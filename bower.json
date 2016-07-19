@@ -1,0 +1,21 @@
+{
+  "name": "purescript-formatters",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-console": "^1.0.0",
+    "purescript-arrays": "^1.0.0",
+    "purescript-tuples": "^1.0.0",
+    "purescript-maybe": "^1.0.0",
+    "purescript-either": "^1.0.0",
+    "purescript-parsing": "^1.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^1.0.0",
+    "purescript-debug": "^1.0.0"
+  }
+}
