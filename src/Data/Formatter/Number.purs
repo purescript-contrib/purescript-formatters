@@ -2,7 +2,15 @@
 -- | Please, note that using simple formatter that tabulates number with
 -- | zeros and put commas between thousands should be enough for everything
 -- | because one could just compose it with `flip append "%"` or whatever
-module Data.Formatter.Number where
+module Data.Formatter.Number
+  ( Formatter
+  , printFormatter
+  , parseFormatString
+  , format
+  , unformat
+  , formatNumber
+  , unformatNumber
+  ) where
 
 import Prelude
 
@@ -24,6 +32,8 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
+import Utils (foldDigits, digit, repeat)
+
 type Formatter =
   { comma ∷ Boolean
   , before ∷ Int
@@ -32,15 +42,6 @@ type Formatter =
   , sign ∷ Boolean
   }
 
-
-repeat ∷ ∀ a. Monoid a ⇒ a → Int → a
-repeat = repeat' mempty
-  where
-  repeat' ∷ a → a → Int → a
-  repeat' accum part count
-    | count < one = accum
-  repeat' accum part count =
-    repeat' (accum <> part) part (count - one)
 
 printFormatter ∷ Formatter → String
 printFormatter f =
@@ -206,26 +207,6 @@ unformatParser f = do
     $ Math.pow 10.0 (Int.toNumber abbr)
     * sign
     * (before + after / Math.pow 10.0 (Int.toNumber f.after))
-
-foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
-foldDigits = foldl (\acc d → acc * 10 + d) zero
-
-digit ∷ P.Parser String Int
-digit = do
-  char ← PS.oneOf ['0','1','2','3','4','5','6','7','8','9']
-  case char of
-    '0' → pure 0
-    '1' → pure 1
-    '2' → pure 2
-    '3' → pure 3
-    '4' → pure 4
-    '5' → pure 5
-    '6' → pure 6
-    '7' → pure 7
-    '8' → pure 8
-    '9' → pure 9
-    _ → P.fail "Incorrect digit, impossible situation"
-
 
 formatNumber ∷ String → Number → Either String String
 formatNumber pattern number =
