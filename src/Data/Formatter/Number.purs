@@ -18,12 +18,10 @@ import Data.Bifunctor (lmap)
 import Data.Array as Arr
 import Data.Array (many, some)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Foldable (class Foldable, foldl)
 import Data.Traversable (for)
 import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
-import Data.Monoid (class Monoid, mempty)
 import Data.Functor (($>))
 
 import Math as Math

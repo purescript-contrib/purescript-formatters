@@ -13,7 +13,7 @@ import Prelude
 
 import Control.Bind ((=<<))
 import Control.Lazy as Lazy
-import Control.Monad.State (State, runState, get, put, modify)
+import Control.Monad.State (State, runState, put, modify)
 import Control.Monad.Trans (lift)
 
 import Data.Int as Int
@@ -39,8 +39,6 @@ import Text.Parsing.Parser.String as PS
 import Text.Parsing.Parser.Pos (initialPos)
 
 import Utils (digit, foldDigits)
-
-import Debug.Trace as DT
 
 data FormatterF a
   = YearFull a

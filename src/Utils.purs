@@ -6,7 +6,6 @@ import Data.Foldable (class Foldable, foldl)
 import Data.Monoid (class Monoid, mempty)
 
 import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
 foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
