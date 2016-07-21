@@ -13,7 +13,7 @@ Formatter has following properties
 Number will be padded with zeros to have at least this number of leading zeros.
 This doesn't restrict number to have more digits then leading zeros in format string.
 + `0000.0` will show 4 digits: `12 -> "0012.0"`, `1234 -> "1234.0"`
-+ `00.0` will show only 2 digits : `1234 -> "1234.0"`, `1234 -> "1234.0"`
++ `00.0` will show only 2 digits : `12 -> "12.0"`, `1234 -> "1234.0"`
 
 Number of digits after dot is set by number of trailing zeros (note the rounding)
 + `0.000` will show 3 digits: `0.12345 -> "0.123"`, `12.98765 -> "12.988"`
