@@ -6,4 +6,4 @@ install:
   - npm install pulp bower -g
   - npm install && bower install
 script:
-  - pulp test
+  - travis_wait pulp test
