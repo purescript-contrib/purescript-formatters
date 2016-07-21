@@ -30,7 +30,7 @@ For abbreviation one could use `a` flag. In general it tries to find the closest
 then use formatter to result of division of input number and that power.
 + `0a`: `1234567 -> "1M"`, `1 -> "1"`
 
-## Datetim formatters
+## Date/Time formatters
 
 This is just subset of format/parse string from moment.js library. Currently supported
 + `YYYY`
