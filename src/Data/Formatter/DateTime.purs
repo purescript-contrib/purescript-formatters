@@ -158,7 +158,15 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   YearFull a →
     (show $ fromEnum $ D.year d) <> cb a
   YearTwoDigits a →
-    show ((fromEnum $ D.year d) - 1900) <> cb a
+    let
+      y = fromEnum $ D.year d
+      adjustedYear
+        | y > 2000 = y - 2000
+        | y > 1900 = y - 1900
+      -- A bit strange situation when user wants to format year from not 20th or 21st centuries as
+      -- two digits.
+        | otherwise = y
+    in show y <> cb a
   YearAbsolute a →
     show (fromEnum $ D.year d) <> cb a
   MonthFull a →
@@ -222,7 +230,6 @@ type UnformatAccum =
   , minute ∷ Maybe Int
   , second ∷ Maybe Int
   , millisecond ∷ Maybe Int
-  , dayOfWeek ∷ Maybe Int
   , meridiem ∷ Maybe Meridiem
   }
 
@@ -235,7 +242,6 @@ initialAccum =
   , minute: Nothing
   , second: Nothing
   , millisecond: Nothing
-  , dayOfWeek: Nothing
   , meridiem: Nothing
   }
 
@@ -243,18 +249,24 @@ unformatAccumToDateTime ∷ UnformatAccum → Either String DT.DateTime
 unformatAccumToDateTime a =
   DT.DateTime
     <$> (D.canonicalDate
-           <$> (maybe (Left "incorrect year") pure $ toEnum $ fromMaybe zero a.year)
-           <*> (maybe (Left "incorrect month") pure $ toEnum $ fromMaybe one a.month)
-           <*> (maybe (Left "incorrect day") pure $ toEnum $ fromMaybe one a.day))
+           <$> (maybe (Left "Incorrect year") pure $ toEnum $ fromMaybe zero a.year)
+           <*> (maybe (Left "Incorrect month") pure $ toEnum $ fromMaybe one a.month)
+           <*> (maybe (Left "Incorrect day") pure $ toEnum $ fromMaybe one a.day))
     <*> (T.Time
            <$> (maybe
-                  (Left "incorrect hour") pure
+                  (Left "Incorrect hour") pure
                   $ toEnum
-                  $ (if a.meridiem == Just PM then (_ + 12) else id)
-                  $ fromMaybe zero a.hour)
-           <*> (maybe (Left "incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
-           <*> (maybe (Left "incorrect second") pure $ toEnum $ fromMaybe zero a.second)
-           <*> (maybe (Left "incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
+                  =<< (adjustMeridiem $ fromMaybe zero a.hour))
+           <*> (maybe (Left "Incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
+           <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
+           <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
+  where
+  adjustMeridiem ∷ Int → Maybe Int
+  adjustMeridiem inp
+    | a.meridiem /= Just PM = Just inp
+    | inp == 12 = pure 0
+    | inp < 12 = pure $ inp + 12
+    | otherwise = Nothing
 
 
 unformatFParser
@@ -270,8 +282,9 @@ unformatFParser cb = case _ of
     cb a
   YearTwoDigits a → do
     ds ← some digit
-    when (Arr.length ds /= 2) $ P.fail "Incorrect 2digit year"
-    lift $ modify _{year = Just $ foldDigits ds + 1900}
+    when (Arr.length ds /= 2) $ P.fail "Incorrect 2-digit year"
+    let y = foldDigits ds
+    lift $ modify _{year = Just $ if y > 69 then y + 1900 else y + 2000}
     cb a
   YearAbsolute a → do
     sign ← PC.optionMaybe $ PC.try $ PS.string "-"
@@ -289,7 +302,7 @@ unformatFParser cb = case _ of
   MonthTwoDigits a → do
     ds ← some digit
     let month = foldDigits ds
-    when (Arr.length ds /= 2 || month > 12 || month < 1) $ P.fail "Incorrect 2digit month"
+    when (Arr.length ds /= 2 || month > 12 || month < 1) $ P.fail "Incorrect 2-digit month"
     lift $ modify _{month = Just month}
     cb a
   DayOfMonth a → do
@@ -311,13 +324,11 @@ unformatFParser cb = case _ of
                    , second: Just $ fromEnum $ T.second t
                    , millisecond: Just $ fromEnum $ T.millisecond t
                    , meridiem: (Nothing ∷ Maybe Meridiem)
-                   , dayOfWeek: (Nothing ∷ Maybe Int)
                    }
         cb a
   DayOfWeek a → do
     dow ← digit
     when (dow > 7 || dow < 1) $ P.fail "Incorrect day of week"
-    lift $ modify _{dayOfWeek = Just dow}
     cb a
   Hours24 a → do
     ds ← some digit

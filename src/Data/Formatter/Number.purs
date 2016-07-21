@@ -30,6 +30,8 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
+import Debug.Trace as DT
+
 import Utils (foldDigits, digit, repeat)
 
 type Formatter =
@@ -76,7 +78,8 @@ formatParser = do
 format ∷ Formatter → Number → String
 format f num =
   let
-    tens = Int.floor $ Math.log num / Math.ln10
+    absed = Math.abs num
+    tens = Int.floor $ Math.log absed / Math.ln10
   in if f.abbreviations
      then
        let
@@ -99,13 +102,16 @@ format f num =
          zeros = f.before - tens - one
          integer = Int.floor num
          leftover = num - Int.toNumber integer
-         tehths = -1 * (Int.floor $ Math.log num / Math.ln10)
+         tehths = -1 * (Int.floor $ Math.log absed / Math.ln10)
          rounded =
            let
              multiplier = Math.pow 10.0 $ Int.toNumber f.after
            in Int.round $ leftover * multiplier
          shownNumber =
-           addCommas [] zero $ Arr.reverse $ Str.toCharArray (repeat "0" zeros <> show integer)
+           if f.comma
+             then
+             addCommas [] zero $ Arr.reverse $ Str.toCharArray (repeat "0" zeros <> show integer)
+             else repeat "0" zeros <> show integer
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
@@ -116,7 +122,6 @@ format f num =
              addCommas (Arr.cons ',' acc) zero input
        in
         (if num > zero && f.sign then "+" else "")
-        <> (if num < zero then "-" else "")
         <> shownNumber
         <> (if f.after < 1
               then ""
