@@ -33,12 +33,14 @@ import Data.Enum (fromEnum, toEnum)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..), maybe, isJust, fromMaybe)
 
+import Data.Formatter.Internal (digit, foldDigits)
+
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Text.Parsing.Parser.Pos (initialPos)
 
-import Utils.Formatter (digit, foldDigits)
+
 
 data FormatterF a
   = YearFull a
