@@ -38,7 +38,7 @@ import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Text.Parsing.Parser.Pos (initialPos)
 
-import Utils (digit, foldDigits)
+import Utils.Formatter (digit, foldDigits)
 
 data FormatterF a
   = YearFull a
