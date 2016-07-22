@@ -25,13 +25,15 @@ import Data.Int as Int
 import Data.String as Str
 import Data.Functor (($>))
 
+import Data.Formatter.Internal (foldDigits, digit, repeat)
+
 import Math as Math
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
-import Utils.Formatter (foldDigits, digit, repeat)
+
 
 type Formatter =
   { comma ∷ Boolean

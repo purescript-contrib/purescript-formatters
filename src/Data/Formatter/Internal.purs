@@ -1,4 +1,4 @@
-module Utils.Formatter where
+module Data.Formatter.Internal where
 
 import Prelude
 
