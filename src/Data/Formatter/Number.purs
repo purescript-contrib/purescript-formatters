@@ -9,6 +9,7 @@ module Data.Formatter.Number
   , format
   , unformat
   , formatNumber
+  , formatOrShowNumber
   , unformatNumber
   ) where
 
