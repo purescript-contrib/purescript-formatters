@@ -1,4 +1,4 @@
-module Utils where
+module Utils.Formatter where
 
 import Prelude
 

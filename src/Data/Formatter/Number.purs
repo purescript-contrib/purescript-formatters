@@ -30,9 +30,7 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
-import Debug.Trace as DT
-
-import Utils (foldDigits, digit, repeat)
+import Utils.Formatter (foldDigits, digit, repeat)
 
 type Formatter =
   { comma ∷ Boolean
