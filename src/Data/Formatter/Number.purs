@@ -33,8 +33,6 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
-
-
 type Formatter =
   { comma ∷ Boolean
   , before ∷ Int
@@ -80,7 +78,7 @@ format ∷ Formatter → Number → String
 format f num =
   let
     absed = Math.abs num
-    tens = Int.floor $ Math.log absed / Math.ln10
+    tens = if absed > 0.0 then Int.floor $ Math.log absed / Math.ln10 else 0
   in if f.abbreviations
      then
        let
