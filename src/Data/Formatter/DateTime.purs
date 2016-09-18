@@ -186,9 +186,10 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   Hours24 a →
     show (fromEnum $ T.hour t) <> cb a
   Hours12 a →
-    show ((fromEnum $ T.hour t) `mod` 12) <> cb a
+    let fix12 h = if h == 0 then 12 else h
+    in show (fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
   Meridiem a →
-    (if (fromEnum $ T.hour t) > 12 then "PM" else "AM") <> cb a
+    (if (fromEnum $ T.hour t) >= 12 then "PM" else "AM") <> cb a
   Minutes a →
     show (fromEnum $ T.minute t) <> cb a
   Seconds a →
