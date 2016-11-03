@@ -11,36 +11,32 @@ module Data.Formatter.DateTime
 
 import Prelude
 
-import Control.Bind ((=<<))
 import Control.Lazy as Lazy
 import Control.Monad.State (State, runState, put, modify)
-import Control.Monad.Trans (lift)
+import Control.Monad.Trans.Class (lift)
 
-import Data.Int as Int
-import Data.Bifunctor (lmap)
-import Data.Functor (($>))
-import Data.Functor.Mu (Mu, unroll, roll)
-import Data.Either (Either(..))
-import Data.String as Str
 import Data.Array (some)
 import Data.Array as Arr
-import Data.DateTime as DT
+import Data.Bifunctor (lmap)
 import Data.Date as D
-import Data.Time as T
+import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
-import Data.Time.Duration as Dur
+import Data.Either (Either(..))
 import Data.Enum (fromEnum, toEnum)
-import Data.Tuple (Tuple(..))
+import Data.Functor.Mu (Mu, unroll, roll)
+import Data.Int as Int
 import Data.Maybe (Maybe(..), maybe, isJust, fromMaybe)
+import Data.Newtype (unwrap)
+import Data.String as Str
+import Data.Time as T
+import Data.Time.Duration as Dur
+import Data.Tuple (Tuple(..))
 
 import Data.Formatter.Internal (digit, foldDigits)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
-import Text.Parsing.Parser.Pos (initialPos)
-
-
 
 data FormatterF a
   = YearFull a
@@ -111,7 +107,7 @@ printFormatter f = printFormatterF printFormatter $ unroll f
 
 parseFormatString ∷ String → Either String Formatter
 parseFormatString s =
-  lmap (\(P.ParseError {message}) → message) $ P.runParser s formatParser
+  lmap P.parseErrorMessage $ P.runParser s formatParser
 
 
 placeholderContent ∷ P.Parser String String
@@ -180,7 +176,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   DayOfMonth a →
     show (fromEnum $ D.day d) <> cb a
   UnixTimestamp a →
-    (show $ Int.floor $ (_ / 1000.0) $ Dur.unMilliseconds $ unInstant $ fromDateTime dt) <> cb a
+    (show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt) <> cb a
   DayOfWeek a →
     show (fromEnum $ D.weekday d) <> cb a
   Hours24 a →
@@ -213,11 +209,11 @@ unformat f s =
   let
     run =
       runState
-        (P.runParserT (P.PState {input: s, position: initialPos}) $ unformatParser f)
+        (P.runParserT s $ unformatParser f)
         initialAccum
   in
     case run of
-      Tuple (Left (P.ParseError {message})) state → Left message
+      Tuple (Left err) _ → Left $ P.parseErrorMessage err
       Tuple _ accum → unformatAccumToDateTime accum
 
 data Meridiem = AM | PM
