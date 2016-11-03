@@ -23,7 +23,6 @@ import Data.Traversable (for)
 import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
-import Data.Functor (($>))
 
 import Data.Formatter.Internal (foldDigits, digit, repeat)
 
@@ -53,7 +52,7 @@ printFormatter f =
 
 parseFormatString ∷ String → Either String Formatter
 parseFormatString s =
-  lmap (\(P.ParseError {message}) → message) $ P.runParser s formatParser
+  lmap P.parseErrorMessage $ P.runParser s formatParser
 
 
 formatParser ∷ P.Parser String Formatter
@@ -132,7 +131,7 @@ format f num =
 
 unformat ∷ Formatter → String → Either String Number
 unformat f s =
-  lmap (\(P.ParseError {message}) → message) $ P.runParser s $ unformatParser f
+  lmap P.parseErrorMessage $ P.runParser s $ unformatParser f
 
 unformatParser ∷ Formatter → P.Parser String Number
 unformatParser f = do

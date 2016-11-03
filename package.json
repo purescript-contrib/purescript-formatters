@@ -15,7 +15,7 @@
   "homepage": "https://github.com/slamdata/purescript-formatters#readme",
   "dependencies": {
     "pulp": "^9.0.1",
-    "purescript": "^0.9.1",
+    "purescript": "^0.10.1",
     "purescript-psa": "^0.3.9"
   }
 }
