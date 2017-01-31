@@ -202,7 +202,6 @@ padSingleDigit i
   | i < 10    = "0" <> (show i)
   | otherwise = show i
 
-
 format ∷ Formatter → DT.DateTime → String
 format f dt = formatF (flip format dt) dt $ unroll f
 
