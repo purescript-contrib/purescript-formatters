@@ -13,6 +13,7 @@
     "purescript-datetime": "^2.0.0"
   },
   "devDependencies": {
+    "purescript-aff": "^2.0.2",
     "purescript-console": "^2.0.0",
     "purescript-psci-support": "^2.0.0",
     "purescript-debug": "^2.0.0"
