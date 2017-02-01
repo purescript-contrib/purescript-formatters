@@ -38,6 +38,11 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
+-- | Formatting function that accepts a number that is a year,
+-- | and strips away the non-significat digits, leaving only the
+-- | ones and tens positions.
+foreign import formatYearTwoDigits :: Int -> String
+
 data FormatterF a
   = YearFull a
   | YearTwoDigits a
@@ -155,16 +160,9 @@ formatF
 formatF cb dt@(DT.DateTime d t) = case _ of
   YearFull a →
     (show $ fromEnum $ D.year d) <> cb a
-  YearTwoDigits a →
-    let
-      y = fromEnum $ D.year d
-      adjustedYear
-        | y > 2000 = y - 2000
-        | y > 1900 = y - 1900
-      -- A bit strange situation when user wants to format year from not 20th or 21st centuries as
-      -- two digits.
-        | otherwise = y
-    in show y <> cb a
+  YearTwoDigits a ->
+    let y = (fromEnum $ D.year d)
+    in (formatYearTwoDigits y) <> cb a
   YearAbsolute a →
     show (fromEnum $ D.year d) <> cb a
   MonthFull a →
