@@ -119,15 +119,18 @@ numeralTests = do
 
 -- April 12th 2017 at 11:34:34:234
 -- 4/12/2017
-testDateTime ∷ DTi.DateTime
-testDateTime =
+makeDateTime ∷ Int -> DTi.DateTime
+makeDateTime year =
   DTi.DateTime
-    (D.canonicalDate (fromMaybe bottom $ toEnum 2017) D.April (fromMaybe bottom $ toEnum 12))
+    (D.canonicalDate (fromMaybe bottom $ toEnum year) D.April (fromMaybe bottom $ toEnum 12))
     (T.Time
        (fromMaybe bottom $ toEnum 11)
        (fromMaybe bottom $ toEnum 34)
        (fromMaybe bottom $ toEnum 34)
        (fromMaybe bottom $ toEnum 234))
+
+testDateTime :: DTi.DateTime
+testDateTime = makeDateTime 2017
 
 
 assert :: forall e. String -> String -> Boolean -> Tests e Unit
@@ -145,7 +148,7 @@ failTest message = do
 
 assertFormatting :: forall e. String -> String -> DateTime -> Tests e Unit
 assertFormatting target' format dateTime = do
-  let result = FDT.formatDateTime format testDateTime
+  let result = FDT.formatDateTime format dateTime
   let target = Right target'
   assert
     ((show result) <> " does not equal " <> (show target))
@@ -157,6 +160,11 @@ timeTest :: forall e. Tests e Unit
 timeTest = do
   log "- Data.Formatter.DateTime.formatDateTime"
 
+  -- var a = moment(
+  --   'April 12th 2017 at 11:34:34:234',
+  --   'MMMM Do YYYY [at] HH:mm:ss:SSS'
+  -- ); 
+  -- a.format('MMMM Do YYYY [at] HH:mm:ss:SSS')
   -- testDateTime = April 12th 2017 at 11:34:34:234
   assertFormatting "04/12/2017"      "MM/DD/YYYY" testDateTime
   assertFormatting "April"           "MMMM" testDateTime
@@ -166,7 +174,10 @@ timeTest = do
   -- This should probably be am (lowercase), if the desired
   -- functionality of the library is to mirror momentjs
   assertFormatting "11:34:34:234 AM" "hh:mm:ss:SSS a"  testDateTime
-  assertFormatting "17-3"            "YY-E"  testDateTime
+  assertFormatting "17"            "YY"  testDateTime
+  assertFormatting "07"            "YY"  (makeDateTime 7)
+  assertFormatting "00"            "YY"  (makeDateTime 0)
+  assertFormatting "01"            "YY"  (makeDateTime (-1))
 
   log "- Data.Formatter.DateTime.unformatDateTime "
 

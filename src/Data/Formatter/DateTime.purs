@@ -15,6 +15,7 @@ import Control.Lazy as Lazy
 import Control.Monad.State (State, runState, put, modify)
 import Control.Monad.Trans.Class (lift)
 
+import Data.Ord (abs)
 import Data.Array (some)
 import Data.Array as Arr
 import Data.Bifunctor (lmap)
@@ -31,17 +32,13 @@ import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Tuple (Tuple(..))
-
+import Data.Foldable (foldr)
 import Data.Formatter.Internal (digit, foldDigits)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
--- | Formatting function that accepts a number that is a year,
--- | and strips away the non-significat digits, leaving only the
--- | ones and tens positions.
-foreign import formatYearTwoDigits :: Int -> String
 
 data FormatterF a
   = YearFull a
@@ -113,6 +110,18 @@ printFormatter f = printFormatterF printFormatter $ unroll f
 parseFormatString ∷ String → Either String Formatter
 parseFormatString s =
   lmap P.parseErrorMessage $ P.runParser s formatParser
+
+-- | Formatting function that accepts a number that is a year,
+-- | and strips away the non-significat digits, leaving only the
+-- | ones and tens positions.
+formatYearTwoDigits :: Int -> String
+formatYearTwoDigits i = case dateLength of
+  1 -> "0" <> (show $ abs i)
+  2 -> show $ abs i
+  _ -> reverse $ Str.take 2 $ reverse $ show $ abs i
+  where
+    dateLength = Str.length $ show $ abs i
+    reverse str = foldr (flip (<>)) "" (Str.split (Str.Pattern "") str)
 
 
 placeholderContent ∷ P.Parser String String
