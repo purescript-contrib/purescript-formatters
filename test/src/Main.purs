@@ -179,7 +179,7 @@ timeTest = do
   assertFormatting "17"            "YY"  (makeDateTime 20017)
   log "  --- Format 0 with YY"
   assertFormatting "00"            "YY"  (makeDateTime 0)
-  log "  --- Format - 1 with YY"
+  log "  --- Format -1 with YY"
   assertFormatting "01"            "YY"  (makeDateTime (-1))
 
   log "- Data.Formatter.DateTime.unformatDateTime "
