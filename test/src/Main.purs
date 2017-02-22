@@ -163,7 +163,7 @@ timeTest = do
   -- var a = moment(
   --   'April 12th 2017 at 11:34:34:234',
   --   'MMMM Do YYYY [at] HH:mm:ss:SSS'
-  -- ); 
+  -- );
   -- a.format('MMMM Do YYYY [at] HH:mm:ss:SSS')
   -- testDateTime = April 12th 2017 at 11:34:34:234
   assertFormatting "04/12/2017"      "MM/DD/YYYY" testDateTime
@@ -175,8 +175,11 @@ timeTest = do
   -- functionality of the library is to mirror momentjs
   assertFormatting "11:34:34:234 AM" "hh:mm:ss:SSS a"  testDateTime
   assertFormatting "17"            "YY"  testDateTime
-  assertFormatting "07"            "YY"  (makeDateTime 7)
+  log "  --- Format 20017 with YY"
+  assertFormatting "17"            "YY"  (makeDateTime 20017)
+  log "  --- Format 0 with YY"
   assertFormatting "00"            "YY"  (makeDateTime 0)
+  log "  --- Format - 1 with YY"
   assertFormatting "01"            "YY"  (makeDateTime (-1))
 
   log "- Data.Formatter.DateTime.unformatDateTime "

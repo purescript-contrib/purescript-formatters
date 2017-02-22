@@ -112,16 +112,16 @@ parseFormatString s =
   lmap P.parseErrorMessage $ P.runParser s formatParser
 
 -- | Formatting function that accepts a number that is a year,
--- | and strips away the non-significat digits, leaving only the
+-- | and strips away the non-significant digits, leaving only the
 -- | ones and tens positions.
 formatYearTwoDigits :: Int -> String
 formatYearTwoDigits i = case dateLength of
-  1 -> "0" <> (show $ abs i)
-  2 -> show $ abs i
-  _ -> reverse $ Str.take 2 $ reverse $ show $ abs i
+  1 -> "0" <> dateString
+  2 -> dateString
+  _ -> Str.drop (dateLength - 2) dateString
   where
-    dateLength = Str.length $ show $ abs i
-    reverse str = foldr (flip (<>)) "" (Str.split (Str.Pattern "") str)
+    dateString = show $ abs i
+    dateLength = Str.length $ dateString
 
 
 placeholderContent ∷ P.Parser String String
