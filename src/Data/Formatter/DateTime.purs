@@ -15,6 +15,7 @@ import Control.Lazy as Lazy
 import Control.Monad.State (State, runState, put, modify)
 import Control.Monad.Trans.Class (lift)
 
+import Data.Ord (abs)
 import Data.Array (some)
 import Data.Array as Arr
 import Data.Bifunctor (lmap)
@@ -31,12 +32,13 @@ import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Tuple (Tuple(..))
-
+import Data.Foldable (foldr)
 import Data.Formatter.Internal (digit, foldDigits)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
+
 
 data FormatterF a
   = YearFull a
@@ -109,6 +111,18 @@ parseFormatString ∷ String → Either String Formatter
 parseFormatString s =
   lmap P.parseErrorMessage $ P.runParser s formatParser
 
+-- | Formatting function that accepts a number that is a year,
+-- | and strips away the non-significant digits, leaving only the
+-- | ones and tens positions.
+formatYearTwoDigits :: Int -> String
+formatYearTwoDigits i = case dateLength of
+  1 -> "0" <> dateString
+  2 -> dateString
+  _ -> Str.drop (dateLength - 2) dateString
+  where
+    dateString = show $ abs i
+    dateLength = Str.length $ dateString
+
 
 placeholderContent ∷ P.Parser String String
 placeholderContent =
@@ -155,16 +169,9 @@ formatF
 formatF cb dt@(DT.DateTime d t) = case _ of
   YearFull a →
     (show $ fromEnum $ D.year d) <> cb a
-  YearTwoDigits a →
-    let
-      y = fromEnum $ D.year d
-      adjustedYear
-        | y > 2000 = y - 2000
-        | y > 1900 = y - 1900
-      -- A bit strange situation when user wants to format year from not 20th or 21st centuries as
-      -- two digits.
-        | otherwise = y
-    in show y <> cb a
+  YearTwoDigits a ->
+    let y = (fromEnum $ D.year d)
+    in (formatYearTwoDigits y) <> cb a
   YearAbsolute a →
     show (fromEnum $ D.year d) <> cb a
   MonthFull a →
@@ -172,7 +179,8 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   MonthShort a →
     printShortMonth (D.month d) <> cb a
   MonthTwoDigits a →
-    show (fromEnum $ D.month d) <> cb a
+    let month = fromEnum $ D.month d
+    in (padSingleDigit month) <> cb a
   DayOfMonth a →
     show (fromEnum $ D.day d) <> cb a
   UnixTimestamp a →
@@ -183,7 +191,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     show (fromEnum $ T.hour t) <> cb a
   Hours12 a →
     let fix12 h = if h == 0 then 12 else h
-    in show (fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
+    in (padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
   Meridiem a →
     (if (fromEnum $ T.hour t) >= 12 then "PM" else "AM") <> cb a
   Minutes a →
@@ -196,6 +204,10 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     s <> cb a
   End → ""
 
+padSingleDigit :: Int -> String
+padSingleDigit i
+  | i < 10    = "0" <> (show i)
+  | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
 format f dt = formatF (flip format dt) dt $ unroll f
