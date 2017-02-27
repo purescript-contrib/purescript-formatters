@@ -32,7 +32,6 @@ import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Tuple (Tuple(..))
-import Data.Foldable (foldr)
 import Data.Formatter.Internal (digit, foldDigits)
 
 import Text.Parsing.Parser as P
