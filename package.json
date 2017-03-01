@@ -1,25 +1,14 @@
 {
-  "name": "purescript-formatters",
-  "description": "Replacement for numeral.js, moment.js etc",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/slamdata/purescript-formatters"
-  },
-  "contributors": [
-    "Maxim Zimaliev <zimaliev@gmail.com>"
-  ],
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/slamdata/purescript-formatters/issues"
-  },
+  "private": true,
   "scripts": {
-    "build": "pulp build -- --censor-lib --strict --stash",
-    "test": "pulp test -- --censor-lib --strict --stash"
+    "clean": "rimraf output && rimraf .pulp-cache",
+    "build": "pulp build -- --censor-lib --strict",
+    "test": "pulp test"
   },
-  "homepage": "https://github.com/slamdata/purescript-formatters#readme",
-  "dependencies": {
-    "pulp": "^9.1.0",
+  "devDependencies": {
+    "pulp": "^10.0.1",
     "purescript": "^0.10.7",
-    "purescript-psa": "^0.3.9"
+    "purescript-psa": "^0.4.0",
+    "rimraf": "^2.6.1"
   }
 }
