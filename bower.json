@@ -1,10 +1,19 @@
 {
   "name": "purescript-formatters",
+  "homepage": "https://github.com/slamdata/purescript-formatters",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/slamdata/purescript-formatters.git"
+  },
   "ignore": [
     "**/.*",
-    "node_modules",
     "bower_components",
-    "output"
+    "node_modules",
+    "output",
+    "test",
+    "bower.json",
+    "package.json"
   ],
   "dependencies": {
     "purescript-prelude": "^2.1.0",

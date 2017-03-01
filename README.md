@@ -1,5 +1,15 @@
 # purescript-formatters
-Replacement for numeral.js, moment.js etc
+
+[![Latest release](http://img.shields.io/github/release/slamdata/purescript-formatters.svg)](https://github.com/slamdata/purescript-formatters/releases)
+[![Build status](https://travis-ci.org/slamdata/purescript-formatters.svg?branch=master)](https://travis-ci.org/slamdata/purescript-formatters)
+
+A PureScript alternative to numeral.js, moment.js, etc.
+
+## Installation
+
+```
+bower install purescript-formatters
+```
 
 ## Number formatters
 
@@ -47,3 +57,7 @@ This is just subset of format/parse string from moment.js library. Currently sup
 + `mm`
 + `ss`
 + `SSS`
+
+## Documentation
+
+Module documentation is published on Pursuit: [http://pursuit.purescript.org/packages/purescript-formatters](http://pursuit.purescript.org/packages/purescript-formatters)
