@@ -46,6 +46,7 @@ data FormatterF a
   | MonthFull a
   | MonthShort a
   | MonthTwoDigits a
+  | DayOfMonthTwoDigits a
   | DayOfMonth a
   | UnixTimestamp a
   | DayOfWeek a
@@ -65,6 +66,7 @@ instance formatterFFunctor ∷ Functor FormatterF where
   map f (MonthFull a) = MonthFull $ f a
   map f (MonthShort a) = MonthShort $ f a
   map f (MonthTwoDigits a) = MonthTwoDigits $ f a
+  map f (DayOfMonthTwoDigits a) = DayOfMonthTwoDigits $ f a
   map f (DayOfMonth a) = DayOfMonth $ f a
   map f (UnixTimestamp a) = UnixTimestamp $ f a
   map f (DayOfWeek a) = DayOfWeek $ f a
@@ -91,7 +93,8 @@ printFormatterF cb = case _ of
   MonthFull a → "MMMM" <> cb a
   MonthShort a → "MMM" <> cb a
   MonthTwoDigits a → "MM" <> cb a
-  DayOfMonth a → "DD" <> cb a
+  DayOfMonthTwoDigits a → "DD" <> cb a
+  DayOfMonth a → "D" <> cb a
   UnixTimestamp a → "X" <> cb a
   DayOfWeek a → "E" <> cb a
   Hours24 a → "HH" <> cb a
@@ -143,7 +146,8 @@ formatterFParser cb =
     , (PC.try $ PS.string "MMMM") *> map MonthFull cb
     , (PC.try $ PS.string "MMM") *> map MonthShort cb
     , (PC.try $ PS.string "MM") *> map MonthTwoDigits cb
-    , (PC.try $ PS.string "DD") *> map DayOfMonth cb
+    , (PC.try $ PS.string "DD") *> map DayOfMonthTwoDigits cb
+    , (PC.try $ PS.string "D") *> map DayOfMonth cb
     , (PC.try $ PS.string "E") *> map DayOfWeek cb
     , (PC.try $ PS.string "HH") *> map Hours24 cb
     , (PC.try $ PS.string "hh") *> map Hours12 cb
@@ -180,6 +184,8 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   MonthTwoDigits a →
     let month = fromEnum $ D.month d
     in (padSingleDigit month) <> cb a
+  DayOfMonthTwoDigits a →
+    show (fromEnum $ D.day d) <> cb a
   DayOfMonth a →
     show (fromEnum $ D.day d) <> cb a
   UnixTimestamp a →
@@ -314,6 +320,12 @@ unformatFParser cb = case _ of
     let month = foldDigits ds
     when (Arr.length ds /= 2 || month > 12 || month < 1) $ P.fail "Incorrect 2-digit month"
     lift $ modify _{month = Just month}
+    cb a
+  DayOfMonthTwoDigits a → do
+    ds ← some digit
+    let dom = foldDigits ds
+    when (Arr.length ds /= 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
+    lift $ modify _{day = Just dom}
     cb a
   DayOfMonth a → do
     ds ← some digit

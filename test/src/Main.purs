@@ -119,10 +119,10 @@ numeralTests = do
 
 -- April 12th 2017 at 11:34:34:234
 -- 4/12/2017
-makeDateTime ∷ Int -> DTi.DateTime
-makeDateTime year =
+makeDateTime ∷ Int -> Int -> Int -> DTi.DateTime
+makeDateTime year month day =
   DTi.DateTime
-    (D.canonicalDate (fromMaybe bottom $ toEnum year) D.April (fromMaybe bottom $ toEnum 12))
+    (D.canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
     (T.Time
        (fromMaybe bottom $ toEnum 11)
        (fromMaybe bottom $ toEnum 34)
@@ -130,7 +130,7 @@ makeDateTime year =
        (fromMaybe bottom $ toEnum 234))
 
 testDateTime :: DTi.DateTime
-testDateTime = makeDateTime 2017
+testDateTime = makeDateTime 2017 4 12
 
 
 assert :: forall e. String -> String -> Boolean -> Tests e Unit
@@ -170,17 +170,18 @@ timeTest = do
   assertFormatting "April"           "MMMM" testDateTime
   assertFormatting "2017-12-04"      "YYYY-DD-MM" testDateTime
   assertFormatting "2017-Apr"        "YYYY-MMM" testDateTime
+  assertFormatting "Apr 1"           "MMM D" (makeDateTime 2017 4 1)
 
   -- This should probably be am (lowercase), if the desired
   -- functionality of the library is to mirror momentjs
   assertFormatting "11:34:34:234 AM" "hh:mm:ss:SSS a"  testDateTime
   assertFormatting "17"            "YY"  testDateTime
   log "  --- Format 20017 with YY"
-  assertFormatting "17"            "YY"  (makeDateTime 20017)
+  assertFormatting "17"            "YY"  (makeDateTime 20017 4 12)
   log "  --- Format 0 with YY"
-  assertFormatting "00"            "YY"  (makeDateTime 0)
+  assertFormatting "00"            "YY"  (makeDateTime 0 4 12)
   log "  --- Format -1 with YY"
-  assertFormatting "01"            "YY"  (makeDateTime (-1))
+  assertFormatting "01"            "YY"  (makeDateTime (-1) 4 12)
 
   log "- Data.Formatter.DateTime.unformatDateTime "
 
