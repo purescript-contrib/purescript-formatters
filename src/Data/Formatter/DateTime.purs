@@ -318,7 +318,7 @@ unformatFParser cb = case _ of
   DayOfMonth a → do
     ds ← some digit
     let dom = foldDigits ds
-    when (Arr.length ds /= 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
+    when (Arr.length ds > 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   UnixTimestamp a → do
