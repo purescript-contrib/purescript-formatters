@@ -49,6 +49,7 @@ This is just subset of format/parse string from moment.js library. Currently sup
 + `MMM`
 + `MM`
 + `DD`
++ `D`
 + `X`
 + `E`
 + `HH`
