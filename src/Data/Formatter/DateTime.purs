@@ -185,7 +185,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     let month = fromEnum $ D.month d
     in (padSingleDigit month) <> cb a
   DayOfMonthTwoDigits a →
-    show (fromEnum $ D.day d) <> cb a
+    (padSingleDigit $ fromEnum $ D.day d) <> cb a
   DayOfMonth a →
     show (fromEnum $ D.day d) <> cb a
   UnixTimestamp a →
