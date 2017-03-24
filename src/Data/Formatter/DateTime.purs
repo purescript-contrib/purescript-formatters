@@ -391,25 +391,25 @@ unformatFParser cb = case _ of
   MinutesTwoDigits a → do
     ds ← some digit
     let mm = foldDigits ds
-    when (Arr.length ds > 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect 2-digit minute"
     lift $ modify _{minute = Just mm}
     cb a
   Minutes a → do
     ds ← some digit
     let mm = foldDigits ds
-    when (mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    when (Arr.length ds > 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
     lift $ modify _{minute = Just mm}
     cb a
   SecondsTwoDigits a → do
     ds ← some digit
     let ss = foldDigits ds
-    when (Arr.length ds > 2 || ss < 0 || ss > 59) $ P.fail "Incorrect 2-digi second"
+    when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect 2-digit second"
     lift $ modify _{second = Just ss}
     cb a
   Seconds a → do
     ds ← some digit
     let ss = foldDigits ds
-    when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
+    when (Arr.length ds > 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
     lift $ modify _{second = Just ss}
     cb a
   Milliseconds a → do
