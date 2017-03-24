@@ -54,7 +54,9 @@ data FormatterF a
   | Hours12 a
   | Meridiem a
   | Minutes a
+  | MinutesTwoDigits a
   | Seconds a
+  | SecondsTwoDigits a
   | Milliseconds a
   | Placeholder String a
   | End
@@ -74,7 +76,9 @@ instance formatterFFunctor ∷ Functor FormatterF where
   map f (Hours12 a) = Hours12 $ f a
   map f (Meridiem a) = Meridiem $ f a
   map f (Minutes a) = Minutes $ f a
+  map f (MinutesTwoDigits a) = MinutesTwoDigits $ f a
   map f (Seconds a) = Seconds $ f a
+  map f (SecondsTwoDigits a) = SecondsTwoDigits $ f a
   map f (Milliseconds a) = Milliseconds $ f a
   map f (Placeholder str a) = Placeholder str $ f a
   map f End = End
@@ -100,8 +104,10 @@ printFormatterF cb = case _ of
   Hours24 a → "HH" <> cb a
   Hours12 a → "hh" <> cb a
   Meridiem a → "a" <> cb a
-  Minutes a → "mm" <> cb a
-  Seconds a → "ss" <> cb a
+  Minutes a → "m" <> cb a
+  MinutesTwoDigits a → "mm" <> cb a
+  Seconds a → "s" <> cb a
+  SecondsTwoDigits a → "ss" <> cb a
   Milliseconds a → "SSS" <> cb a
   Placeholder s a → s <> cb a
   End → ""
@@ -152,8 +158,10 @@ formatterFParser cb =
     , (PC.try $ PS.string "HH") *> map Hours24 cb
     , (PC.try $ PS.string "hh") *> map Hours12 cb
     , (PC.try $ PS.string "a") *> map Meridiem cb
-    , (PC.try $ PS.string "mm") *> map Minutes cb
-    , (PC.try $ PS.string "ss") *> map Seconds cb
+    , (PC.try $ PS.string "mm") *> map MinutesTwoDigits cb
+    , (PC.try $ PS.string "m") *> map Minutes cb
+    , (PC.try $ PS.string "ss") *> map SecondsTwoDigits cb
+    , (PC.try $ PS.string "s") *> map Seconds cb
     , (PC.try $ PS.string "SSS") *> map Milliseconds cb
     , (Placeholder <$> placeholderContent <*> cb)
     , (PS.eof $> End)
@@ -201,10 +209,14 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     (if (fromEnum $ T.hour t) >= 12 then "PM" else "AM") <> cb a
   Minutes a →
     show (fromEnum $ T.minute t) <> cb a
+  MinutesTwoDigits a →
+    (padSingleDigit <<< fromEnum $ T.minute t) <> cb a
   Seconds a →
     show (fromEnum $ T.second t) <> cb a
+  SecondsTwoDigits a →
+    (padSingleDigit <<< fromEnum $ T.second t) <> cb a
   Milliseconds a →
-    show (fromEnum $ T.millisecond t) <> cb a
+    (padSingleDigit $ fromEnum $ T.millisecond t) <> cb a
   Placeholder s a →
     s <> cb a
   End → ""
@@ -376,11 +388,23 @@ unformatFParser cb = case _ of
           | otherwise = id
     lift $ modify f
     cb a
+  MinutesTwoDigits a → do
+    ds ← some digit
+    let mm = foldDigits ds
+    when (Arr.length ds > 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    lift $ modify _{minute = Just mm}
+    cb a
   Minutes a → do
     ds ← some digit
     let mm = foldDigits ds
-    when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    when (mm < 0 || mm > 59) $ P.fail "Incorrect minute"
     lift $ modify _{minute = Just mm}
+    cb a
+  SecondsTwoDigits a → do
+    ds ← some digit
+    let ss = foldDigits ds
+    when (Arr.length ds > 2 || ss < 0 || ss > 59) $ P.fail "Incorrect 2-digi second"
+    lift $ modify _{second = Just ss}
     cb a
   Seconds a → do
     ds ← some digit
