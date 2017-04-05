@@ -4,6 +4,12 @@ import Prelude
 import Control.Monad.Aff.Console as AffC
 import Data.Date as D
 import Data.DateTime as DTi
+
+-- TODO parser should't be exposed so this should be removed
+import Text.Parsing.Parser as P
+import Data.Interval as I
+import Data.Formatter.Interval as FI
+
 import Data.Formatter.DateTime as FDT
 import Data.Formatter.Number as FN
 import Data.Time as T
@@ -155,7 +161,20 @@ assertFormatting target' format dateTime = do
     ((show result) <> " equals " <> (show target))
     (result == target)
 
+assertParserRes :: forall a e. (Show a, Eq a) => a -> a -> Tests e Unit
+assertParserRes result target =
+  assert
+    ((show result) <> " does not equal " <> (show target))
+    ((show result) <> " equals " <> (show target))
+    (result == target)
 
+timeInterval :: forall e. Tests e Unit
+timeInterval = do
+  log "- Data.Formatter.Interval.parseDuration"
+  assertParserRes (P.runParser "P1W" FI.parseDuration) (Right $ I.day 7.0)
+  assertParserRes (P.runParser "P1.0W" FI.parseDuration) (Right $ I.day 7.0)
+  assertParserRes (P.runParser "P1.0D" FI.parseDuration) (Right $ I.day 1.0)
+  assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
 timeTest :: forall e. Tests e Unit
 timeTest = do
   log "- Data.Formatter.DateTime.formatDateTime"
@@ -217,6 +236,7 @@ main = execTests tests true
   tests = do
     log "Testing time functions..."
     timeTest
+    timeInterval
     passed <- get
     when (passed /= true) (throwError (error "Tests did not pass."))
     --numeralTests
