@@ -1,5 +1,4 @@
 module Data.Formatter.Interval
-  -- TODO parser should't be exposed
   ( parseDuration
   ) where
 
@@ -11,10 +10,14 @@ import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Control.Alt ((<|>))
 import Data.Array (some)
-import Data.Function (on)
+import Data.Foldable (class Foldable, fold)
 import Data.Formatter.Internal (digit, foldDigits)
+import Data.Function (on)
 import Data.Int (toNumber, floor)
-import Data.Monoid (mempty)
+import Data.Maybe (Maybe, maybe)
+import Data.Monoid (class Monoid, mempty)
+import Data.Traversable (sequence)
+import Data.Tuple (Tuple(..))
 
 
 numOfDigits ∷ Int → Int
@@ -40,31 +43,40 @@ number = (+)
   <$> (integer <#> toNumber)
   <*> (PC.option 0.0 $ PC.try $ PS.oneOf ['.', ','] *> fractional)
 
+durationParser :: Array (Tuple (Number -> I.Duration) String) -> P.Parser String I.Duration
+durationParser arr = arr
+  <#> applyDurations
+  # sequence
+  <#> foldFoldableMaybe
+
+applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
+applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
+
+foldFoldableMaybe :: ∀ f a. (Foldable f, Monoid a) => f (Maybe a) -> a
+foldFoldableMaybe = fold >>> unMaybe
+
+unMaybe :: ∀ a. (Monoid a) => Maybe a -> a
+unMaybe = maybe mempty id
+
 component ∷ String → P.Parser String Number
 component designator = number <* PS.string designator
 
-tryOr :: ∀ a. a → P.Parser String a → P.Parser String a
-tryOr a p = PC.option a $ PC.try p
+tryM :: ∀ a. (Monoid a) => P.Parser String a → P.Parser String a
+tryM p = PC.option mempty $ PC.try p
+
+parseIsoDuration :: P.Parser String I.IsoDuration
+parseIsoDuration = do
+  dur ← parseDuration
+  case I.mkIsoDuration dur of
+    Nothing -> PC.fail "extracted Duration is not valid ISO duration"
+    Just a -> pure a
 
 parseDuration :: P.Parser String I.Duration
-parseDuration = PS.string "P" *> (weekDuration <|> fullDuration) <* PS.eof
+parseDuration =
+  PS.string "P" *> (weekDuration <|> fullDuration) <* PS.eof
   where
-    weekDuration :: P.Parser String I.Duration
-    weekDuration = PC.try $ I.week <$> component "W"
-
-    fullDuration ∷ P.Parser String I.Duration
+    weekDuration = durationParser [ Tuple I.week "W" ]
     fullDuration = append <$> durationDatePart <*> durationTimePart
-
-    durationDatePart ∷ P.Parser String I.Duration
-    durationDatePart = (\y m d → I.year y <> I.month m <> I.day d)
-      <$> (tryOr 0.0 $ component "Y")
-      <*> (tryOr 0.0 $ component "M")
-      <*> (tryOr 0.0 $ component "D")
-
-    durationTimePart ∷ P.Parser String I.Duration
-    durationTimePart = tryOr mempty $
-      PS.string "T" *>
-        pure (\h m s → I.hours h <> I.minutes m <> I.seconds s)
-          <*> (tryOr 0.0 $ component "H")
-          <*> (tryOr 0.0 $ component "M")
-          <*> (tryOr 0.0 $ component "S")
+    durationDatePart = durationParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
+    durationTimePart = tryM $ PS.string "T" *>
+      (durationParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])

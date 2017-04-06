@@ -27,6 +27,20 @@ digit = do
     '9' → pure 9
     _ → P.fail "Incorrect digit, impossible situation"
 
+-- https://github.com/purescript-contrib/purescript-parsing/issues/50
+-- digit ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
+-- digit = PS.oneOfAs $
+--   [ Tuple '0' 0
+--   , Tuple '1' 1
+--   , Tuple '2' 2
+--   , Tuple '3' 3
+--   , Tuple '4' 4
+--   , Tuple '5' 5
+--   , Tuple '6' 6
+--   , Tuple '7' 7
+--   , Tuple '8' 8
+--   , Tuple '9' 9]
+
 repeat ∷ ∀ a. Monoid a ⇒ a → Int → a
 repeat = repeat' mempty
   where
