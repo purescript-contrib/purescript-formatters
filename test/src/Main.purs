@@ -173,7 +173,7 @@ timeInterval = do
   log "- Data.Formatter.Interval.parseDuration"
   assertParserRes (P.runParser "P1W" FI.parseDuration) (Right $ I.day 7.0)
   assertParserRes (P.runParser "P1.0W" FI.parseDuration) (Right $ I.day 7.0)
-  assertParserRes (P.runParser "P1.0D" FI.parseDuration) (Right $ I.day 1.0)
+  assertParserRes (P.runParser "P1.9748600D" FI.parseDuration) (Right $ I.day 1.97486)
   assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
 timeTest :: forall e. Tests e Unit
 timeTest = do

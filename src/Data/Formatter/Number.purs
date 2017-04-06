@@ -11,8 +11,6 @@ module Data.Formatter.Number
   , formatNumber
   , formatOrShowNumber
   , unformatNumber
-  -- TODO move to internal or add doc
-  , unformatNumberParser
   ) where
 
 import Prelude
@@ -22,7 +20,7 @@ import Data.Array as Arr
 import Data.Array (many, some)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Traversable (for)
-import Data.Either (Either(..), either)
+import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
 
@@ -216,11 +214,6 @@ formatNumber pattern number =
 unformatNumber ∷ String → String → Either String Number
 unformatNumber pattern str =
   parseFormatString pattern >>= flip unformat str
-
-unformatNumberParser ∷ String → P.Parser String Number
-unformatNumberParser pattern = case P.runParser pattern formatParser of
-    Left e → P.fail $ P.parseErrorMessage e
-    Right p → unformatParser p
 
 -- Supposed to be used in chaining, because after calling format number there is no
 -- good way to extract number back to show.
