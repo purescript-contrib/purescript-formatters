@@ -2,6 +2,7 @@ module Test.Main where
 
 import Prelude
 import Control.Monad.Aff.Console as AffC
+import Control.Monad.Eff (kind Effect)
 import Data.Date as D
 import Data.DateTime as DTi
 import Data.Formatter.DateTime as FDT
@@ -35,7 +36,7 @@ log :: forall e. String -> Tests e Unit
 log message = liftAff $ AffC.log message
 
 
-foreign import data PROCESS :: !
+foreign import data PROCESS :: Effect
 foreign import exit :: Int -> forall e. Eff (process :: PROCESS | e) Unit
 
 

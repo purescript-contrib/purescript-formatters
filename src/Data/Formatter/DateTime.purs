@@ -394,9 +394,8 @@ unformatFParser cb = case _ of
     when (Arr.length ds /= 3 || sss < 0 || sss > 999) $ P.fail "Incorrect millisecond"
     lift $ modify _{millisecond = Just sss}
     cb a
-  Placeholder s a → do
-    PS.string s
-    cb a
+  Placeholder s a →
+    PS.string s *> cb a
   End →
     pure unit
 
