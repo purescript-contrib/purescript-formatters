@@ -2,7 +2,6 @@ module Test.Main where
 
 import Prelude
 import Control.Monad.Aff.Console as AffC
-import Control.Monad.Eff (kind Effect)
 import Data.Date as D
 import Data.DateTime as DTi
 import Data.Formatter.DateTime as FDT
@@ -11,7 +10,7 @@ import Data.Time as T
 import Debug.Trace as DT
 import Control.Monad.Aff (Aff, Canceler, runAff)
 import Control.Monad.Aff.Class (liftAff)
-import Control.Monad.Eff (Eff)
+import Control.Monad.Eff (Eff, kind Effect)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION, error)
 import Control.Monad.Error.Class (throwError)
