@@ -175,6 +175,12 @@ timeInterval = do
   assertParserRes (P.runParser "P1.0W" FI.parseDuration) (Right $ I.day 7.0)
   assertParserRes (P.runParser "P1.9748600D" FI.parseDuration) (Right $ I.day 1.97486)
   assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
+  assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration <#> I.isValidIsoDuration) (Right True)
+  assertParserRes (P.runParser "P1DT1H1M1.5S" FI.parseDuration <#> I.isValidIsoDuration) (Right True)
+  assertParserRes (P.runParser "P1DT1H1.5M0S" FI.parseDuration <#> I.isValidIsoDuration) (Right True)
+  assertParserRes (P.runParser "P1DT1.5H0M0S" FI.parseDuration <#> I.isValidIsoDuration) (Right True)
+  assertParserRes (P.runParser "P1DT1.5H0M1S" FI.parseDuration <#> I.isValidIsoDuration) (Right False)
+
 timeTest :: forall e. Tests e Unit
 timeTest = do
   log "- Data.Formatter.DateTime.formatDateTime"
