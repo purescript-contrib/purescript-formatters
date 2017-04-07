@@ -9,12 +9,12 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Control.Alt ((<|>))
-import Data.Array (some)
+import Data.Array (some, many, length)
 import Data.Foldable (class Foldable, fold)
 import Data.Formatter.Internal (digit, foldDigits)
 import Data.Function (on)
 import Data.Int (toNumber, floor)
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
@@ -29,6 +29,9 @@ log10 n = Math.log10e * Math.log n
 
 integer ∷ P.Parser String Int
 integer = some digit <#> foldDigits
+
+integerMaybe ∷ P.Parser String (Maybe Int)
+integerMaybe = many digit <#> (\l -> if length l == 0 then Nothing else Just $ foldDigits l)
 
 pow :: Int -> Int -> Number
 pow = Math.pow `on` toNumber
@@ -52,23 +55,35 @@ durationParser arr = arr
 applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
 applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
 
-foldFoldableMaybe :: ∀ f a. (Foldable f, Monoid a) => f (Maybe a) -> a
+foldFoldableMaybe :: ∀ f a. Foldable f => Monoid a => f (Maybe a) -> a
 foldFoldableMaybe = fold >>> unMaybe
 
-unMaybe :: ∀ a. (Monoid a) => Maybe a -> a
+unMaybe :: ∀ a. Monoid a => Maybe a -> a
 unMaybe = maybe mempty id
 
 component ∷ String → P.Parser String Number
 component designator = number <* PS.string designator
 
-tryM :: ∀ a. (Monoid a) => P.Parser String a → P.Parser String a
+tryM :: ∀ a. Monoid a => P.Parser String a → P.Parser String a
 tryM p = PC.option mempty $ PC.try p
+
+parseRecurringInterval :: ∀ a b. P.Parser String a -> P.Parser String b -> P.Parser String (I.RecurringInterval a b)
+parseRecurringInterval duration date =
+  I.RecurringInterval <$> (PS.string "R" *> integerMaybe) <*> (PS.string "/" *> parseInterval duration date)
+
+parseInterval :: ∀ a b. P.Parser String a -> P.Parser String b -> P.Parser String (I.Interval a b)
+parseInterval duration date = startEnd <|> durationEnd <|> startDuration <|> justDuration
+  where
+    startEnd = I.StartEnd <$> date <* PS.string "/" <*> date
+    durationEnd = I.DurationEnd <$> duration <* PS.string "/" <*> date
+    startDuration = I.StartDuration <$> date <* PS.string "/" <*> duration
+    justDuration = I.JustDuration <$> duration
 
 parseIsoDuration :: P.Parser String I.IsoDuration
 parseIsoDuration = do
   dur ← parseDuration
   case I.mkIsoDuration dur of
-    Nothing -> PC.fail "extracted Duration is not valid ISO duration"
+    Nothing -> P.fail "extracted Duration is not valid ISO duration"
     Just a -> pure a
 
 parseDuration :: P.Parser String I.Duration
