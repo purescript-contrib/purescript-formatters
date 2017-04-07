@@ -149,9 +149,7 @@ unformatParser f = do
     digitsWithCommas =
       if not f.comma
         then do
-        ds ← some digit
-        PS.string "."
-        pure ds
+        some digit <* PS.string "."
         else
         digitsWithCommas' [ ]
 

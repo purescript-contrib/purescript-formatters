@@ -10,7 +10,7 @@ import Data.Time as T
 import Debug.Trace as DT
 import Control.Monad.Aff (Aff, Canceler, runAff)
 import Control.Monad.Aff.Class (liftAff)
-import Control.Monad.Eff (Eff)
+import Control.Monad.Eff (Eff, kind Effect)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION, error)
 import Control.Monad.Error.Class (throwError)
@@ -35,7 +35,7 @@ log :: forall e. String -> Tests e Unit
 log message = liftAff $ AffC.log message
 
 
-foreign import data PROCESS :: !
+foreign import data PROCESS :: Effect
 foreign import exit :: Int -> forall e. Eff (process :: PROCESS | e) Unit
 
 
