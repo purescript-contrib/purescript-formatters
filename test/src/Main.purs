@@ -180,6 +180,9 @@ timeTest = do
   assertFormatting "11:12:30.123"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 123)
   assertFormatting "11:12:30.023"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 23)
   assertFormatting "11:12:30.003"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 3)
+  assertFormatting "11:12:30.12"    "hh:mm:ss.SS"  (makeDateTime 2017 4 10 11 12 30 123)
+  assertFormatting "11:12:30.1"     "hh:mm:ss.S"  (makeDateTime 2017 4 10 11 12 30 123)
+
   assertFormatting "17"                "YY"  testDateTime
   log "  --- Format 20017 with YY"
   assertFormatting "17"                "YY"  (makeDateTime 20017 4 12 0 0 0 0)
