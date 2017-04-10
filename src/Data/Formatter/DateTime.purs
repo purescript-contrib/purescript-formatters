@@ -58,6 +58,8 @@ data FormatterF a
   | Seconds a
   | SecondsTwoDigits a
   | Milliseconds a
+  | MillisecondsShort a
+  | MillisecondsTwoDigits a
   | Placeholder String a
   | End
 
@@ -80,6 +82,8 @@ instance formatterFFunctor ∷ Functor FormatterF where
   map f (Seconds a) = Seconds $ f a
   map f (SecondsTwoDigits a) = SecondsTwoDigits $ f a
   map f (Milliseconds a) = Milliseconds $ f a
+  map f (MillisecondsShort a) = MillisecondsShort $ f a
+  map f (MillisecondsTwoDigits a) = MillisecondsTwoDigits $ f a
   map f (Placeholder str a) = Placeholder str $ f a
   map f End = End
 
@@ -108,6 +112,8 @@ printFormatterF cb = case _ of
   MinutesTwoDigits a → "mm" <> cb a
   Seconds a → "s" <> cb a
   SecondsTwoDigits a → "ss" <> cb a
+  MillisecondsShort a → "S" <> cb a
+  MillisecondsTwoDigits a → "SS" <> cb a
   Milliseconds a → "SSS" <> cb a
   Placeholder s a → s <> cb a
   End → ""
@@ -163,6 +169,8 @@ formatterFParser cb =
     , (PC.try $ PS.string "ss") *> map SecondsTwoDigits cb
     , (PC.try $ PS.string "s") *> map Seconds cb
     , (PC.try $ PS.string "SSS") *> map Milliseconds cb
+    , (PC.try $ PS.string "SS") *> map MillisecondsTwoDigits cb
+    , (PC.try $ PS.string "S") *> map MillisecondsShort cb
     , (Placeholder <$> placeholderContent <*> cb)
     , (PS.eof $> End)
     ]
@@ -216,7 +224,11 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   SecondsTwoDigits a →
     (padSingleDigit <<< fromEnum $ T.second t) <> cb a
   Milliseconds a →
-    (padDoubleDigit $ fromEnum $ T.millisecond t) <> cb a
+    (padDoubleDigit <<< fromEnum $ T.millisecond t) <> cb a
+  MillisecondsShort a →
+    (show $ (_ / 100) $ fromEnum $ T.millisecond t) <> cb a
+  MillisecondsTwoDigits a →
+    (padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t) <> cb a
   Placeholder s a →
     s <> cb a
   End → ""
@@ -426,6 +438,18 @@ unformatFParser cb = case _ of
     cb a
   Placeholder s a →
     PS.string s *> cb a
+  MillisecondsShort a → do
+    ds ← some digit
+    let s = foldDigits ds
+    when (Arr.length ds /= 1 || s < 0 || s > 9) $ P.fail "Incorrect 1-digit millisecond"
+    lift $ modify _{millisecond = Just s}
+    cb a
+  MillisecondsTwoDigits a → do
+    ds ← some digit
+    let ss = foldDigits ds
+    when (Arr.length ds /= 2 || ss < 0 || ss > 99) $ P.fail "Incorrect 2-digit millisecond"
+    lift $ modify _{millisecond = Just ss}
+    cb a
   End →
     pure unit
 
