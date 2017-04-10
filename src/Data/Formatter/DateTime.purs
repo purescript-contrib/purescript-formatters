@@ -216,7 +216,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   SecondsTwoDigits a →
     (padSingleDigit <<< fromEnum $ T.second t) <> cb a
   Milliseconds a →
-    (padSingleDigit $ fromEnum $ T.millisecond t) <> cb a
+    (padDoubleDigit $ fromEnum $ T.millisecond t) <> cb a
   Placeholder s a →
     s <> cb a
   End → ""
@@ -224,6 +224,12 @@ formatF cb dt@(DT.DateTime d t) = case _ of
 padSingleDigit :: Int -> String
 padSingleDigit i
   | i < 10    = "0" <> (show i)
+  | otherwise = show i
+
+padDoubleDigit :: Int -> String
+padDoubleDigit i
+  | i < 100 && i > 10 = "0" <> (show i)
+  | i < 100 && i < 10 = "00" <> (show i)
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
