@@ -8,7 +8,7 @@ import Data.DateTime as DTi
 -- TODO parser should't be exposed so this should be removed
 import Text.Parsing.Parser as P
 import Data.Interval as I
-import Data.Formatter.Interval as FI
+import Data.Formatter.Interval as FPI
 
 import Data.Formatter.DateTime as FDT
 import Data.Formatter.Number as FN
@@ -170,16 +170,16 @@ assertParserRes result target =
 
 timeInterval :: forall e. Tests e Unit
 timeInterval = do
-  log "- Data.Formatter.Interval.parseDuration"
-  assertParserRes (P.runParser "P1W" FI.parseDuration) (Right $ I.day 7.0)
-  assertParserRes (P.runParser "P1.0W" FI.parseDuration) (Right $ I.day 7.0)
-  assertParserRes (P.runParser "P1.9748600D" FI.parseDuration) (Right $ I.day 1.97486)
-  assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
-  assertParserRes (P.runParser "P1DT1H1M1S" FI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1H1M1.5S" FI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1H1.5M0S" FI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1.5H0M0S" FI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1.5H0M1S" FI.parseDuration <#> I.isValidIsoDuration) (Right false)
+  log "- Data.Formatter.Parser.Interval.parseDuration"
+  assertParserRes (P.runParser "P1W" FPI.parseDuration) (Right $ I.day 7.0)
+  assertParserRes (P.runParser "P1.0W" FPI.parseDuration) (Right $ I.day 7.0)
+  assertParserRes (P.runParser "P1.9748600D" FPI.parseDuration) (Right $ I.day 1.97486)
+  assertParserRes (P.runParser "P1DT1H1M1S" FPI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
+  assertParserRes (P.runParser "P1DT1H1M1S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
+  assertParserRes (P.runParser "P1DT1H1M1.5S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
+  assertParserRes (P.runParser "P1DT1H1.5M0S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
+  assertParserRes (P.runParser "P1DT1.5H0M0S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
+  assertParserRes (P.runParser "P1DT1.5H0M1S" FPI.parseDuration <#> I.isValidIsoDuration) (Right false)
 
 timeTest :: forall e. Tests e Unit
 timeTest = do

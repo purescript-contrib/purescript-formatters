@@ -11,6 +11,7 @@ import Text.Parsing.Parser.String as PS
 foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
 foldDigits = foldl (\acc d → acc * 10 + d) zero
 
+-- TODO move to Parser.Number
 digit ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
 digit = do
   char ← PS.oneOf ['0','1','2','3','4','5','6','7','8','9']
