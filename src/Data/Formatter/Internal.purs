@@ -11,37 +11,6 @@ import Text.Parsing.Parser.String as PS
 foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
 foldDigits = foldl (\acc d → acc * 10 + d) zero
 
--- TODO move to Parser.Number
-digit ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
-digit = do
-  char ← PS.oneOf ['0','1','2','3','4','5','6','7','8','9']
-  case char of
-    '0' → pure 0
-    '1' → pure 1
-    '2' → pure 2
-    '3' → pure 3
-    '4' → pure 4
-    '5' → pure 5
-    '6' → pure 6
-    '7' → pure 7
-    '8' → pure 8
-    '9' → pure 9
-    _ → P.fail "Incorrect digit, impossible situation"
-
--- https://github.com/purescript-contrib/purescript-parsing/issues/50
--- digit ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
--- digit = PS.oneOfAs $
---   [ Tuple '0' 0
---   , Tuple '1' 1
---   , Tuple '2' 2
---   , Tuple '3' 3
---   , Tuple '4' 4
---   , Tuple '5' 5
---   , Tuple '6' 6
---   , Tuple '7' 7
---   , Tuple '8' 8
---   , Tuple '9' 9]
-
 repeat ∷ ∀ a. Monoid a ⇒ a → Int → a
 repeat = repeat' mempty
   where

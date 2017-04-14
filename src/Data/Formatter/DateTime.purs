@@ -32,7 +32,8 @@ import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Tuple (Tuple(..))
-import Data.Formatter.Internal (digit, foldDigits)
+import Data.Formatter.Internal (foldDigits)
+import Data.Formatter.Parser.Number (parseDigit)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
@@ -292,19 +293,19 @@ unformatFParser
   → P.ParserT String (State UnformatAccum) Unit
 unformatFParser cb = case _ of
   YearFull a → do
-    ds ← some digit
+    ds ← some parseDigit
     when (Arr.length ds /= 4) $ P.fail "Incorrect full year"
     lift $ modify _{year = Just $ foldDigits ds}
     cb a
   YearTwoDigits a → do
-    ds ← some digit
+    ds ← some parseDigit
     when (Arr.length ds /= 2) $ P.fail "Incorrect 2-digit year"
     let y = foldDigits ds
     lift $ modify _{year = Just $ if y > 69 then y + 1900 else y + 2000}
     cb a
   YearAbsolute a → do
     sign ← PC.optionMaybe $ PC.try $ PS.string "-"
-    year ← map foldDigits $ some digit
+    year ← map foldDigits $ some parseDigit
     lift $ modify _{year = Just $ (if isJust sign then -1 else 1) * year}
     cb a
   MonthFull a → do
@@ -316,25 +317,25 @@ unformatFParser cb = case _ of
     lift $ modify _{month = Just $ fromEnum month}
     cb a
   MonthTwoDigits a → do
-    ds ← some digit
+    ds ← some parseDigit
     let month = foldDigits ds
     when (Arr.length ds /= 2 || month > 12 || month < 1) $ P.fail "Incorrect 2-digit month"
     lift $ modify _{month = Just month}
     cb a
   DayOfMonthTwoDigits a → do
-    ds ← some digit
+    ds ← some parseDigit
     let dom = foldDigits ds
     when (Arr.length ds /= 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   DayOfMonth a → do
-    ds ← some digit
+    ds ← some parseDigit
     let dom = foldDigits ds
     when (Arr.length ds > 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   UnixTimestamp a → do
-    s ← map foldDigits $ some digit
+    s ← map foldDigits $ some parseDigit
     case map toDateTime $ instant $ Dur.Milliseconds $ 1000.0 * Int.toNumber s of
       Nothing → P.fail "Incorrect timestamp"
       Just (DT.DateTime d t) → do
@@ -349,17 +350,17 @@ unformatFParser cb = case _ of
                    }
         cb a
   DayOfWeek a → do
-    dow ← digit
+    dow ← parseDigit
     when (dow > 7 || dow < 1) $ P.fail "Incorrect day of week"
     cb a
   Hours24 a → do
-    ds ← some digit
+    ds ← some parseDigit
     let hh = foldDigits ds
     when (Arr.length ds /= 2 || hh < 0 || hh > 23) $ P.fail "Incorrect 24 hour"
     lift $ modify _{hour = Just hh}
     cb a
   Hours12 a → do
-    ds ← some digit
+    ds ← some parseDigit
     let hh = foldDigits ds
     when (Arr.length ds /= 2 || hh < 0 || hh > 11) $ P.fail "Incorrect 24 hour"
     lift $ modify _{hour = Just hh}
@@ -377,19 +378,19 @@ unformatFParser cb = case _ of
     lift $ modify f
     cb a
   Minutes a → do
-    ds ← some digit
+    ds ← some parseDigit
     let mm = foldDigits ds
     when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
     lift $ modify _{minute = Just mm}
     cb a
   Seconds a → do
-    ds ← some digit
+    ds ← some parseDigit
     let ss = foldDigits ds
     when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
     lift $ modify _{second = Just ss}
     cb a
   Milliseconds a → do
-    ds ← some digit
+    ds ← some parseDigit
     let sss = foldDigits ds
     when (Arr.length ds /= 3 || sss < 0 || sss > 999) $ P.fail "Incorrect millisecond"
     lift $ modify _{millisecond = Just sss}

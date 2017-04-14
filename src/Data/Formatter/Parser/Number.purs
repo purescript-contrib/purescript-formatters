@@ -2,13 +2,14 @@ module Data.Formatter.Parser.Number
   ( parseInteger
   , parseMaybeInteger
   , parseNumber
+  , parseDigit
   ) where
 
 import Prelude
 
 import Data.Int (toNumber, floor)
 import Data.Array (some, many, length)
-import Data.Formatter.Internal (digit, foldDigits)
+import Data.Formatter.Internal (parseDigit, foldDigits)
 import Data.Function (on)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
@@ -18,10 +19,10 @@ import Math as Math
 
 
 parseInteger ∷ P.Parser String Int
-parseInteger = some digit <#> foldDigits
+parseInteger = some parseDigit <#> foldDigits
 
 parseMaybeInteger ∷ P.Parser String (Maybe Int)
-parseMaybeInteger = many digit <#> (\l -> if length l == 0 then Nothing else Just $ foldDigits l)
+parseMaybeInteger = many parseDigit <#> (\l -> if length l == 0 then Nothing else Just $ foldDigits l)
 
 parseFractional ∷ P.Parser String Number
 parseFractional = parseInteger <#> case _ of
@@ -42,3 +43,18 @@ numOfDigits n = 1 + (floor $ log10 $ toNumber n)
 
 log10 ∷ Number → Number
 log10 n = Math.log10e * Math.log n
+
+parseDigit = PS.char `oneOfAs`
+    [ Tuple '0' 0
+    , Tuple '1' 1
+    , Tuple '2' 2
+    , Tuple '3' 3
+    , Tuple '4' 4
+    , Tuple '5' 5
+    , Tuple '6' 6
+    , Tuple '7' 7
+    , Tuple '8' 8
+    , Tuple '9' 9]
+  where
+  -- TODO remove after https://github.com/purescript-contrib/purescript-parsing/pull/51
+  oneOfAs p xs = choice $ (\(Tuple s r) -> try $ p s $> r) <$> xs

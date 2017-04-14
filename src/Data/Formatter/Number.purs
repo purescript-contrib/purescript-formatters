@@ -24,7 +24,8 @@ import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
 
-import Data.Formatter.Internal (foldDigits, digit, repeat)
+import Data.Formatter.Internal (foldDigits, repeat)
+import Data.Formatter.Parser.Number (parseDigit)
 
 import Math as Math
 
@@ -149,13 +150,13 @@ unformatParser f = do
     digitsWithCommas =
       if not f.comma
         then do
-        some digit <* PS.string "."
+        some parseDigit <* PS.string "."
         else
         digitsWithCommas' [ ]
 
     digitsWithCommas' ∷ Array Int → P.Parser String (Array Int)
     digitsWithCommas' accum = do
-      ds ← some digit
+      ds ← some parseDigit
 
       when (Arr.null accum && Arr.length ds > 3)
         $ P.fail "Wrong number of digits between thousand separators"
@@ -174,7 +175,7 @@ unformatParser f = do
     then P.fail "Error: too few digits before dot"
     else pure $ Int.toNumber $ foldDigits beforeDigits
 
-  afterDigits ← some digit
+  afterDigits ← some parseDigit
   after ←
     if Arr.length afterDigits < f.after
     then P.fail "Error: too few digits after dot"
@@ -191,7 +192,7 @@ unformatParser f = do
             Nothing →
               pure 0
             Just _ →
-              map foldDigits $ many digit
+              map foldDigits $ many parseDigit
         Just 'K' → pure 3
         Just 'M' → pure 6
         Just 'G' → pure 9
