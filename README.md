@@ -56,8 +56,12 @@ This is just subset of format/parse string from moment.js library. Currently sup
 + `hh`
 + `a`
 + `mm`
++ `m`
 + `ss`
++ `s`
 + `SSS`
++ `SS`
++ `S`
 
 ## Documentation
 
