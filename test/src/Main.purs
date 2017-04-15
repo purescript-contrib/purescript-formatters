@@ -119,18 +119,18 @@ numeralTests = do
 
 -- April 12th 2017 at 11:34:34:234
 -- 4/12/2017
-makeDateTime ∷ Int -> Int -> Int -> DTi.DateTime
-makeDateTime year month day =
+makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DTi.DateTime
+makeDateTime year month day hour minute second millisecond =
   DTi.DateTime
     (D.canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
     (T.Time
-       (fromMaybe bottom $ toEnum 11)
-       (fromMaybe bottom $ toEnum 34)
-       (fromMaybe bottom $ toEnum 34)
-       (fromMaybe bottom $ toEnum 234))
+       (fromMaybe bottom $ toEnum hour)
+       (fromMaybe bottom $ toEnum minute)
+       (fromMaybe bottom $ toEnum second)
+       (fromMaybe bottom $ toEnum millisecond))
 
 testDateTime :: DTi.DateTime
-testDateTime = makeDateTime 2017 4 12
+testDateTime = makeDateTime 2017 4 12 11 3 4 234
 
 
 assert :: forall e. String -> String -> Boolean -> Tests e Unit
@@ -170,18 +170,26 @@ timeTest = do
   assertFormatting "April"           "MMMM" testDateTime
   assertFormatting "2017-12-04"      "YYYY-DD-MM" testDateTime
   assertFormatting "2017-Apr"        "YYYY-MMM" testDateTime
-  assertFormatting "Apr 1"           "MMM D" (makeDateTime 2017 4 1)
+  assertFormatting "Apr 1"           "MMM D" (makeDateTime 2017 4 1 0 0 0 0)
+  assertFormatting "Apr 01"          "MMM DD" (makeDateTime 2017 4 1 0 0 0 0)
 
   -- This should probably be am (lowercase), if the desired
   -- functionality of the library is to mirror momentjs
-  assertFormatting "11:34:34:234 AM" "hh:mm:ss:SSS a"  testDateTime
-  assertFormatting "17"            "YY"  testDateTime
+  assertFormatting "11:3:4 AM"      "hh:m:s a"  testDateTime
+  assertFormatting "11:03:04 AM"    "hh:mm:ss a"  testDateTime
+  assertFormatting "11:12:30.123"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 123)
+  assertFormatting "11:12:30.023"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 23)
+  assertFormatting "11:12:30.003"   "hh:mm:ss.SSS"  (makeDateTime 2017 4 10 11 12 30 3)
+  assertFormatting "11:12:30.12"    "hh:mm:ss.SS"  (makeDateTime 2017 4 10 11 12 30 123)
+  assertFormatting "11:12:30.1"     "hh:mm:ss.S"  (makeDateTime 2017 4 10 11 12 30 123)
+
+  assertFormatting "17"                "YY"  testDateTime
   log "  --- Format 20017 with YY"
-  assertFormatting "17"            "YY"  (makeDateTime 20017 4 12)
+  assertFormatting "17"                "YY"  (makeDateTime 20017 4 12 0 0 0 0)
   log "  --- Format 0 with YY"
-  assertFormatting "00"            "YY"  (makeDateTime 0 4 12)
+  assertFormatting "00"                "YY"  (makeDateTime 0 4 12 0 0 0 0)
   log "  --- Format -1 with YY"
-  assertFormatting "01"            "YY"  (makeDateTime (-1) 4 12)
+  assertFormatting "01"                "YY"  (makeDateTime (-1) 4 12 0 0 0 0)
 
   log "- Data.Formatter.DateTime.unformatDateTime "
 
