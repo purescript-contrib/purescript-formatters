@@ -2,10 +2,18 @@ module Data.Formatter.Interval
   ( unformatRecurringInterval
   , unformatInterval
   , unformatDuration
+  , class HasDuration
+  , class HasDate
+  , getDuration
+  , getDate
   ) where
 
 import Prelude
+
+import Text.Parsing.Parser as P
 import Data.Interval as I
+import Data.Either (Either)
+import Data.Bifunctor (lmap)
 import Data.Formatter.Parser.Interval (parseRecurringInterval, parseInterval, parseIsoDuration, parseDuration)
 
 unformatRecurringInterval ::
@@ -13,7 +21,7 @@ unformatRecurringInterval ::
   . HasDuration a
   ⇒ HasDate b
   ⇒ String
-  → Either String (RecurringInterval a b)
+  → Either String (I.RecurringInterval a b)
 unformatRecurringInterval = run $ parseRecurringInterval getDuration getDate
 
 unformatInterval ::
@@ -21,7 +29,7 @@ unformatInterval ::
   . HasDuration a
   ⇒ HasDate b
   ⇒ String
-  → Either String (Interval a b)
+  → Either String (I.Interval a b)
 unformatInterval = run $ parseInterval getDuration getDate
 
 unformatDuration ::
@@ -32,22 +40,22 @@ unformatDuration ::
 unformatDuration = run getDuration
 
 
-run :: Parser String a → String → Either String a
+run :: ∀ a. P.Parser String a → String → Either String a
 run p s = lmap P.parseErrorMessage $ P.runParser s p
 
 
 class HasDuration a where
-  getDuration :: Parser String a
+  getDuration :: P.Parser String a
 
-instance hasDurationDuration :: HasDuration Duration where
+instance hasDurationDuration :: HasDuration I.Duration where
   getDuration = parseDuration
 
-instance hasDurationIsoDuration :: HasDuration IsoDuration where
+instance hasDurationIsoDuration :: HasDuration I.IsoDuration where
   getDuration = parseIsoDuration
 
 
 class HasDate a where
-  getDate :: Parser String a
+  getDate :: P.Parser String a
 
 -- instance hasDateDate :: HasDate DateTime where
 --   getDate = parseFormatString "YYYY-MM-DD`T`HH:MM:SS`Z`" >>=  (_ `unformat` str)

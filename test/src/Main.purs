@@ -8,7 +8,7 @@ import Data.DateTime as DTi
 -- TODO parser should't be exposed so this should be removed
 import Text.Parsing.Parser as P
 import Data.Interval as I
-import Data.Formatter.Interval as FPI
+import Data.Formatter.Parser.Interval as FPI
 
 import Data.Formatter.DateTime as FDT
 import Data.Formatter.Number as FN

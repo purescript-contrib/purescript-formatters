@@ -12,11 +12,13 @@ module Data.Formatter.DateTime
 import Prelude
 
 import Control.Lazy as Lazy
-import Control.Monad.State (State, runState, put, modify)
+import Control.Monad.State (State, StateT, runState, mapStateT, put, modify)
 import Control.Monad.Trans.Class (lift)
+import Control.Monad.Except.Trans (mapExceptT)
 
 import Data.Ord (abs)
 import Data.Array (some)
+import Data.Tuple (Tuple(..))
 import Data.Array as Arr
 import Data.Bifunctor (lmap)
 import Data.Date as D
@@ -31,9 +33,9 @@ import Data.Newtype (unwrap)
 import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
-import Data.Tuple (Tuple(..))
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
+import Data.Formatter.Parser.DateTime (parseMonth, parseShortMonth)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
@@ -224,15 +226,10 @@ formatDateTime pattern datetime =
 
 unformat ∷ Formatter → String → Either String DT.DateTime
 unformat f s =
-  let
-    run =
-      runState
-        (P.runParserT s $ unformatParser f)
-        initialAccum
-  in
-    case run of
-      Tuple (Left err) _ → Left $ P.parseErrorMessage err
-      Tuple _ accum → unformatAccumToDateTime accum
+  unformatParser f
+    # P.runParser s
+    # lmap P.parseErrorMessage
+    >>= unformatAccumToDateTime
 
 data Meridiem = AM | PM
 
@@ -367,15 +364,12 @@ unformatFParser cb = case _ of
     cb a
   Meridiem a → do
     m ←
-      PC.choice [ PC.try $ PS.string "am"
-                , PC.try $ PS.string "AM"
-                , PC.try $ PS.string "pm"
-                , PC.try $ PS.string "PM"
+      PC.choice [ PC.try $ PS.string "am" $> AM
+                , PC.try $ PS.string "AM" $> AM
+                , PC.try $ PS.string "pm" $> PM
+                , PC.try $ PS.string "PM" $> PM
                 ]
-    let f | m == "am" || m == "AM" = _{meridiem = Just AM}
-          | m == "pm" || m == "PM" = _{meridiem = Just PM}
-          | otherwise = id
-    lift $ modify f
+    lift $ modify _{meridiem = Just m}
     cb a
   Minutes a → do
     ds ← some parseDigit
@@ -401,47 +395,31 @@ unformatFParser cb = case _ of
     pure unit
 
 
-unformatParser ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
-unformatParser f =
-  unformatFParser unformatParser $ unroll f
+-- unformatParser ∷ ∀ m. Formatter → P.ParserT String m UnformatAccum
+unformatParser ∷ Formatter → P.Parser String UnformatAccum
+unformatParser f' = unState $ rec f'
+  where
+    rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
+    rec f = unformatFParser rec $ unroll f
+
+unState ∷ ∀ m. Monad m => P.ParserT String (State UnformatAccum) Unit -> P.ParserT String m UnformatAccum
+unState (P.ParserT m) = P.ParserT $ mapExceptT mapOutState m
+
+mapOutState :: ∀ s m a e
+  . Monad m
+  => StateT s (State UnformatAccum) (Either e a)
+  -> StateT s m (Either e UnformatAccum)
+mapOutState s = mapStateT unStateIn s
+
+unStateIn ∷ ∀ m a s e . Monad m => State UnformatAccum (Tuple (Either e a) s) -> m (Tuple (Either e UnformatAccum) s)
+unStateIn s = case runState s initialAccum of
+  Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
+
+
 
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= flip unformat str
-
-parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
-parseMonth =
-  PC.choice
-    [ (PC.try $ PS.string "January") $> D.January
-    , (PC.try $ PS.string "February") $> D.February
-    , (PC.try $ PS.string "March") $> D.March
-    , (PC.try $ PS.string "April") $> D.April
-    , (PC.try $ PS.string "May") $> D.May
-    , (PC.try $ PS.string "June") $> D.June
-    , (PC.try $ PS.string "July") $> D.July
-    , (PC.try $ PS.string "August") $> D.August
-    , (PC.try $ PS.string "September") $> D.September
-    , (PC.try $ PS.string "October") $> D.October
-    , (PC.try $ PS.string "November") $> D.November
-    , (PC.try $ PS.string "December") $> D.December
-    ]
-
-parseShortMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
-parseShortMonth =
-  PC.choice
-    [ (PC.try $ PS.string "Jan") $> D.January
-    , (PC.try $ PS.string "Feb") $> D.February
-    , (PC.try $ PS.string "Mar") $> D.March
-    , (PC.try $ PS.string "Apr") $> D.April
-    , (PC.try $ PS.string "May") $> D.May
-    , (PC.try $ PS.string "Jun") $> D.June
-    , (PC.try $ PS.string "Jul") $> D.July
-    , (PC.try $ PS.string "Aug") $> D.August
-    , (PC.try $ PS.string "Sep") $> D.September
-    , (PC.try $ PS.string "Oct") $> D.October
-    , (PC.try $ PS.string "Nov") $> D.November
-    , (PC.try $ PS.string "Dec") $> D.December
-    ]
 
 printShortMonth ∷ D.Month → String
 printShortMonth = case _ of

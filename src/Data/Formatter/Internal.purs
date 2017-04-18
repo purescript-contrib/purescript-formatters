@@ -5,9 +5,6 @@ import Prelude
 import Data.Foldable (class Foldable, foldl)
 import Data.Monoid (class Monoid, mempty)
 
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.String as PS
-
 foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
 foldDigits = foldl (\acc d → acc * 10 + d) zero
 

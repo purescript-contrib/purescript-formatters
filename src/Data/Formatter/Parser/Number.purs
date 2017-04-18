@@ -9,8 +9,10 @@ import Prelude
 
 import Data.Int (toNumber, floor)
 import Data.Array (some, many, length)
-import Data.Formatter.Internal (parseDigit, foldDigits)
+import Data.Formatter.Parser.Number (parseDigit)
+import Data.Formatter.Internal (foldDigits)
 import Data.Function (on)
+import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
@@ -57,4 +59,4 @@ parseDigit = PS.char `oneOfAs`
     , Tuple '9' 9]
   where
   -- TODO remove after https://github.com/purescript-contrib/purescript-parsing/pull/51
-  oneOfAs p xs = choice $ (\(Tuple s r) -> try $ p s $> r) <$> xs
+  oneOfAs p xs = PC.choice $ (\(Tuple s r) -> PC.try $ p s $> r) <$> xs
