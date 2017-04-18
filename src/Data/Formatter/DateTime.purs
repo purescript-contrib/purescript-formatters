@@ -398,13 +398,12 @@ unformatFParser cb = case _ of
 hoistParserT' :: ∀ b n s a m. (m (Tuple (Either P.ParseError a) (P.ParseState s)) -> n (Tuple (Either P.ParseError b) (P.ParseState s))) -> P.ParserT s m a -> P.ParserT s n b
 hoistParserT' f (P.ParserT m) = P.ParserT (mapExceptT (mapStateT f) m)
 
--- unformatParser ∷ ∀ m. Formatter → P.ParserT String m UnformatAccum
-unformatParser ∷ Formatter → P.Parser String UnformatAccum
+unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m UnformatAccum
 unformatParser f' = hoistParserT' unState $ rec f'
   where
     rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
     rec f = unformatFParser rec $ unroll f
-    unState :: ∀ x y m. Monad m => State UnformatAccum (Tuple (Either y Unit) x) -> m (Tuple (Either y UnformatAccum) x)
+    unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) -> n (Tuple (Either y UnformatAccum) x)
     unState s = case runState s initialAccum of
       Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
 
