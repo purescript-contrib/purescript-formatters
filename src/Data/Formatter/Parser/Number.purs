@@ -15,6 +15,7 @@ import Data.Function (on)
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
+import Text.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser.String as PS
 import Data.Maybe (Maybe(..), maybe)
 import Math as Math
@@ -46,7 +47,7 @@ numOfDigits n = 1 + (floor $ log10 $ toNumber n)
 log10 ∷ Number → Number
 log10 n = Math.log10e * Math.log n
 
-parseDigit = PS.char `oneOfAs`
+parseDigit = PC.try $ PS.char `oneOfAs`
     [ Tuple '0' 0
     , Tuple '1' 1
     , Tuple '2' 2
@@ -57,6 +58,3 @@ parseDigit = PS.char `oneOfAs`
     , Tuple '7' 7
     , Tuple '8' 8
     , Tuple '9' 9]
-  where
-  -- TODO remove after https://github.com/purescript-contrib/purescript-parsing/pull/51
-  oneOfAs p xs = PC.choice $ (\(Tuple s r) -> PC.try $ p s $> r) <$> xs
