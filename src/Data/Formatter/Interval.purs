@@ -11,9 +11,13 @@ module Data.Formatter.Interval
 import Prelude
 
 import Text.Parsing.Parser as P
+import Text.Parsing.Parser.String as PS
+import Data.Formatter.Parser.Utils (runP)
 import Data.Interval as I
-import Data.Either (Either)
+import Data.DateTime as D
+import Data.Either (Either(..))
 import Data.Bifunctor (lmap)
+import Data.Formatter.DateTime (Formatter, unformatParser, parseFormatString)
 import Data.Formatter.Parser.Interval (parseRecurringInterval, parseInterval, parseIsoDuration, parseDuration)
 
 unformatRecurringInterval ::
@@ -22,7 +26,7 @@ unformatRecurringInterval ::
   ⇒ HasDate b
   ⇒ String
   → Either String (I.RecurringInterval a b)
-unformatRecurringInterval = run $ parseRecurringInterval getDuration getDate
+unformatRecurringInterval = runP $ parseRecurringInterval getDuration getDate <* PS.eof
 
 unformatInterval ::
   ∀ a b
@@ -30,18 +34,16 @@ unformatInterval ::
   ⇒ HasDate b
   ⇒ String
   → Either String (I.Interval a b)
-unformatInterval = run $ parseInterval getDuration getDate
+unformatInterval = runP $ parseInterval getDuration getDate <* PS.eof
 
 unformatDuration ::
   ∀ a
   . HasDuration a
   ⇒ String
   → Either String a
-unformatDuration = run getDuration
+unformatDuration = runP $ getDuration <* PS.eof
 
 
-run :: ∀ a. P.Parser String a → String → Either String a
-run p s = lmap P.parseErrorMessage $ P.runParser s p
 
 
 class HasDuration a where
@@ -57,8 +59,15 @@ instance hasDurationIsoDuration :: HasDuration I.IsoDuration where
 class HasDate a where
   getDate :: P.Parser String a
 
--- instance hasDateDate :: HasDate DateTime where
---   getDate = parseFormatString "YYYY-MM-DD`T`HH:MM:SS`Z`" >>=  (_ `unformat` str)
+isoDateTimeFormatter ∷ Either String Formatter
+isoDateTimeFormatter = parseFormatString "YYYY-MM-DDTHH:MM:SSZ"
+
+instance hasDateDate :: HasDate D.DateTime where
+  getDate = do
+    case isoDateTimeFormatter of
+      Right f -> unformatParser f
+      Left e -> P.fail e
+
 -- TODO
 -- 2017-04-13T15:36:07+00:00
 -- 2017-04-13T15:36:07Z

@@ -5,13 +5,13 @@ module Data.Formatter.Parser.DateTime
 
 import Prelude
 
-import Text.Formatter.Parser.Utils (oneOfAs)
+import Data.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser as P
+import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Data.Date as D
 
--- TODO use `oneOfAs`
 parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
 parseMonth = (PC.try <<< PS.string) `oneOfAs`
   [ Tuple "January" D.January
@@ -28,7 +28,6 @@ parseMonth = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "December" D.December
   ]
 
--- TODO use `oneOfAs`
 parseShortMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
 parseShortMonth = (PC.try <<< PS.string) `oneOfAs`
     [ Tuple "Jan" D.January

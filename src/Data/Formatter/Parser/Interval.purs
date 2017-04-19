@@ -10,12 +10,13 @@ import Data.Interval as I
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
+import Control.Monad.State (get)
 import Control.Alt ((<|>))
 import Data.Foldable (class Foldable, fold)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (sequence)
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple(..), snd)
 
 import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
 
@@ -24,7 +25,7 @@ parseRecurringInterval duration date =
   I.RecurringInterval <$> (PS.string "R" *> parseMaybeInteger) <*> (PS.string "/" *> parseInterval duration date)
 
 parseInterval :: ∀ a b. P.Parser String a -> P.Parser String b -> P.Parser String (I.Interval a b)
-parseInterval duration date = startEnd <|> durationEnd <|> startDuration <|> justDuration
+parseInterval duration date = [startEnd, durationEnd, startDuration, justDuration] <#> PC.try # PC.choice
   where
     startEnd = I.StartEnd <$> date <* PS.string "/" <*> date
     durationEnd = I.DurationEnd <$> duration <* PS.string "/" <*> date
@@ -39,8 +40,7 @@ parseIsoDuration = do
     Just a -> pure a
 
 parseDuration :: P.Parser String I.Duration
-parseDuration =
-  PS.string "P" *> (weekDuration <|> fullDuration) <* PS.eof
+parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   where
     weekDuration = mkComponentsParser [ Tuple I.week "W" ]
     fullDuration = append <$> durationDatePart <*> durationTimePart
@@ -50,7 +50,11 @@ parseDuration =
 
 
 mkComponentsParser :: Array (Tuple (Number -> I.Duration) String) -> P.Parser String I.Duration
-mkComponentsParser arr = arr <#> applyDurations # sequence <#> foldFoldableMaybe
+mkComponentsParser arr = do
+  dur <- arr <#> applyDurations # sequence <#> foldFoldableMaybe
+  if dur == mempty
+    then P.fail $ "none of valid duration components (" <> (show $ snd <$> arr) <> ") were present"
+    else pure dur
   where
     applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
     applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)

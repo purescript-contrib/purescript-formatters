@@ -15,7 +15,7 @@ import Data.Function (on)
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
-import Text.Formatter.Parser.Utils (oneOfAs)
+import Data.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser.String as PS
 import Data.Maybe (Maybe(..), maybe)
 import Math as Math

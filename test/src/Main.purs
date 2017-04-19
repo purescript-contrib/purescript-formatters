@@ -4,13 +4,10 @@ import Prelude
 import Control.Monad.Aff.Console as AffC
 import Data.Date as D
 import Data.DateTime as DTi
-
--- TODO parser should't be exposed so this should be removed
-import Text.Parsing.Parser as P
 import Data.Interval as I
-import Data.Formatter.Parser.Interval as FPI
 
 import Data.Formatter.DateTime as FDT
+import Data.Formatter.Interval as FI
 import Data.Formatter.Number as FN
 import Data.Time as T
 import Debug.Trace as DT
@@ -25,7 +22,7 @@ import Data.DateTime (DateTime)
 import Data.Either (Either(..), either)
 import Data.Enum (toEnum)
 import Data.Functor.Mu (roll)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, Maybe(..), maybe)
 
 type Tests e a = StateT Boolean (Aff (exception :: EXCEPTION, console :: CONSOLE | e)) a
 
@@ -156,30 +153,35 @@ assertFormatting :: forall e. String -> String -> DateTime -> Tests e Unit
 assertFormatting target' format dateTime = do
   let result = FDT.formatDateTime format dateTime
   let target = Right target'
+  assertEq result target
+
+assertEq :: forall a e. Show a => Eq a => a -> a -> Tests e Unit
+assertEq result target =
   assert
-    ((show result) <> " does not equal " <> (show target))
-    ((show result) <> " equals " <> (show target))
+    ((show result) <> " ≠ " <> (show target))
+    ((show result) <> " ≡ " <> (show target))
     (result == target)
 
-assertParserRes :: forall a e. Show a => Eq a => a -> a -> Tests e Unit
-assertParserRes result target =
-  assert
-    ((show result) <> " does not equal " <> (show target))
-    ((show result) <> " equals " <> (show target))
-    (result == target)
+dur :: Either String (I.RecurringInterval I.IsoDuration DTi.DateTime)
+dur = I.mkIsoDuration (I.day 1.0 <> I.hours 1.0 <> I.minutes 0.0 <> I.seconds 1.5)
+  <#> I.JustDuration
+  <#> I.RecurringInterval (Just 10)
+   #  maybe (Left "boom") Right
 
 timeInterval :: forall e. Tests e Unit
 timeInterval = do
   log "- Data.Formatter.Parser.Interval.parseDuration"
-  assertParserRes (P.runParser "P1W" FPI.parseDuration) (Right $ I.day 7.0)
-  assertParserRes (P.runParser "P1.0W" FPI.parseDuration) (Right $ I.day 7.0)
-  assertParserRes (P.runParser "P1.9748600D" FPI.parseDuration) (Right $ I.day 1.97486)
-  assertParserRes (P.runParser "P1DT1H1M1S" FPI.parseDuration) (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
-  assertParserRes (P.runParser "P1DT1H1M1S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1H1M1.5S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1H1.5M0S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1.5H0M0S" FPI.parseDuration <#> I.isValidIsoDuration) (Right true)
-  assertParserRes (P.runParser "P1DT1.5H0M1S" FPI.parseDuration <#> I.isValidIsoDuration) (Right false)
+  assertEq (FI.unformatDuration "P1W") (Right $ I.day 7.0)
+  assertEq (FI.unformatDuration "P1.0W") (Right $ I.day 7.0)
+  assertEq (FI.unformatDuration "P1.9748600D") (Right $ I.day 1.97486)
+  assertEq (FI.unformatDuration "P1DT1H1M1S") (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
+  assertEq (FI.unformatDuration "P1DT1H1M0S") (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 0.0)
+  assertEq (FI.unformatDuration "P1DT1H1M1S" <#> I.isValidIsoDuration) (Right true)
+  assertEq (FI.unformatDuration "P1DT1H1M1.5S" <#> I.isValidIsoDuration) (Right true)
+  assertEq (FI.unformatDuration "P1DT1H1.5M0S" <#> I.isValidIsoDuration) (Right true)
+  assertEq (FI.unformatDuration "P1DT1.5H0M0S" <#> I.isValidIsoDuration) (Right true)
+  assertEq (FI.unformatDuration "P1DT1.5H0M1S" <#> I.isValidIsoDuration) (Right false)
+  assertEq (FI.unformatRecurringInterval "R10/P1DT1H0M1.5S") dur
 
 timeTest :: forall e. Tests e Unit
 timeTest = do

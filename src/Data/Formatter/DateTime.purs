@@ -1,12 +1,14 @@
 module Data.Formatter.DateTime
   ( Formatter
   , FormatterF(..)
+  , Meridiem
   , printFormatter
   , parseFormatString
   , format
   , formatDateTime
   , unformat
   , unformatDateTime
+  , unformatParser
   ) where
 
 import Prelude
@@ -24,7 +26,7 @@ import Data.Bifunctor (lmap)
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
 import Data.Functor.Mu (Mu, unroll, roll)
 import Data.Int as Int
@@ -34,6 +36,7 @@ import Data.String as Str
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
+import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.DateTime (parseMonth, parseShortMonth)
 
@@ -113,8 +116,7 @@ printFormatter ∷ Formatter → String
 printFormatter f = printFormatterF printFormatter $ unroll f
 
 parseFormatString ∷ String → Either String Formatter
-parseFormatString s =
-  lmap P.parseErrorMessage $ P.runParser s formatParser
+parseFormatString = runP formatParser
 
 -- | Formatting function that accepts a number that is a year,
 -- | and strips away the non-significant digits, leaving only the
@@ -225,11 +227,7 @@ formatDateTime pattern datetime =
   parseFormatString pattern <#> flip format datetime
 
 unformat ∷ Formatter → String → Either String DT.DateTime
-unformat f s =
-  unformatParser f
-    # P.runParser s
-    # lmap P.parseErrorMessage
-    >>= unformatAccumToDateTime
+unformat = runP <<< unformatParser
 
 data Meridiem = AM | PM
 
@@ -395,11 +393,13 @@ unformatFParser cb = case _ of
     pure unit
 
 
-hoistParserT' :: ∀ b n s a m. (m (Tuple (Either P.ParseError a) (P.ParseState s)) -> n (Tuple (Either P.ParseError b) (P.ParseState s))) -> P.ParserT s m a -> P.ParserT s n b
+hoistParserT' :: ∀ b n s a m. (∀ e s'. m (Tuple (Either e a) s') -> n (Tuple (Either e b) s')) -> P.ParserT s m a -> P.ParserT s n b
 hoistParserT' f (P.ParserT m) = P.ParserT (mapExceptT (mapStateT f) m)
 
-unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m UnformatAccum
-unformatParser f' = hoistParserT' unState $ rec f'
+unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m DT.DateTime
+unformatParser f' = do
+  acc <- hoistParserT' unState $ rec f'
+  either P.fail pure $ unformatAccumToDateTime acc
   where
     rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
     rec f = unformatFParser rec $ unroll f
