@@ -22,7 +22,6 @@ import Data.Ord (abs)
 import Data.Array (some)
 import Data.Tuple (Tuple(..))
 import Data.Array as Arr
-import Data.Bifunctor (lmap)
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)

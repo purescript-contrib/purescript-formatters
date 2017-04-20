@@ -2,7 +2,6 @@ module Data.Formatter.Parser.Interval
   ( parseRecurringInterval
   , parseInterval
   , parseIsoDuration
-  , parseDuration
   ) where
 
 import Prelude
@@ -10,7 +9,6 @@ import Data.Interval as I
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
-import Control.Monad.State (get)
 import Control.Alt ((<|>))
 import Data.Foldable (class Foldable, fold)
 import Data.Maybe (Maybe(..), maybe)

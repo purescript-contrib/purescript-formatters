@@ -17,22 +17,22 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser.String as PS
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Math as Math
 
 
-parseInteger ∷ P.Parser String Int
+parseInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
 parseInteger = some parseDigit <#> foldDigits
 
-parseMaybeInteger ∷ P.Parser String (Maybe Int)
+parseMaybeInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m (Maybe Int)
 parseMaybeInteger = many parseDigit <#> (\l -> if length l == 0 then Nothing else Just $ foldDigits l)
 
-parseFractional ∷ P.Parser String Number
+parseFractional ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Number
 parseFractional = parseInteger <#> case _ of
   0 ->  0.0
   n -> (toNumber n) / (pow 10 $ numOfDigits n)
 
-parseNumber ∷ P.Parser String Number
+parseNumber ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Number
 parseNumber = (+)
   <$> (parseInteger <#> toNumber)
   <*> (PC.option 0.0 $ PC.try $ PS.oneOf ['.', ','] *> parseFractional)
@@ -47,6 +47,7 @@ numOfDigits n = 1 + (floor $ log10 $ toNumber n)
 log10 ∷ Number → Number
 log10 n = Math.log10e * Math.log n
 
+parseDigit ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
     [ Tuple '0' 0
     , Tuple '1' 1

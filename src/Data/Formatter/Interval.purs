@@ -16,9 +16,8 @@ import Data.Formatter.Parser.Utils (runP)
 import Data.Interval as I
 import Data.DateTime as D
 import Data.Either (Either(..))
-import Data.Bifunctor (lmap)
 import Data.Formatter.DateTime (Formatter, unformatParser, parseFormatString)
-import Data.Formatter.Parser.Interval (parseRecurringInterval, parseInterval, parseIsoDuration, parseDuration)
+import Data.Formatter.Parser.Interval (parseRecurringInterval, parseInterval, parseIsoDuration)
 
 unformatRecurringInterval ::
   ∀ a b
@@ -48,9 +47,6 @@ unformatDuration = runP $ getDuration <* PS.eof
 
 class HasDuration a where
   getDuration :: P.Parser String a
-
-instance hasDurationDuration :: HasDuration I.Duration where
-  getDuration = parseDuration
 
 instance hasDurationIsoDuration :: HasDuration I.IsoDuration where
   getDuration = parseIsoDuration
