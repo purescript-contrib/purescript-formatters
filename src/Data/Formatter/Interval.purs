@@ -56,23 +56,18 @@ class HasDate a where
   getDate :: P.Parser String a
 
 isoDateTimeFormatter ∷ Either String Formatter
-isoDateTimeFormatter = parseFormatString "YYYY-MM-DDTHH:MM:SSZ"
+isoDateTimeFormatter = parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
 
 instance hasDateDate :: HasDate D.DateTime where
   getDate = do
     case isoDateTimeFormatter of
       Right f -> unformatParser f
-      Left e -> P.fail e
+      Left e -> P.fail $ "(this must be unrechable) error in parsing ISO date format: " <> e
 
--- TODO
+-- TODO read iso spec and check if local datetimes or datetimes with offset are supported
 -- 2017-04-13T15:36:07+00:00
 -- 2017-04-13T15:36:07Z
-
-
--- TODO implement date parsers
-
+-- TODO instance for Date?
 -- TODO instance for local versions
 -- * LocalDate
 -- * LocalDateTime
-
--- TODO Q? should we define for LocalTime and Time

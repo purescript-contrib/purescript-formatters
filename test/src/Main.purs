@@ -1,45 +1,26 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Aff.Console as AffC
+
 import Data.Date as D
 import Data.DateTime as DTi
-import Data.Interval as I
 
 import Data.Formatter.DateTime as FDT
-import Data.Formatter.Interval as FI
 import Data.Formatter.Number as FN
 import Data.Time as T
 import Debug.Trace as DT
-import Control.Monad.Aff (Aff, Canceler, runAff)
-import Control.Monad.Aff.Class (liftAff)
+import Control.Monad.Aff (Canceler)
 import Control.Monad.Eff (Eff, kind Effect)
 import Control.Monad.Eff.Console (CONSOLE)
-import Control.Monad.Eff.Exception (EXCEPTION, error)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.State (StateT, put, get, execStateT)
+import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..), either)
 import Data.Enum (toEnum)
 import Data.Functor.Mu (roll)
-import Data.Maybe (fromMaybe, Maybe(..), maybe)
+import Data.Maybe (fromMaybe)
+import Test.Test (PROCESS, Tests, assertEq, exec, failTest, log)
+import Test.Interval (intervalTest)
 
-type Tests e a = StateT Boolean (Aff (exception :: EXCEPTION, console :: CONSOLE | e)) a
-
-
-execTests :: forall a e c.
-  StateT a (Aff ( process :: PROCESS | e)) c ->
-  a ->
-  Eff (process :: PROCESS | e) (Canceler ( process :: PROCESS | e ))
-execTests fn state = runAff (\s -> exit 1) (\s -> exit 0) (execStateT fn state)
-
-
-log :: forall e. String -> Tests e Unit
-log message = liftAff $ AffC.log message
-
-
-foreign import data PROCESS :: Effect
-foreign import exit :: Int -> forall e. Eff (process :: PROCESS | e) Unit
 
 
 fnOne ∷ FN.Formatter
@@ -74,11 +55,11 @@ fnThree =
 
 fdtOne ∷ FDT.Formatter
 fdtOne =
-  roll $ FDT.Placeholder "format string is "
-  $ roll $ FDT.YearFull
-  $ roll $ FDT.Placeholder "-"
-  $ roll $ FDT.MonthShort
-  $ roll FDT.End
+  roll $ FDT.Placeholder "format string is " $
+  roll $ FDT.YearFull $
+  roll $ FDT.Placeholder "-" $
+  roll $ FDT.MonthShort $
+  roll FDT.End
 
 
 numeralTests :: forall e. Tests e Unit
@@ -136,52 +117,12 @@ testDateTime :: DTi.DateTime
 testDateTime = makeDateTime 2017 4 12
 
 
-assert :: forall e. String -> String -> Boolean -> Tests e Unit
-assert _           success true = log $ "  ✓ - Passed - " <> success
-assert fail _              false = do
-  log $ "  ☠ - Failed because " <> fail
-  put false
-
-
-failTest :: forall e. String -> Tests e Unit
-failTest message = do
-  log message
-  put false
-
-
 assertFormatting :: forall e. String -> String -> DateTime -> Tests e Unit
 assertFormatting target' format dateTime = do
   let result = FDT.formatDateTime format dateTime
   let target = Right target'
   assertEq result target
 
-assertEq :: forall a e. Show a => Eq a => a -> a -> Tests e Unit
-assertEq result target =
-  assert
-    ((show result) <> " ≠ " <> (show target))
-    ((show result) <> " ≡ " <> (show target))
-    (result == target)
-
-dur :: Either String (I.RecurringInterval I.IsoDuration DTi.DateTime)
-dur = I.mkIsoDuration (I.day 1.0 <> I.hours 1.0 <> I.minutes 0.0 <> I.seconds 1.5)
-  <#> I.JustDuration
-  <#> I.RecurringInterval (Just 10)
-   #  maybe (Left "boom") Right
-
-timeInterval :: forall e. Tests e Unit
-timeInterval = do
-  log "- Data.Formatter.Parser.Interval.parseDuration"
-  assertEq (FI.unformatDuration "P1W") (Right $ I.day 7.0)
-  assertEq (FI.unformatDuration "P1.0W") (Right $ I.day 7.0)
-  assertEq (FI.unformatDuration "P1.9748600D") (Right $ I.day 1.97486)
-  assertEq (FI.unformatDuration "P1DT1H1M1S") (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0)
-  assertEq (FI.unformatDuration "P1DT1H1M0S") (Right $ I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 0.0)
-  assertEq (FI.unformatDuration "P1DT1H1M1S" <#> I.isValidIsoDuration) (Right true)
-  assertEq (FI.unformatDuration "P1DT1H1M1.5S" <#> I.isValidIsoDuration) (Right true)
-  assertEq (FI.unformatDuration "P1DT1H1.5M0S" <#> I.isValidIsoDuration) (Right true)
-  assertEq (FI.unformatDuration "P1DT1.5H0M0S" <#> I.isValidIsoDuration) (Right true)
-  assertEq (FI.unformatDuration "P1DT1.5H0M1S" <#> I.isValidIsoDuration) (Right false)
-  assertEq (FI.unformatRecurringInterval "R10/P1DT1H0M1.5S") dur
 
 timeTest :: forall e. Tests e Unit
 timeTest = do
@@ -239,13 +180,9 @@ formattingTests = do
 main :: forall e.
   Eff ( process :: PROCESS, exception :: EXCEPTION, console :: CONSOLE | e)
     (Canceler ( process :: PROCESS, exception :: EXCEPTION, console :: CONSOLE | e))
-main = execTests tests true
-  where
-  tests = do
+main = exec do
     log "Testing time functions..."
-    timeTest
-    timeInterval
-    passed <- get
-    when (passed /= true) (throwError (error "Tests did not pass."))
+    -- timeTest
+    intervalTest
     --numeralTests
     --formattingTests
