@@ -11,14 +11,16 @@ import Control.MonadZero (guard)
 import Data.Foldable (for_)
 import Data.Time (Time(..))
 import Data.Date (canonicalDate)
-import Data.Formatter.Interval (unformatDuration, unformatRecurringInterval, getDate, class HasDuration)
+import Data.Formatter.Interval (unformatDuration, unformatRecurringInterval, getDate)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Enum (toEnum)
 import Partial.Unsafe (unsafePartialBecause)
-import Test.Test (Tests, assertEq, log)
 import Unsafe.Coerce (unsafeCoerce)
 import Data.Formatter.Parser.Utils (runP)
+import Control.Monad.Aff (Aff)
+import Test.Spec (describe, it, Spec)
+import Test.Spec.Assertions (shouldEqual)
 
 unsafeMkToIsoDuration :: I.Duration -> I.IsoDuration
 unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
@@ -41,14 +43,14 @@ durations =
   , { str: "P1DT1.5H", dur: I.day 1.0 <> I.hours 1.5 }
   ] <#> (\a -> a { dur = unsafeMkToIsoDuration a.dur })
 
-invalidDurations :: Array String
+invalidDurations :: Array { str :: String, pos :: String}
 invalidDurations =
-  [ "P1DT1.5H0M1S" -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/duration_spec.rb
+  [ { str: "P1DT1.5H0M1S", pos:"1:13" } -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/duration_spec.rb
   ]
 
 invalidIntervals :: Array String
 invalidIntervals =
-  [ "P1DT1.5H0M1S" -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
+  [ -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
   ]
 
 recurrences ∷ Array { str :: String, rec :: Maybe Int }
@@ -69,11 +71,11 @@ dates =
 forceIsoDuration :: ∀ a. I.Interval a DateTime -> I.Interval I.IsoDuration DateTime
 forceIsoDuration = unsafeCoerce
 
-intervalStartEndTest ∷ ∀ e. Tests e Unit
+intervalStartEndTest ∷ ∀ e. Aff e Unit
 intervalStartEndTest = for_ items test
   where
   test ({ start, end, rec }) =
-    assertEq
+    shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> end.str)
       (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.StartEnd start.date end.date)
 
@@ -84,11 +86,11 @@ intervalStartEndTest = for_ items test
     guard $ start.str /= end.str -- investigatge if this is needed
     pure { start, end, rec}
 
-intervalDurationEndTest ∷ ∀ e. Tests e Unit
+intervalDurationEndTest ∷ ∀ e. Aff e Unit
 intervalDurationEndTest = for_ items test
   where
   test ({ dur, end, rec }) =
-    assertEq
+    shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str <> "/" <> end.str)
       (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.DurationEnd dur.dur end.date)
 
@@ -98,11 +100,11 @@ intervalDurationEndTest = for_ items test
     rec <- recurrences
     pure { dur, end, rec}
 
-intervalStartDurationTest ∷ ∀ e. Tests e Unit
+intervalStartDurationTest ∷ ∀ e. Aff e Unit
 intervalStartDurationTest = for_ items test
   where
   test ({ dur, start, rec }) =
-    assertEq
+    shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> dur.str)
       (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.StartDuration start.date dur.dur)
 
@@ -112,12 +114,11 @@ intervalStartDurationTest = for_ items test
     rec <- recurrences
     pure { dur, start, rec}
 
---
-intervalJustDurationTest ∷ ∀ e. Tests e Unit
+intervalJustDurationTest ∷ ∀ e. Aff e Unit
 intervalJustDurationTest = for_ items test
   where
   test ({ dur, rec }) =
-    assertEq
+    shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str)
       (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.JustDuration dur.dur)
 
@@ -126,29 +127,23 @@ intervalJustDurationTest = for_ items test
     rec <- recurrences
     pure { dur, rec}
 
+intervalTest ∷ ∀ e. Spec e Unit
+intervalTest = describe "Data.Formatter.Interval" do
+  it "should unformat valid durations" do
+    for_ durations \d -> do
+      (unformatDuration d.str) `shouldEqual` (Right d.dur)
 
-intervalTest :: ∀ e. Tests e Unit
-intervalTest = do
-  log "- Data.Formatter.Interval"
+  it "should unformat valid ISO DateTime" do
+    for_ dates \d -> do
+      (runP getDate d.str) `shouldEqual` (Right d.date)
 
-  for_ durations \d -> do
-    assertEq (unformatDuration d.str) (Right d.dur)
+  it "shouldn't unformat invalid ISO DateTime" do
+    for_ invalidDurations \d -> do
+      let dur = (unformatDuration d.str) :: Either String I.IsoDuration
+      dur `shouldEqual` (Left $ "extracted Duration is not valid ISO duration@" <> d.pos)
 
-  for_ dates \d -> do
-    assertEq (runP getDate d.str) (Right d.date)
-
-  for_ invalidDurations \d -> do
-    let dur = (unformatDuration d) :: Either String I.IsoDuration
-    assertEq dur (Left "extracted Duration is not valid ISO duration")
-
-  log "- Data.Formatter.Interval.StartEnd"
-  intervalStartEndTest
-
-  log "- Data.Formatter.Interval.DurationEnd"
-  intervalDurationEndTest
-
-  log "- Data.Formatter.Interval.StartDuration"
-  intervalStartDurationTest
-
-  log "- Data.Formatter.Interval.JustDuration"
-  intervalJustDurationTest
+  describe "Interval variations" do
+    it "should unformat Interval.StartEnd" intervalStartEndTest
+    it "should unformat Interval.DurationEnd" intervalDurationEndTest
+    it "should unformat Interval.StartDuration" intervalStartDurationTest
+    it "should unformat Interval.JustDuration" intervalJustDurationTest
