@@ -33,6 +33,7 @@ import Data.Maybe (Maybe(..), maybe, isJust, fromMaybe)
 import Data.Newtype (unwrap)
 import Data.String as Str
 import Data.Time as T
+import Control.Alt ((<|>))
 import Data.Eq (class Eq1)
 import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
@@ -182,6 +183,7 @@ placeholderContent =
     $ PC.try
     $ Arr.some
     $ PS.noneOf
+    -- TODO why this chars: 'Q', 'X', 'W' are included here?
     $ Str.toCharArray "YQMDXWEHhamsS"
 
 formatterFParser
@@ -207,7 +209,7 @@ formatterFParser cb =
     , (PC.try $ PS.string "SSS") *> map Milliseconds cb
     , (Placeholder <$> placeholderContent <*> cb)
     , (PS.eof $> End)
-    ]
+    ] <|> (P.fail "Format contains invalid string")
 
 formatParser ∷ P.Parser String Formatter
 formatParser =
@@ -394,6 +396,9 @@ unformatFParser cb = case _ of
     when (dow > 7 || dow < 1) $ P.fail "Incorrect day of week"
     cb a
   Hours24 a → do
+    -- TODO because `some` is parsing digits it will consume more then 2
+    -- even when input is properly formatted in case of `HHmmss`
+    -- which results in need to add some seperators to format `HH:mm:ss`
     ds ← some parseDigit
     let hh = foldDigits ds
     when (Arr.length ds /= 2 || hh < 0 || hh > 23) $ P.fail "Incorrect 24 hour"
