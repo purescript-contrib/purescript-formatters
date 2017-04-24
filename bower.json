@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "purescript-prelude": "^3.0.0",
-    "purescript-parsing": "^4.0.0",
+    "purescript-parsing": "^4.2.0",
     "purescript-fixed-points": "^4.0.0",
     "purescript-datetime": "git://github.com/safareli/purescript-datetime.git#interval",
     "purescript-generics-rep": "^5.0.0"

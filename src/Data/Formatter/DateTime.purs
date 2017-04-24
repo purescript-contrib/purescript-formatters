@@ -440,13 +440,6 @@ unformatFParser cb = case _ of
   End →
     pure unit
 
--- TODO remove after merge https://github.com/purescript-contrib/purescript-parsing/pull/54
-mapParserT :: forall b n s a m.
-  (  m (Tuple (Either P.ParseError a) (P.ParseState s))
-  -> n (Tuple (Either P.ParseError b) (P.ParseState s))
-  ) -> P.ParserT s m a -> P.ParserT s n b
-mapParserT f (P.ParserT m) = P.ParserT (mapExceptT (mapStateT f) m)
-
 unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m DT.DateTime
 unformatParser f' = do
   acc <- mapParserT unState $ rec f'
