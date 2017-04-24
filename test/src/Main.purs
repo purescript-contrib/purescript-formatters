@@ -13,6 +13,7 @@ import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff, kind Effect)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
+import Control.MonadZero (guard)
 import Data.Enum (toEnum)
 import Data.Functor.Mu (roll)
 import Data.Maybe (fromMaybe)
@@ -173,8 +174,8 @@ timeTest = describe "Data.Formatter.DateTime" do
 
 invalidDateformats ∷ Array { str :: String , pos :: String }
 invalidDateformats =
-  [ { str: "YY-Q-dddd HH:mm Z", pos: "1:4" }
-  , { str: "YYYY-MM-DD Q", pos: "1:12" }
+  [ { str: "YY-SS-dddd HH:mm Z", pos: "1:4" }
+  , { str: "YYYY-MM-DD M", pos: "1:12" }
   ]
 
 dateformats ∷ Array { str :: String , lossless :: Boolean, format :: FDT.Formatter }
