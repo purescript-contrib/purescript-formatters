@@ -3,7 +3,7 @@
 -- | zeros and put commas between thousands should be enough for everything
 -- | because one could just compose it with `flip append "%"` or whatever
 module Data.Formatter.Number
-  ( Formatter
+  ( Formatter(..)
   , printFormatter
   , parseFormatString
   , format
@@ -15,7 +15,6 @@ module Data.Formatter.Number
 
 import Prelude
 
-import Data.Bifunctor (lmap)
 import Data.Array as Arr
 import Data.Array (many, some)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -24,6 +23,7 @@ import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
 
+import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Internal (foldDigits, repeat)
 import Data.Formatter.Parser.Number (parseDigit)
 
@@ -33,7 +33,12 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
-type Formatter =
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.Generic.Rep.Eq (genericEq)
+
+
+newtype Formatter = Formatter
   { comma ∷ Boolean
   , before ∷ Int
   , after ∷ Int
@@ -41,9 +46,16 @@ type Formatter =
   , sign ∷ Boolean
   }
 
+derive instance genericFormatter :: Generic Formatter _
+
+instance showFormatter :: Show Formatter where
+  show = genericShow
+
+instance eqFormatter :: Eq Formatter where
+  eq = genericEq
 
 printFormatter ∷ Formatter → String
-printFormatter f =
+printFormatter (Formatter f) =
     (if f.sign then "+" else "")
     <> repeat "0" (f.before - one)
     <> (if f.comma then "0,0" else "0")
@@ -52,8 +64,7 @@ printFormatter f =
     <> (if f.abbreviations then "a" else "")
 
 parseFormatString ∷ String → Either String Formatter
-parseFormatString s =
-  lmap P.parseErrorMessage $ P.runParser s formatParser
+parseFormatString = runP formatParser
 
 
 formatParser ∷ P.Parser String Formatter
@@ -66,16 +77,17 @@ formatParser = do
     PC.try $ many $ PS.string "0"
   abbreviations ← PC.optionMaybe $ PC.try $ PS.string "a"
 
-  pure { sign: isJust sign
-       , before: Arr.length before
-       , comma: isJust comma
-       , after: fromMaybe zero $ Arr.length <$> after
-       , abbreviations: isJust abbreviations
-       }
+  pure $ Formatter
+    { sign: isJust sign
+    , before: Arr.length before
+    , comma: isJust comma
+    , after: fromMaybe zero $ Arr.length <$> after
+    , abbreviations: isJust abbreviations
+    }
 
 
 format ∷ Formatter → Number → String
-format f num =
+format (Formatter f) num =
   let
     absed = Math.abs num
     tens = if absed > 0.0 then Int.floor $ Math.log absed / Math.ln10 else 0
@@ -95,7 +107,7 @@ format f num =
               | otherwise = "10e+" <> show (thousands * 3)
          newNum = if thousands < 1 then num else num / Math.pow 1000.0 (Int.toNumber thousands)
        in
-        format f{abbreviations = false} newNum <> abbr
+        format (Formatter f{abbreviations = false}) newNum <> abbr
      else
        let
          zeros = f.before - tens - one
@@ -131,11 +143,10 @@ format f num =
 
 
 unformat ∷ Formatter → String → Either String Number
-unformat f s =
-  lmap P.parseErrorMessage $ P.runParser s $ unformatParser f
+unformat = runP <<< unformatParser
 
 unformatParser ∷ Formatter → P.Parser String Number
-unformatParser f = do
+unformatParser (Formatter f) = do
   minus ← PC.optionMaybe $ PC.try $ PS.string "-"
   sign ← case minus of
     Nothing | f.sign →
