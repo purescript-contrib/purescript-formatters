@@ -132,19 +132,19 @@ timeTest :: forall e. Spec e Unit
 timeTest = describe "Data.Formatter.DateTime" do
   describe "formatDateTime" do
     it "should formatt dateTime" do
-      -- TODO make sure it's not compiler bug as `[` can't be moved to new line
-      let items = [
-          { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: testDateTime}
-        , { format: "MMMM", dateStr: "April" , date: testDateTime}
-        , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: testDateTime}
-        , { format: "YYYY-MMM", dateStr: "2017-Apr" , date: testDateTime}
-        , { format: "MMM D", dateStr: "Apr 1" , date: makeDateTime 2017 4 1}
-        , { format: "hh:mm:ss:SSS a", dateStr: "11:34:34:234 AM" , date: testDateTime}
-        , { format: "YY", dateStr: "17" , date: testDateTime}
-        , { format: "YY", dateStr: "17" , date: makeDateTime 20017 4 12} -- Format 20017 with YY
-        , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12} -- Format 0 with YY
-        , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12} -- Format -1 with YY
-        ]
+      let
+        items =
+          [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: testDateTime}
+          , { format: "MMMM", dateStr: "April" , date: testDateTime}
+          , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: testDateTime}
+          , { format: "YYYY-MMM", dateStr: "2017-Apr" , date: testDateTime}
+          , { format: "MMM D", dateStr: "Apr 1" , date: makeDateTime 2017 4 1}
+          , { format: "hh:mm:ss:SSS a", dateStr: "11:34:34:234 AM" , date: testDateTime}
+          , { format: "YY", dateStr: "17" , date: testDateTime}
+          , { format: "YY", dateStr: "17" , date: makeDateTime 20017 4 12} -- Format 20017 with YY
+          , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12} -- Format 0 with YY
+          , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12} -- Format -1 with YY
+          ]
       for_ items \({ format, dateStr, date }) -> do
         (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr)
 
@@ -161,13 +161,12 @@ timeTest = describe "Data.Formatter.DateTime" do
       (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date)
 
   it "s ≡ unformat (format s)" do
-    let items = ({ date: _, format: _ }) <$> dates <*> (dateformats # filter _.lossless <#> _.format)
-    -- TODO check if it's compiler bug that we can't use do notation here
-    -- let items = do
-    --   format <-dateformats
-    --   date <-dates
-    --   guard format.lossless
-    --   pure {date, format: format.format}
+    let
+      items = do
+        format <- dateformats
+        date <- dates
+        guard format.lossless
+        pure { date, format: format.format }
     for_ items \({ date, format }) -> do
       FDT.unformat format (FDT.format format date) `shouldEqual` (Right date)
 
