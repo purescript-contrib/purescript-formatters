@@ -49,13 +49,13 @@ log10 n = Math.log10e * Math.log n
 
 parseDigit ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
-    [ Tuple '0' 0
-    , Tuple '1' 1
-    , Tuple '2' 2
-    , Tuple '3' 3
-    , Tuple '4' 4
-    , Tuple '5' 5
-    , Tuple '6' 6
-    , Tuple '7' 7
-    , Tuple '8' 8
-    , Tuple '9' 9]
+  [ Tuple '0' 0
+  , Tuple '1' 1
+  , Tuple '2' 2
+  , Tuple '3' 3
+  , Tuple '4' 4
+  , Tuple '5' 5
+  , Tuple '6' 6
+  , Tuple '7' 7
+  , Tuple '8' 8
+  , Tuple '9' 9]

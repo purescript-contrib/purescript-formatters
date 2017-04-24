@@ -39,7 +39,7 @@ import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Parser.Number (parseDigit)
-import Data.Formatter.Parser.DateTime (parseMonth, parseShortMonth)
+import Data.Formatter.Parser.Utils (oneOfAs)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
@@ -464,6 +464,38 @@ unformatParser f' = do
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= flip unformat str
+
+parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
+parseMonth = (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "January" D.January
+  , Tuple "February" D.February
+  , Tuple "March" D.March
+  , Tuple "April" D.April
+  , Tuple "May" D.May
+  , Tuple "June" D.June
+  , Tuple "July" D.July
+  , Tuple "August" D.August
+  , Tuple "September" D.September
+  , Tuple "October" D.October
+  , Tuple "November" D.November
+  , Tuple "December" D.December
+  ]
+
+parseShortMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
+parseShortMonth = (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "Jan" D.January
+  , Tuple "Feb" D.February
+  , Tuple "Mar" D.March
+  , Tuple "Apr" D.April
+  , Tuple "May" D.May
+  , Tuple "Jun" D.June
+  , Tuple "Jul" D.July
+  , Tuple "Aug" D.August
+  , Tuple "Sep" D.September
+  , Tuple "Oct" D.October
+  , Tuple "Nov" D.November
+  , Tuple "Dec" D.December
+  ]
 
 printShortMonth ∷ D.Month → String
 printShortMonth = case _ of
