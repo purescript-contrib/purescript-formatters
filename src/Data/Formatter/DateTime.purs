@@ -37,9 +37,8 @@ import Control.Alt ((<|>))
 import Data.Eq (class Eq1)
 import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
-import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Parser.Number (parseDigit)
-import Data.Formatter.Parser.Utils (oneOfAs)
+import Data.Formatter.Parser.Utils (runP, oneOfAs)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
