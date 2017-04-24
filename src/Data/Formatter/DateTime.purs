@@ -183,8 +183,7 @@ placeholderContent =
     $ PC.try
     $ Arr.some
     $ PS.noneOf
-    -- TODO why this chars: 'Q', 'X', 'W' are included here?
-    $ Str.toCharArray "YQMDXWEHhamsS"
+    $ Str.toCharArray "YMDEHhamsS"
 
 formatterFParser
   ∷ ∀ a
