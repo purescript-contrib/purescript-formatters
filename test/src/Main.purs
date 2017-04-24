@@ -23,12 +23,17 @@ import Control.Alternative (class Alternative, empty)
 
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (RunnerEffects, run)
-import Test.Spec (describe, it, Spec)
+import Test.Spec (describe, it, pending, Spec)
 import Test.Spec.Assertions (shouldEqual)
 
+-- TODO remove after https://github.com/owickstrom/purescript-spec/pull/48
+pending' :: forall r. String
+        -> Aff r Unit
+        -> Spec r Unit
+pending' name _ = pending name
 
-fnOne ∷ FN.Formatter
-fnOne =
+fmt1 :: FN.Formatter
+fmt1 = FN.Formatter
   { comma: false
   , before: 3
   , after: 2
@@ -36,9 +41,8 @@ fnOne =
   , sign: false
   }
 
-
-fnTwo ∷ FN.Formatter
-fnTwo =
+fmt2 :: FN.Formatter
+fmt2 = FN.Formatter
   { comma: true
   , before: one
   , after: 4
@@ -46,56 +50,51 @@ fnTwo =
   , sign: true
   }
 
+fmt3 :: FN.Formatter
+fmt3 = FN.Formatter
+  { comma: false
+  , before: 2
+  , after: 2
+  , abbreviations: true
+  , sign: true
+  }
 
-fnThree ∷ FN.Formatter
-fnThree =
- { comma: false
- , before: 2
- , after: 2
- , abbreviations: true
- , sign: true
- }
+numberformatts :: Array { fmt :: FN.Formatter, str :: String }
+numberformatts =
+  [ { str: "000.00"
+    , fmt: fmt1
+    }
+  , { str: "+0,0.0000"
+    , fmt: fmt2
+    }
+  , { str: "+00.00a"
+    , fmt: fmt3
+    }
+  ]
 
+numeralTests :: forall e. Spec e Unit
+numeralTests = describe "Data.Formatter.Number" do
+  it "should print formatter" do
+    for_ numberformatts \({fmt, str}) -> do
+      FN.printFormatter fmt `shouldEqual` str
 
--- TODO refactor this
--- numeralTests :: forall e. Spec e Unit
--- numeralTests = do
---   log $ "\nNUMERAL TESTS\n"
---
---   log $ "\nPRINT FORMATTER"
---   log $ FN.printFormatter fnOne
---   log $ FN.printFormatter fnTwo
---   log $ FN.printFormatter fnThree
---
---   log $ "\nPARSE FORMAT STRING"
---   DT.traceAnyA $ FN.parseFormatString "000,0.00"
---   DT.traceAnyA $ FN.parseFormatString "000"
---   DT.traceAnyA $ FN.parseFormatString "0a"
---   DT.traceAnyA $ FN.parseFormatString "-0,0.000"
---   DT.traceAnyA $ FN.parseFormatString "+000.0"
---
---   log $ "\n FORMAT"
---   log $ FN.format fnOne 100.2
---   log $ FN.format fnTwo 100.1
---   log $ FN.format fnThree 100.3
---   log $ FN.format fnThree 10004000.0
---
---   log $ "\n UNFORMAT"
---   DT.traceAnyA $ FN.unformat fnOne "001.12"
---   DT.traceAnyA $ FN.unformat fnOne "-123.12"
---   DT.traceAnyA $ FN.unformat fnOne "12.12"
---   DT.traceAnyA $ FN.unformat fnThree "+123"
---   DT.traceAnyA $ FN.unformat fnTwo "-100,000.1234"
---
---   log $ "\n FORMAT NUMBER"
---   DT.traceAnyA $ FN.formatNumber "00.00" 12.0
---   DT.traceAnyA $ FN.formatNumber "00000,0.000" 123345.1235
---   DT.traceAnyA $ FN.formatNumber "0.0" 123345.1235
---   DT.traceAnyA $ FN.formatNumber "0.0" (-123345.1235)
---
---   log $ "\n UNFORMAT NUMBER"
---   DT.traceAnyA $ FN.unformatNumber "0.00" "12.00"
---
+  it "parse format string" do
+    for_ numberformatts \({fmt, str}) -> do
+      FN.parseFormatString str `shouldEqual` (Right fmt)
+
+  it "unformat (format n) = n" do
+    let ns = [100.2, 100.1, 100.3, 10004000.0]
+    for_ ns \n -> do
+      FN.unformat fmt1 (FN.format fmt1 n) `shouldEqual` (Right n)
+
+  -- TODO fails on negative numbers
+  pending' "format (unformat n) = n" do
+    let ns = ["001.12", "-012.12", "-123.12"]
+    for_ ns \n -> do
+      (FN.format fmt1 <$> (FN.unformat fmt1 n)) `shouldEqual` (Right n)
+    -- TODO check for different formatters
+    -- DT.traceAnyA $ FN.unformat fnThree "+123"
+    -- DT.traceAnyA $ FN.unformat fnTwo "-100,000.1234"
 
 makeDateTime ∷ Int -> Int -> Int -> DTi.DateTime
 makeDateTime year month day =
@@ -256,4 +255,4 @@ main :: Eff (RunnerEffects ()) Unit
 main = run [consoleReporter] do
   intervalTest
   timeTest
---     --numeralTests
+  numeralTests
