@@ -4,11 +4,10 @@ import Prelude
 
 import Data.DateTime (DateTime(..))
 import Data.Interval as I
-import Control.MonadZero (guard)
 import Data.Foldable (for_)
 import Data.Time (Time(..))
 import Data.Date (canonicalDate)
-import Data.Formatter.Interval (unformatDuration, unformatRecurringInterval, getDate)
+import Data.Formatter.Interval (unformatDuration, unformatInterval, unformatRecurringInterval, getDate)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Enum (toEnum)
@@ -29,10 +28,16 @@ intervalTest = describe "Data.Formatter.Interval" do
     for_ dates \d -> do
       (runP getDate d.str) `shouldEqual` (Right d.date)
 
-  it "shouldn't unformat invalid ISO DateTime" do
+  it "shouldn't unformat invalid Duration" do
     for_ invalidDurations \d -> do
       let dur = (unformatDuration d.str) :: Either String I.IsoDuration
-      dur `shouldEqual` (Left $ "extracted Duration is not valid ISO duration@" <> d.pos)
+      dur `shouldEqual` (Left $ d.err)
+
+  it "shouldn't unformat invalid Interval" do
+    for_ invalidDurations \d -> do
+      let dur = (unformatInterval d.str) :: Either String (I.Interval I.IsoDuration DateTime)
+      dur `shouldEqual` (Left $ d.err)
+
 
   describe "Interval variations" do
     it "should unformat Interval.StartEnd" intervalStartEndTest
@@ -60,16 +65,58 @@ durations =
   , { str: "P1DT1H1M1.5S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.5 }
   , { str: "P1DT1H1.5M", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.5 }
   , { str: "P1DT1.5H", dur: I.day 1.0 <> I.hours 1.5 }
+  , { str: "PT1M", dur: I.minutes 1.0 }
+  , { str: "PT1S", dur: I.seconds 1.0 }
+  , { str: "PT1H1S", dur: I.hours 1.0 <> I.seconds 1.0 }
   ] <#> (\a -> a { dur = unsafeMkToIsoDuration a.dur })
 
-invalidDurations :: Array { str :: String, pos :: String}
+-- TODO error messages could be improved
+invalidDurations :: Array { err :: String, str :: String}
 invalidDurations =
-  [ { str: "P1DT1.5H0M1S", pos:"1:13" } -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/duration_spec.rb
+  [ { err: errInvalidISO <> "1:13", str: "P1DT1.5H0M1S" }
+  , { err: errInvalidISO <> "1:10", str: "P1.5Y0.5M" }
+  , { err: errInvalidISO <> "1:8", str: "P1.5Y1M" }
+  , { err: errInvalidISO <> "1:12", str: "P1.5MT10.5S" }
+  , { err: errInvalidComponent <> "1:2", str: "P" }
+  , { err: errInvalidComponent <> "1:2", str: "PW" }
+  , { err: errInvalidComponent <> "1:2", str: "PD" }
+  , { err: errNoTimeComponent <> "1:3", str: "PT" }
+  , { err: errNoTimeComponent <> "1:3", str: "PTH" }
+  , { err: errNoTimeComponent <> "1:5", str: "P1YT" }
+  , { err: errPrefix <> "1:1", str: "" }
+  , { err: errPrefix <> "1:1", str: "T" }
+  , { err: errPrefix <> "1:1", str: "~P1Y" }
+  , { err: errPrefix <> "1:1", str: ".P1Y" }
+  , { err: errEOF <> "1:4", str: "P1Y1W" }
   ]
+  where
+    errInvalidComponent = "must contain valid duration components@"
+    errPrefix = "Expected \"P\"@"
+    errEOF = "Expected EOF@"
+    errInvalidISO = "extracted Duration is not valid ISO duration@"
+    errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
-invalidIntervals :: Array String
+-- TODO error messages could be improved
+invalidIntervals :: Array {err :: String, str :: String}
 invalidIntervals =
-  [ -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
+  -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
+  [ { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z-P1Y2M10D" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z~P1Y2M10D" }
+  , { err: "Expected EOF@1:15", str: "P1Y2M10DT2H30M2007-03-01T13:00:00Z" }
+  , { err: "Expected EOF@1:9", str: "P1Y2M10D-2007-03-01T13:00:00Z" }
+  , { err: "Expected EOF@1:9", str: "P1Y2M10D~2007-03-01T13:00:00Z" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z-2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z~2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/P" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/PT" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/2010-0-09" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/2010-05-09T103012+0400" }
+  , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z/2014-W15-02T10:11:12Z" }
+  , { err: "Expected EOF@1:9", str: "P1Y2M10D/P1Y2M10D" }
+  , { err: "Expected EOF@1:8", str: "P1Y0.5M/P1Y0.5M" }
   ]
 
 recurrences ∷ Array { str :: String, rec :: Maybe Int }
@@ -102,7 +149,6 @@ intervalStartEndTest = for_ items test
     start <- dates
     end <- dates
     rec <- recurrences
-    guard $ start.str /= end.str -- investigatge if this is needed
     pure { start, end, rec}
 
 intervalDurationEndTest ∷ ∀ e. Aff e Unit

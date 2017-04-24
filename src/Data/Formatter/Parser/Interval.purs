@@ -41,19 +41,19 @@ parseDuration :: P.Parser String I.Duration
 parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   where
     weekDuration = mkComponentsParser [ Tuple I.week "W" ]
-    fullDuration = append <$> durationDatePart <*> durationTimePart
-    durationDatePart = mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
-    durationTimePart = tryM $ PS.string "T" *>
-      (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
+    fullDuration = (append <$> durationDatePart <*> durationTimePart) `notEmpty` "must contain valid duration components"
+    durationDatePart = PC.option mempty $ PC.try $ mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
+    durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
 
+
+notEmpty :: ∀ a. Monoid a => Eq a => P.Parser String a -> String -> P.Parser String a
+notEmpty p str = p >>= \x -> if x == mempty then P.fail str else pure x
 
 mkComponentsParser :: Array (Tuple (Number -> I.Duration) String) -> P.Parser String I.Duration
-mkComponentsParser arr = do
-  dur <- arr <#> applyDurations # sequence <#> foldFoldableMaybe
-  if dur == mempty
-    then P.fail $ "none of valid duration components (" <> (show $ snd <$> arr) <> ") were present"
-    else pure dur
+mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> (show $ snd <$> arr) <> ") were present")
+
   where
+    p = arr <#> applyDurations # sequence <#> foldFoldableMaybe
     applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
     applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
 
@@ -65,6 +65,3 @@ mkComponentsParser arr = do
 
     component ∷ String → P.Parser String Number
     component designator = parseNumber <* PS.string designator
-
-tryM :: ∀ a. Monoid a => P.Parser String a → P.Parser String a
-tryM p = PC.option mempty $ PC.try p
