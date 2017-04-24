@@ -1,7 +1,4 @@
-module Test.Interval
-  ( intervalTest
-  ) where
-
+module Test.Interval (intervalTest) where
 
 import Prelude
 
@@ -21,6 +18,28 @@ import Data.Formatter.Parser.Utils (runP)
 import Control.Monad.Aff (Aff)
 import Test.Spec (describe, it, Spec)
 import Test.Spec.Assertions (shouldEqual)
+
+intervalTest ∷ ∀ e. Spec e Unit
+intervalTest = describe "Data.Formatter.Interval" do
+  it "should unformat valid durations" do
+    for_ durations \d -> do
+      (unformatDuration d.str) `shouldEqual` (Right d.dur)
+
+  it "should unformat valid ISO DateTime" do
+    for_ dates \d -> do
+      (runP getDate d.str) `shouldEqual` (Right d.date)
+
+  it "shouldn't unformat invalid ISO DateTime" do
+    for_ invalidDurations \d -> do
+      let dur = (unformatDuration d.str) :: Either String I.IsoDuration
+      dur `shouldEqual` (Left $ "extracted Duration is not valid ISO duration@" <> d.pos)
+
+  describe "Interval variations" do
+    it "should unformat Interval.StartEnd" intervalStartEndTest
+    it "should unformat Interval.DurationEnd" intervalDurationEndTest
+    it "should unformat Interval.StartDuration" intervalStartDurationTest
+    it "should unformat Interval.JustDuration" intervalJustDurationTest
+
 
 unsafeMkToIsoDuration :: I.Duration -> I.IsoDuration
 unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
@@ -126,24 +145,3 @@ intervalJustDurationTest = for_ items test
     dur <- durations
     rec <- recurrences
     pure { dur, rec}
-
-intervalTest ∷ ∀ e. Spec e Unit
-intervalTest = describe "Data.Formatter.Interval" do
-  it "should unformat valid durations" do
-    for_ durations \d -> do
-      (unformatDuration d.str) `shouldEqual` (Right d.dur)
-
-  it "should unformat valid ISO DateTime" do
-    for_ dates \d -> do
-      (runP getDate d.str) `shouldEqual` (Right d.date)
-
-  it "shouldn't unformat invalid ISO DateTime" do
-    for_ invalidDurations \d -> do
-      let dur = (unformatDuration d.str) :: Either String I.IsoDuration
-      dur `shouldEqual` (Left $ "extracted Duration is not valid ISO duration@" <> d.pos)
-
-  describe "Interval variations" do
-    it "should unformat Interval.StartEnd" intervalStartEndTest
-    it "should unformat Interval.DurationEnd" intervalDurationEndTest
-    it "should unformat Interval.StartDuration" intervalStartDurationTest
-    it "should unformat Interval.JustDuration" intervalJustDurationTest
