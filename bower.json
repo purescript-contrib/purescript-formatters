@@ -27,6 +27,6 @@
     "purescript-console": "^3.0.0",
     "purescript-psci-support": "^3.0.0",
     "purescript-debug": "^3.0.0",
-    "purescript-spec": "^0.13.0"
+    "purescript-spec": "^0.14.0"
   }
 }

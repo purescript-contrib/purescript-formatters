@@ -7,8 +7,7 @@ import Data.Formatter.Number (Formatter(..), printFormatter, parseFormatString, 
 import Control.Monad.Aff (Aff)
 import Data.Either (Either(..))
 
-
-import Test.Spec (describe, it, pending, Spec)
+import Test.Spec (describe, it, pending', Spec)
 import Test.Spec.Assertions (shouldEqual)
 
 numberTest :: forall e. Spec e Unit
@@ -34,13 +33,6 @@ numberTest = describe "Data.Formatter.Number" do
     -- TODO check for different formatters
     -- DT.traceAnyA $ unformat fnThree "+123"
     -- DT.traceAnyA $ unformat fnTwo "-100,000.1234"
-
-
--- TODO remove after https://github.com/owickstrom/purescript-spec/pull/48
-pending' :: forall r. String
-        -> Aff r Unit
-        -> Spec r Unit
-pending' name _ = pending name
 
 fmt1 :: Formatter
 fmt1 = Formatter
