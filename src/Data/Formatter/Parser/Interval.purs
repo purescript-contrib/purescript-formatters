@@ -3,6 +3,7 @@ module Data.Formatter.Parser.Interval
   , parseInterval
   , parseIsoDuration
   , parseDateTime
+  , extendedDateTimeFormatInUTC
   ) where
 
 import Prelude
@@ -14,11 +15,12 @@ import Control.Alt ((<|>))
 import Data.Foldable (class Foldable, fold)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (class Monoid, mempty)
-import Data.Either (Either(..))
+import Data.Either (Either, fromRight)
 import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
 import Data.DateTime (DateTime)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
+import Partial.Unsafe (unsafePartialBecause)
 
 import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
 
@@ -73,10 +75,13 @@ mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> 
 
 -- parser for DateTime in UTC time zone using "extended format"
 parseDateTime :: ∀ m. Monad m => P.ParserT String m DateTime
-parseDateTime = do
-  case format of
-    Right f -> unformatParser f
-    Left e -> P.fail $ "(this must be unrechable) error in parsing ISO date format: " <> e
+parseDateTime = unformatParser extendedDateTimeFormatInUTC
+
+extendedDateTimeFormatInUTC ∷ Formatter
+extendedDateTimeFormatInUTC = unEither $ parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
   where
-  format ∷ Either String Formatter
-  format = parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
+    unEither :: Either String Formatter -> Formatter
+    unEither e = (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format") (fromRight e)
+    --TODO check why this are not working?
+    -- unEither = (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format") <<< fromRight
+    -- unEither = fromRight >>> (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format")

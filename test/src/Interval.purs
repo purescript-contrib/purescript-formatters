@@ -4,69 +4,65 @@ import Prelude
 
 import Data.DateTime (DateTime(..))
 import Data.Interval as I
-import Data.Foldable (for_)
+import Data.Foldable (class Foldable, fold, for_)
 import Data.Time (Time(..))
 import Data.Date (canonicalDate)
-import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval)
-import Data.Formatter.Parser.Interval (parseDateTime, parseIsoDuration)
+import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval, formatRecurringInterval)
+import Data.Formatter.Parser.Interval (parseIsoDuration)
 import Data.Formatter.Parser.Utils (runP)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Enum (toEnum)
 import Partial.Unsafe (unsafePartialBecause)
-import Control.Monad.Aff (Aff)
 import Test.Spec (describe, it, Spec)
 import Test.Spec.Assertions (shouldEqual)
+import Control.Monad.Aff (Aff)
+
+-- forAll :: ∀ e f a. Foldable f => String -> f a -> (a -> Aff e Unit) -> Spec e Unit
+-- forAll title arb f = it title do
+--   for_ arb f
+
+forAll :: ∀ e a f. Foldable f => (a -> String) -> String -> f a -> (a -> Aff e Unit) -> Spec e Unit
+forAll itTitle title arb f = describe title do
+  for_ arb \a -> it (itTitle a) (f a)
+
+prop :: ∀ e e' f. Foldable f => String -> f {str :: String | e'} -> ({str :: String | e'} -> Aff e Unit) -> Spec e Unit
+prop = forAll (show <<< _.str)
 
 intervalTest ∷ ∀ e. Spec e Unit
 intervalTest = describe "Data.Formatter.Interval" do
-  it "should unformat valid durations" do
-    for_ durations \d -> do
-      (runP parseIsoDuration d.str) `shouldEqual` (Right d.dur)
+  prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) -> do
+    (unformatInterval str) `shouldEqual` (Left $ err)
 
-  it "should unformat valid ISO DateTime" do
-    for_ dates \d -> do
-      (runP parseDateTime d.str) `shouldEqual` (Right d.date)
+  prop "shouldn't unformat invalid Duration" invalidDurations \({str, err}) -> do
+    (runP parseIsoDuration str) `shouldEqual` (Left $ err)
 
-  it "shouldn't unformat invalid Duration" do
-    for_ invalidDurations \d -> do
-      let dur = (runP parseIsoDuration d.str) :: Either String I.IsoDuration
-      dur `shouldEqual` (Left $ d.err)
+  prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) -> do
+    (unformatRecurringInterval str) `shouldEqual` (Right interval)
 
-  it "shouldn't unformat invalid Interval" do
-    for_ invalidDurations \d -> do
-      (unformatInterval d.str) `shouldEqual` (Left $ d.err)
+  prop "format (unformat s) = s" arbRecurringInterval \({ str, interval, formatedStr }) -> do
+    (formatRecurringInterval <$> (unformatRecurringInterval str)) `shouldEqual` (Right formatedStr)
 
-
-  describe "Interval variations" do
-    it "should unformat Interval.StartEnd" intervalStartEndTest
-    it "should unformat Interval.DurationEnd" intervalDurationEndTest
-    it "should unformat Interval.StartDuration" intervalStartDurationTest
-    it "should unformat Interval.JustDuration" intervalJustDurationTest
+  prop "unformat (format s) = s" arbRecurringInterval \({ str, interval, formatedStr }) -> do
+    (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
 
 unsafeMkToIsoDuration :: I.Duration -> I.IsoDuration
 unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
 
-makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DateTime
-makeDateTime year month day h m s ms=
-  DateTime
-    (canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
-    (Time (fromMaybe bottom $ toEnum h) (fromMaybe bottom $ toEnum m) (fromMaybe bottom $ toEnum s) (fromMaybe bottom $ toEnum ms))
-
-durations :: Array { str:: String, dur :: I.IsoDuration }
+durations :: Array { str:: String, formatedStr:: String, dur :: I.IsoDuration }
 durations =
-  [ { str: "P1W", dur: I.day 7.0 }
-  , { str: "P1.0W", dur: I.day 7.0 }
-  , { str: "P1DT1H1M1S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0 }
-  , { str: "P1.9748600D", dur: I.day 1.97486 }
-  , { str: "P1DT1H1M0S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 0.0 }
-  , { str: "P1DT1H1M1.5S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.5 }
-  , { str: "P1DT1H1.5M", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.5 }
-  , { str: "P1DT1.5H", dur: I.day 1.0 <> I.hours 1.5 }
-  , { str: "PT1M", dur: I.minutes 1.0 }
-  , { str: "PT1S", dur: I.seconds 1.0 }
-  , { str: "PT1H1S", dur: I.hours 1.0 <> I.seconds 1.0 }
+  [ { str: "P1W", formatedStr: "P7D", dur: I.day 7.0 }
+  , { str: "P1.0W", formatedStr: "P7D", dur: I.day 7.0 }
+  , { str: "P1DT1H1M1S", formatedStr: "P1DT1H1M1S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0 }
+  , { str: "P1.9748600D", formatedStr: "P1.97486D", dur: I.day 1.97486 }
+  , { str: "P1DT1H1M0S", formatedStr: "P1DT1H1M0S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 0.0 }
+  , { str: "P1DT1H1M1.5S", formatedStr: "P1DT1H1M1.5S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.5 }
+  , { str: "P1DT1H1.5M", formatedStr: "P1DT1H1.5M", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.5 }
+  , { str: "P1DT1.5H", formatedStr: "P1DT1.5H", dur: I.day 1.0 <> I.hours 1.5 }
+  , { str: "PT1M", formatedStr: "PT1M", dur: I.minutes 1.0 }
+  , { str: "PT1S", formatedStr: "PT1S", dur: I.seconds 1.0 }
+  , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hours 1.0 <> I.seconds 1.0 }
   ] <#> (\a -> a { dur = unsafeMkToIsoDuration a.dur })
 
 -- TODO error messages could be improved
@@ -120,70 +116,78 @@ invalidIntervals =
 
 recurrences ∷ Array { str :: String, rec :: Maybe Int }
 recurrences =
-  [ {str: "1", rec: Just 1}
-  , {str: "", rec: Nothing}
-  , {str: "99", rec: Just 99}
-  , {str: "7", rec: Just 7}
+  [ {str: "", rec: Nothing}
+  , {str: "18", rec: Just 18}
   ]
 
 dates :: Array { str:: String, date :: DateTime }
 dates =
-  [ { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
-  , { str: "2015-07-23T11:12:13Z", date: makeDateTime 2015 7 23 11 12 13 0 }
-  , { str: "2015-07-29T13:00:00Z", date: makeDateTime 2015 7 29 13 0  0  0 }
+  [ { str: "2015-07-23T11:12:13Z", date: makeDateTime 2015 7 23 11 12 13 0 }
+  -- , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
   ]
 
-intervalStartEndTest ∷ ∀ e. Aff e Unit
-intervalStartEndTest = for_ items test
-  where
-  test ({ start, end, rec }) =
-    shouldEqual
-      (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> end.str)
-      (Right $ I.RecurringInterval rec.rec  $ I.StartEnd start.date end.date)
+makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DateTime
+makeDateTime year month day h m s ms=
+  DateTime
+    (canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
+    (Time (fromMaybe bottom $ toEnum h) (fromMaybe bottom $ toEnum m) (fromMaybe bottom $ toEnum s) (fromMaybe bottom $ toEnum ms))
 
-  items = do
-    start <- dates
-    end <- dates
-    rec <- recurrences
-    pure { start, end, rec}
+type ArbRecurringInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.RecurringInterval I.IsoDuration DateTime}
+type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.Interval I.IsoDuration DateTime}
 
-intervalDurationEndTest ∷ ∀ e. Aff e Unit
-intervalDurationEndTest = for_ items test
-  where
-  test ({ dur, end, rec }) =
-    shouldEqual
-      (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str <> "/" <> end.str)
-      (Right $ I.RecurringInterval rec.rec $ I.DurationEnd dur.dur end.date)
+arbRecurringInterval ∷ ArbRecurringInterval
+arbRecurringInterval = do
+  rec <- recurrences
+  i <- arbInterval
+  pure
+    { str : "R" <> rec.str <> "/" <> i.str
+    , formatedStr : "R" <> rec.str <> "/" <> i.formatedStr
+    , interval: I.RecurringInterval rec.rec i.interval
+    }
 
-  items = do
-    dur <- durations
-    end <- dates
-    rec <- recurrences
-    pure { dur, end, rec}
+arbInterval ∷ ArbInterval
+arbInterval = fold
+  [ arbIntervalStartEnd
+  , arbIntervalDurationEnd
+  , arbIntervalStartDuration
+  , arbIntervalJustDuration
+  ]
 
-intervalStartDurationTest ∷ ∀ e. Aff e Unit
-intervalStartDurationTest = for_ items test
-  where
-  test ({ dur, start, rec }) =
-    shouldEqual
-      (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> dur.str)
-      (Right $ I.RecurringInterval rec.rec $ I.StartDuration start.date dur.dur)
+arbIntervalStartEnd ∷ ArbInterval
+arbIntervalStartEnd = do
+  start <- dates
+  end <- dates
+  pure
+    { str: start.str <> "/" <> end.str
+    , formatedStr: start.str <> "/" <> end.str
+    , interval: I.StartEnd start.date end.date
+    }
 
-  items = do
-    dur <- durations
-    start <- dates
-    rec <- recurrences
-    pure { dur, start, rec}
+arbIntervalDurationEnd ∷ ArbInterval
+arbIntervalDurationEnd = do
+  dur <- durations
+  end <- dates
+  pure
+    { str: dur.str <> "/" <> end.str
+    , formatedStr: dur.formatedStr <> "/" <> end.str
+    , interval: I.DurationEnd dur.dur end.date
+    }
 
-intervalJustDurationTest ∷ ∀ e. Aff e Unit
-intervalJustDurationTest = for_ items test
-  where
-  test ({ dur, rec }) =
-    shouldEqual
-      (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str)
-      (Right $ I.RecurringInterval rec.rec $ I.JustDuration dur.dur)
+arbIntervalStartDuration ∷ ArbInterval
+arbIntervalStartDuration = do
+  dur <- durations
+  start <- dates
+  pure
+    { str:  start.str <> "/" <> dur.str
+    , formatedStr:  start.str <> "/" <> dur.formatedStr
+    , interval: I.StartDuration start.date dur.dur
+    }
 
-  items = do
-    dur <- durations
-    rec <- recurrences
-    pure { dur, rec}
+arbIntervalJustDuration ∷ ArbInterval
+arbIntervalJustDuration = do
+  dur <- durations
+  pure
+    { str: dur.str
+    , formatedStr: dur.formatedStr
+    , interval: I.JustDuration dur.dur
+    }
