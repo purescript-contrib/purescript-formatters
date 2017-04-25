@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Foldable (for_)
 import Data.Formatter.Number (Formatter(..), printFormatter, parseFormatString, format, unformat)
-import Control.Monad.Aff (Aff)
 import Data.Either (Either(..))
 
 import Test.Spec (describe, it, pending', Spec)

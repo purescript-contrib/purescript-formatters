@@ -2,6 +2,7 @@ module Data.Formatter.Parser.Interval
   ( parseRecurringInterval
   , parseInterval
   , parseIsoDuration
+  , parseDateTime
   ) where
 
 import Prelude
@@ -13,6 +14,9 @@ import Control.Alt ((<|>))
 import Data.Foldable (class Foldable, fold)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (class Monoid, mempty)
+import Data.Either (Either(..))
+import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
+import Data.DateTime (DateTime)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
 
@@ -65,3 +69,14 @@ mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> 
 
     component ∷ String → P.Parser String Number
     component designator = parseNumber <* PS.string designator
+
+
+-- parser for DateTime in UTC time zone using "extended format"
+parseDateTime :: ∀ m. Monad m => P.ParserT String m DateTime
+parseDateTime = do
+  case format of
+    Right f -> unformatParser f
+    Left e -> P.fail $ "(this must be unrechable) error in parsing ISO date format: " <> e
+  where
+  format ∷ Either String Formatter
+  format = parseFormatString "YYYY-MM-DDTHH:mm:ssZ"

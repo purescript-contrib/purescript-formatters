@@ -7,13 +7,13 @@ import Data.Interval as I
 import Data.Foldable (for_)
 import Data.Time (Time(..))
 import Data.Date (canonicalDate)
-import Data.Formatter.Interval (unformatDuration, unformatInterval, unformatRecurringInterval, getDate)
+import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval)
+import Data.Formatter.Parser.Interval (parseDateTime, parseIsoDuration)
+import Data.Formatter.Parser.Utils (runP)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Enum (toEnum)
 import Partial.Unsafe (unsafePartialBecause)
-import Unsafe.Coerce (unsafeCoerce)
-import Data.Formatter.Parser.Utils (runP)
 import Control.Monad.Aff (Aff)
 import Test.Spec (describe, it, Spec)
 import Test.Spec.Assertions (shouldEqual)
@@ -22,21 +22,20 @@ intervalTest ∷ ∀ e. Spec e Unit
 intervalTest = describe "Data.Formatter.Interval" do
   it "should unformat valid durations" do
     for_ durations \d -> do
-      (unformatDuration d.str) `shouldEqual` (Right d.dur)
+      (runP parseIsoDuration d.str) `shouldEqual` (Right d.dur)
 
   it "should unformat valid ISO DateTime" do
     for_ dates \d -> do
-      (runP getDate d.str) `shouldEqual` (Right d.date)
+      (runP parseDateTime d.str) `shouldEqual` (Right d.date)
 
   it "shouldn't unformat invalid Duration" do
     for_ invalidDurations \d -> do
-      let dur = (unformatDuration d.str) :: Either String I.IsoDuration
+      let dur = (runP parseIsoDuration d.str) :: Either String I.IsoDuration
       dur `shouldEqual` (Left $ d.err)
 
   it "shouldn't unformat invalid Interval" do
     for_ invalidDurations \d -> do
-      let dur = (unformatInterval d.str) :: Either String (I.Interval I.IsoDuration DateTime)
-      dur `shouldEqual` (Left $ d.err)
+      (unformatInterval d.str) `shouldEqual` (Left $ d.err)
 
 
   describe "Interval variations" do
@@ -134,16 +133,13 @@ dates =
   , { str: "2015-07-29T13:00:00Z", date: makeDateTime 2015 7 29 13 0  0  0 }
   ]
 
-forceIsoDuration :: ∀ a. I.Interval a DateTime -> I.Interval I.IsoDuration DateTime
-forceIsoDuration = unsafeCoerce
-
 intervalStartEndTest ∷ ∀ e. Aff e Unit
 intervalStartEndTest = for_ items test
   where
   test ({ start, end, rec }) =
     shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> end.str)
-      (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.StartEnd start.date end.date)
+      (Right $ I.RecurringInterval rec.rec  $ I.StartEnd start.date end.date)
 
   items = do
     start <- dates
@@ -157,7 +153,7 @@ intervalDurationEndTest = for_ items test
   test ({ dur, end, rec }) =
     shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str <> "/" <> end.str)
-      (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.DurationEnd dur.dur end.date)
+      (Right $ I.RecurringInterval rec.rec $ I.DurationEnd dur.dur end.date)
 
   items = do
     dur <- durations
@@ -171,7 +167,7 @@ intervalStartDurationTest = for_ items test
   test ({ dur, start, rec }) =
     shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> start.str <> "/" <> dur.str)
-      (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.StartDuration start.date dur.dur)
+      (Right $ I.RecurringInterval rec.rec $ I.StartDuration start.date dur.dur)
 
   items = do
     dur <- durations
@@ -185,7 +181,7 @@ intervalJustDurationTest = for_ items test
   test ({ dur, rec }) =
     shouldEqual
       (unformatRecurringInterval $ "R" <> rec.str <> "/" <> dur.str)
-      (Right $ I.RecurringInterval rec.rec $ forceIsoDuration $ I.JustDuration dur.dur)
+      (Right $ I.RecurringInterval rec.rec $ I.JustDuration dur.dur)
 
   items = do
     dur <- durations
