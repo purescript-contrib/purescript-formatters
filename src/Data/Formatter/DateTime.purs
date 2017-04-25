@@ -59,8 +59,12 @@ data FormatterF a
   | Hours12 a
   | Meridiem a
   | Minutes a
+  | MinutesTwoDigits a
   | Seconds a
+  | SecondsTwoDigits a
   | Milliseconds a
+  | MillisecondsShort a
+  | MillisecondsTwoDigits a
   | Placeholder String a
   | End
 
@@ -79,8 +83,12 @@ instance formatterFFunctor ∷ Functor FormatterF where
   map f (Hours12 a) = Hours12 $ f a
   map f (Meridiem a) = Meridiem $ f a
   map f (Minutes a) = Minutes $ f a
+  map f (MinutesTwoDigits a) = MinutesTwoDigits $ f a
   map f (Seconds a) = Seconds $ f a
+  map f (SecondsTwoDigits a) = SecondsTwoDigits $ f a
   map f (Milliseconds a) = Milliseconds $ f a
+  map f (MillisecondsShort a) = MillisecondsShort $ f a
+  map f (MillisecondsTwoDigits a) = MillisecondsTwoDigits $ f a
   map f (Placeholder str a) = Placeholder str $ f a
   map f End = End
 
@@ -99,8 +107,12 @@ instance formatterFShow ∷ Show a => Show (FormatterF a) where
   show (Hours12 a) = "(Hours12" <> (show a) <> ")"
   show (Meridiem a) = "(Meridiem" <> (show a) <> ")"
   show (Minutes a) = "(Minutes" <> (show a) <> ")"
+  show (MinutesTwoDigits a) = "(MinutesTwoDigits" <> (show a) <> ")"
   show (Seconds a) = "(Seconds" <> (show a) <> ")"
+  show (SecondsTwoDigits a) = "(SecondsTwoDigits" <> (show a) <> ")"
   show (Milliseconds a) = "(Milliseconds" <> (show a) <> ")"
+  show (MillisecondsShort a) = "(MillisecondsShort" <> (show a) <> ")"
+  show (MillisecondsTwoDigits a) = "(MillisecondsTwoDigits" <> (show a) <> ")"
   show (Placeholder str a) = "(Placeholder" <> (show str) <> " "<> (show a) <> ")"
   show End = "End"
 
@@ -119,8 +131,12 @@ instance formatterFEq ∷ Eq a => Eq (FormatterF a) where
   eq (Hours12 a) (Hours12 b) = eq a b
   eq (Meridiem a) (Meridiem b) = eq a b
   eq (Minutes a) (Minutes b) = eq a b
+  eq (MinutesTwoDigits a) (MinutesTwoDigits b) = eq a b
   eq (Seconds a) (Seconds b) = eq a b
+  eq (SecondsTwoDigits a) (SecondsTwoDigits b) = eq a b
   eq (Milliseconds a) (Milliseconds b) = eq a b
+  eq (MillisecondsShort a) (MillisecondsShort b) = eq a b
+  eq (MillisecondsTwoDigits a) (MillisecondsTwoDigits b) = eq a b
   eq (Placeholder stra a) (Placeholder strb b) = eq stra strb && eq a b
   eq End End = true
   eq _ _ = false
@@ -150,8 +166,12 @@ printFormatterF cb = case _ of
   Hours24 a → "HH" <> cb a
   Hours12 a → "hh" <> cb a
   Meridiem a → "a" <> cb a
-  Minutes a → "mm" <> cb a
-  Seconds a → "ss" <> cb a
+  Minutes a → "m" <> cb a
+  MinutesTwoDigits a → "mm" <> cb a
+  Seconds a → "s" <> cb a
+  SecondsTwoDigits a → "ss" <> cb a
+  MillisecondsShort a → "S" <> cb a
+  MillisecondsTwoDigits a → "SS" <> cb a
   Milliseconds a → "SSS" <> cb a
   Placeholder s a → s <> cb a
   End → ""
@@ -201,9 +221,13 @@ formatterFParser cb =
     , (PC.try $ PS.string "HH") *> map Hours24 cb
     , (PC.try $ PS.string "hh") *> map Hours12 cb
     , (PC.try $ PS.string "a") *> map Meridiem cb
-    , (PC.try $ PS.string "mm") *> map Minutes cb
-    , (PC.try $ PS.string "ss") *> map Seconds cb
+    , (PC.try $ PS.string "mm") *> map MinutesTwoDigits cb
+    , (PC.try $ PS.string "m") *> map Minutes cb
+    , (PC.try $ PS.string "ss") *> map SecondsTwoDigits cb
+    , (PC.try $ PS.string "s") *> map Seconds cb
     , (PC.try $ PS.string "SSS") *> map Milliseconds cb
+    , (PC.try $ PS.string "SS") *> map MillisecondsTwoDigits cb
+    , (PC.try $ PS.string "S") *> map MillisecondsShort cb
     , (Placeholder <$> placeholderContent <*> cb)
     , (PS.eof $> End)
     ] <|> (P.fail "Format contains invalid string")
@@ -242,7 +266,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   DayOfWeek a →
     show (fromEnum $ D.weekday d) <> cb a
   Hours24 a →
-    show (fromEnum $ T.hour t) <> cb a
+    padSingleDigit (fromEnum $ T.hour t) <> cb a
   Hours12 a →
     let fix12 h = if h == 0 then 12 else h
     in (padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
@@ -250,10 +274,18 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     (if (fromEnum $ T.hour t) >= 12 then "PM" else "AM") <> cb a
   Minutes a →
     show (fromEnum $ T.minute t) <> cb a
+  MinutesTwoDigits a →
+    (padSingleDigit <<< fromEnum $ T.minute t) <> cb a
   Seconds a →
     show (fromEnum $ T.second t) <> cb a
+  SecondsTwoDigits a →
+    (padSingleDigit <<< fromEnum $ T.second t) <> cb a
   Milliseconds a →
-    show (fromEnum $ T.millisecond t) <> cb a
+    (padDoubleDigit <<< fromEnum $ T.millisecond t) <> cb a
+  MillisecondsShort a →
+    (show $ (_ / 100) $ fromEnum $ T.millisecond t) <> cb a
+  MillisecondsTwoDigits a →
+    (padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t) <> cb a
   Placeholder s a →
     s <> cb a
   End → ""
@@ -261,6 +293,12 @@ formatF cb dt@(DT.DateTime d t) = case _ of
 padSingleDigit :: Int -> String
 padSingleDigit i
   | i < 10    = "0" <> (show i)
+  | otherwise = show i
+
+padDoubleDigit :: Int -> String
+padDoubleDigit i
+  | i < 100 && i > 10 = "0" <> (show i)
+  | i < 100 && i < 10 = "00" <> (show i)
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
@@ -416,16 +454,28 @@ unformatFParser cb = case _ of
                 ]
     lift $ modify _{meridiem = Just m}
     cb a
+  MinutesTwoDigits a → do
+    ds ← some parseDigit
+    let mm = foldDigits ds
+    when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect 2-digit minute"
+    lift $ modify _{minute = Just mm}
+    cb a
   Minutes a → do
     ds ← some parseDigit
     let mm = foldDigits ds
-    when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    when (Arr.length ds > 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
     lift $ modify _{minute = Just mm}
+    cb a
+  SecondsTwoDigits a → do
+    ds ← some parseDigit
+    let ss = foldDigits ds
+    when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect 2-digit second"
+    lift $ modify _{second = Just ss}
     cb a
   Seconds a → do
     ds ← some parseDigit
     let ss = foldDigits ds
-    when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
+    when (Arr.length ds > 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
     lift $ modify _{second = Just ss}
     cb a
   Milliseconds a → do
@@ -436,6 +486,18 @@ unformatFParser cb = case _ of
     cb a
   Placeholder s a →
     PS.string s *> cb a
+  MillisecondsShort a → do
+    ds ← some parseDigit
+    let s = foldDigits ds
+    when (Arr.length ds /= 1 || s < 0 || s > 9) $ P.fail "Incorrect 1-digit millisecond"
+    lift $ modify _{millisecond = Just s}
+    cb a
+  MillisecondsTwoDigits a → do
+    ds ← some parseDigit
+    let ss = foldDigits ds
+    when (Arr.length ds /= 2 || ss < 0 || ss > 99) $ P.fail "Incorrect 2-digit millisecond"
+    lift $ modify _{millisecond = Just ss}
+    cb a
   End →
     pure unit
 

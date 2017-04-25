@@ -26,16 +26,23 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     it "should formatt dateTime" do
       let
         items =
-          [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: testDateTime}
-          , { format: "MMMM", dateStr: "April" , date: testDateTime}
-          , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: testDateTime}
-          , { format: "YYYY-MMM", dateStr: "2017-Apr" , date: testDateTime}
-          , { format: "MMM D", dateStr: "Apr 1" , date: makeDateTime 2017 4 1}
-          , { format: "hh:mm:ss:SSS a", dateStr: "11:34:34:234 AM" , date: testDateTime}
-          , { format: "YY", dateStr: "17" , date: testDateTime}
-          , { format: "YY", dateStr: "17" , date: makeDateTime 20017 4 12} -- Format 20017 with YY
-          , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12} -- Format 0 with YY
-          , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12} -- Format -1 with YY
+          [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "MMMM", dateStr: "April" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "YYYY-MMM", dateStr: "2017-Apr" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "MMM D", dateStr: "Apr 1" , date: makeDateTime 2017 4 1 0 0 0 0}
+          , { format: "hh:mm:ss:SSS a", dateStr: "11:03:04:234 AM" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "YY", dateStr: "17" , date: makeDateTime 2017 4 12 11 3 4 234}
+          , { format: "YY", dateStr: "17" , date: makeDateTime 20017 4 12 0 0 0 0} -- Format 20017 with YY
+          , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12 0 0 0 0} -- Format 0 with YY
+          , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12 0 0 0 0} -- Format -1 with YY
+          , { format: "hh:m:s a", dateStr: "11:3:4 AM", date: testDateTime }
+          , { format: "hh:mm:ss a", dateStr: "11:03:04 AM", date: testDateTime }
+          , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.123", date: makeDateTime 2017 4 10 11 12 30 123 }
+          , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.023", date: makeDateTime 2017 4 10 11 12 30 23 }
+          , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.003", date: makeDateTime 2017 4 10 11 12 30 3 }
+          , { format: "hh:mm:ss.SS", dateStr: "11:12:30.12", date: makeDateTime 2017 4 10 11 12 30 123 }
+          , { format: "hh:mm:ss.S", dateStr: "11:12:30.1", date: makeDateTime 2017 4 10 11 12 30 123 }
           ]
       for_ items \({ format, dateStr, date }) -> do
         (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr)
@@ -51,7 +58,6 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     let items = [ {date: "2017-12-04 234", format: "YYYY-DD-MM SSS" } , {date: "3456-09-10 333", format: "YYYY-DD-MM SSS" } ]
     for_ items \({date, format}) -> do
       (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date)
-
   it "s ≡ unformat (format s)" do
     let
       items = do
@@ -63,22 +69,15 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       FDT.unformat format (FDT.format format date) `shouldEqual` (Right date)
 
 
-makeDateTime ∷ Int -> Int -> Int -> DT.DateTime
-makeDateTime year month day =
+makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DT.DateTime
+makeDateTime year month day hour minute second millisecond =
   DT.DateTime
     (D.canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
-    -- XXX at 11:34:34:234
     (T.Time
-       (fromMaybe bottom $ toEnum 11)
-       (fromMaybe bottom $ toEnum 34)
-       (fromMaybe bottom $ toEnum 34)
-       (fromMaybe bottom $ toEnum 234))
-
-
-
-testDateTime :: DT.DateTime
-testDateTime = makeDateTime 2017 4 12 -- April 12th 2017
-
+       (fromMaybe bottom $ toEnum hour )
+       (fromMaybe bottom $ toEnum minute )
+       (fromMaybe bottom $ toEnum second )
+       (fromMaybe bottom $ toEnum millisecond))
 
 assertFormatting :: forall e. String -> String -> DateTime -> Aff e Unit
 assertFormatting target' format dateTime = result `shouldEqual` target
@@ -88,16 +87,16 @@ assertFormatting target' format dateTime = result `shouldEqual` target
 
 dates :: Array DateTime
 dates =
-  [ testDateTime
-  , makeDateTime 2017 4 1
-  , makeDateTime 20017 4 12
-  , makeDateTime 0 4 12
-  , makeDateTime (-1) 4 12
+  [ makeDateTime 2017 4 12 11 3 4 234
+  , makeDateTime 2017 4 1 0 0 0 0
+  , makeDateTime 20017 4 12 0 0 0 0
+  , makeDateTime 0 4 12 0 0 0 0
+  , makeDateTime (-1) 4 12 0 0 0 0
   ]
 
 invalidDateformats ∷ Array { str :: String , pos :: String }
 invalidDateformats =
-  [ { str: "YY-SS-dddd HH:mm Z", pos: "1:4" }
+  [ { str: "YY-h-dddd HH:mm Z", pos: "1:4" }
   , { str: "YYYY-MM-DD M", pos: "1:12" }
   ]
 
@@ -124,9 +123,9 @@ dateformats =
       roll $ FDT.Placeholder " " $
       roll $ FDT.Hours24 $
       roll $ FDT.Placeholder ":" $
-      roll $ FDT.Minutes $
+      roll $ FDT.MinutesTwoDigits $
       roll $ FDT.Placeholder ":" $
-      roll $ FDT.Seconds $
+      roll $ FDT.SecondsTwoDigits $
       roll $ FDT.Placeholder ":" $
       roll $ FDT.Milliseconds $
       roll FDT.End
@@ -140,7 +139,7 @@ dateformats =
       roll $ FDT.Placeholder " " $
       roll $ FDT.Hours24 $
       roll $ FDT.Placeholder ":" $
-      roll $ FDT.Minutes $
+      roll $ FDT.MinutesTwoDigits $
       roll $ FDT.Placeholder " Z" $
       roll FDT.End
     }
@@ -155,7 +154,7 @@ dateformats =
       roll $ FDT.Placeholder " trololo " $
       roll $ FDT.Hours24 $
       roll $ FDT.Placeholder "-:-" $
-      roll $ FDT.Minutes $
+      roll $ FDT.MinutesTwoDigits $
       roll FDT.End
     }
   , { str: "YYYY-DD-MM SSS"
