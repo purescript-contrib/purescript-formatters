@@ -14,9 +14,8 @@ module Data.Formatter.DateTime
 import Prelude
 
 import Control.Lazy as Lazy
-import Control.Monad.State (State, mapStateT, modify, put, runState)
+import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Except.Trans (mapExceptT)
 
 import Data.Ord (abs)
 import Data.Array (some)
@@ -442,7 +441,7 @@ unformatFParser cb = case _ of
 
 unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m DT.DateTime
 unformatParser f' = do
-  acc <- mapParserT unState $ rec f'
+  acc <- P.mapParserT unState $ rec f'
   either P.fail pure $ unformatAccumToDateTime acc
   where
     rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
