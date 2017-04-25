@@ -2,36 +2,38 @@ module Test.Number (numberTest) where
 
 import Prelude
 
-import Data.Foldable (for_)
 import Data.Formatter.Number (Formatter(..), printFormatter, parseFormatString, format, unformat)
 import Data.Either (Either(..))
 
-import Test.Spec (describe, it, pending', Spec)
+import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Utils (forAll)
 
 numberTest :: forall e. Spec e Unit
 numberTest = describe "Data.Formatter.Number" do
-  it "should print formatter" do
-    for_ numberformatts \({fmt, str}) -> do
-      printFormatter fmt `shouldEqual` str
+  forAll _.str
+    "should print formatter"
+    numberformatts
+    (\({fmt, str}) -> printFormatter fmt `shouldEqual` str)
 
-  it "parse format string" do
-    for_ numberformatts \({fmt, str}) -> do
-      parseFormatString str `shouldEqual` (Right fmt)
+  forAll _.str
+    "parse format string"
+    numberformatts
+    (\({fmt, str}) -> parseFormatString str `shouldEqual` (Right fmt))
 
-  it "unformat (format n) = n" do
-    let ns = [100.2, 100.1, 100.3, 10004000.0]
-    for_ ns \n -> do
-      unformat fmt1 (format fmt1 n) `shouldEqual` (Right n)
+  forAll show
+    "unformat (format n) = n"
+    [100.2, 100.1, 100.3, 10004000.0]
+    (\n -> unformat fmt1 (format fmt1 n) `shouldEqual` (Right n))
 
-  -- TODO fails on negative numbers
-  pending' "format (unformat n) = n" do
-    let ns = ["001.12", "-012.12", "-123.12"]
-    for_ ns \n -> do
-      (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n)
-    -- TODO check for different formatters
-    -- DT.traceAnyA $ unformat fnThree "+123"
-    -- DT.traceAnyA $ unformat fnTwo "-100,000.1234"
+  forAll show
+    "format (unformat n) = n"
+    [ "001.12"
+    -- TODO fails on negative numbers
+    -- , "-012.12"
+    -- , "-123.12"
+    ]
+    (\n ->  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
 
 fmt1 :: Formatter
 fmt1 = Formatter

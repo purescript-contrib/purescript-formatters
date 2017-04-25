@@ -2,29 +2,19 @@ module Test.Interval (intervalTest) where
 
 import Prelude
 
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Interval as I
-import Data.Foldable (class Foldable, fold, for_)
-import Data.Time (Time(..))
-import Data.Date (canonicalDate)
+import Data.Foldable (class Foldable, fold)
 import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval, formatRecurringInterval)
 import Data.Formatter.Parser.Interval (parseIsoDuration)
 import Data.Formatter.Parser.Utils (runP)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromJust, fromMaybe)
-import Data.Enum (toEnum)
+import Data.Maybe (Maybe(..), fromJust)
 import Partial.Unsafe (unsafePartialBecause)
-import Test.Spec (describe, it, Spec)
+import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Utils (forAll, makeDateTime)
 import Control.Monad.Aff (Aff)
-
--- forAll :: ∀ e f a. Foldable f => String -> f a -> (a -> Aff e Unit) -> Spec e Unit
--- forAll title arb f = it title do
---   for_ arb f
-
-forAll :: ∀ e a f. Foldable f => (a -> String) -> String -> f a -> (a -> Aff e Unit) -> Spec e Unit
-forAll itTitle title arb f = describe title do
-  for_ arb \a -> it (itTitle a) (f a)
 
 prop :: ∀ e e' f. Foldable f => String -> f {str :: String | e'} -> ({str :: String | e'} -> Aff e Unit) -> Spec e Unit
 prop = forAll (show <<< _.str)
@@ -123,14 +113,8 @@ recurrences =
 dates :: Array { str:: String, date :: DateTime }
 dates =
   [ { str: "2015-07-23T11:12:13Z", date: makeDateTime 2015 7 23 11 12 13 0 }
-  -- , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
+  , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
   ]
-
-makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DateTime
-makeDateTime year month day h m s ms=
-  DateTime
-    (canonicalDate (fromMaybe bottom $ toEnum year) (fromMaybe bottom $ toEnum month) (fromMaybe bottom $ toEnum day))
-    (Time (fromMaybe bottom $ toEnum h) (fromMaybe bottom $ toEnum m) (fromMaybe bottom $ toEnum s) (fromMaybe bottom $ toEnum ms))
 
 type ArbRecurringInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.RecurringInterval I.IsoDuration DateTime}
 type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.Interval I.IsoDuration DateTime}

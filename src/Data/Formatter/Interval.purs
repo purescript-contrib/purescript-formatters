@@ -1,8 +1,8 @@
 module Data.Formatter.Interval
   ( unformatRecurringInterval
   , unformatInterval
-  , formatInterval
   , formatRecurringInterval
+  , formatInterval
   ) where
 
 import Prelude
@@ -29,11 +29,8 @@ formatInterval (I.DurationEnd d x) = (formatIsoDuration d) <> "/" <> (formatDate
 formatInterval (I.StartDuration x d) = (formatDateTime x) <> "/" <> (formatIsoDuration d)
 formatInterval (I.JustDuration d) = (formatIsoDuration d)
 
-formatInteger :: Int -> String
-formatInteger = show
-
-formatNumber :: Number -> String
-formatNumber n = if Int.toNumber (Int.floor n) == n then show (Int.floor n) else show n
+formatDateTime :: DateTime -> String
+formatDateTime = FDT.format extendedDateTimeFormatInUTC
 
 formatIsoDuration :: I.IsoDuration -> String
 formatIsoDuration = formatDuration <<< I.unIsoDuration
@@ -50,8 +47,11 @@ formatDuration (I.Duration m) = "P" <> datePart <> timePart
   dateComponentsToStr = [ Tuple I.Year "Y", Tuple I.Month "M", Tuple I.Day "D" ]
   timeComponentsToStr = [ Tuple I.Hours "H", Tuple I.Minutes "M", Tuple I.Seconds "S" ]
 
-formatDateTime :: DateTime -> String
-formatDateTime = FDT.format extendedDateTimeFormatInUTC
+formatInteger :: Int -> String
+formatInteger = show
+
+formatNumber :: Number -> String
+formatNumber n = if Int.toNumber (Int.floor n) == n then show (Int.floor n) else show n
 
 unformatRecurringInterval :: String → Either String (I.RecurringInterval I.IsoDuration DateTime)
 unformatRecurringInterval = runP $ parseRecurringInterval parseIsoDuration parseDateTime
