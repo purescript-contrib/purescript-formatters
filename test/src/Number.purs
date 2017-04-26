@@ -9,7 +9,7 @@ import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll)
 
-numberTest ∷ forall e. Spec e Unit
+numberTest ∷ ∀ e. Spec e Unit
 numberTest = describe "Data.Formatter.Number" do
   forAll _.str
     "should print formatter"

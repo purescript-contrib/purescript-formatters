@@ -15,7 +15,7 @@ import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 
-datetimeTest ∷ forall e. Spec e Unit
+datetimeTest ∷ ∀ e. Spec e Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime should formatt dateTime"
@@ -77,7 +77,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     (\({ date, format }) → FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))
 
 
-assertFormatting ∷ forall e. String → String → DateTime → Aff e Unit
+assertFormatting ∷ ∀ e. String → String → DateTime → Aff e Unit
 assertFormatting target' format dateTime = result `shouldEqual` target
   where
   result = FDT.formatDateTime format dateTime
