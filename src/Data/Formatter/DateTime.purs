@@ -297,8 +297,8 @@ padSingleDigit i
 
 padDoubleDigit :: Int -> String
 padDoubleDigit i
-  | i < 100 && i > 10 = "0" <> (show i)
-  | i < 100 && i < 10 = "00" <> (show i)
+  | i < 10  = "00" <> (show i)
+  | i < 100 = "0" <> (show i)
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
