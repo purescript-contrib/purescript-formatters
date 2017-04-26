@@ -423,11 +423,11 @@ unformatFParser cb = case _ of
     lift $ modify _{month = Just $ fromEnum month}
     cb a
   MonthTwoDigits a → do
-    month ← parseInt 2 (exactLength *> (validateRange 1 12)) "Incorrect 2-digit month"
+    month ← parseInt 2 (validateRange 1 12 *> exactLength) "Incorrect 2-digit month"
     lift $ modify _{month = Just month}
     cb a
   DayOfMonthTwoDigits a → do
-    dom ← parseInt 2 (exactLength *> (validateRange 1 31)) "Incorrect day of month"
+    dom ← parseInt 2 (validateRange 1 31 *> exactLength) "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   DayOfMonth a → do
@@ -454,11 +454,11 @@ unformatFParser cb = case _ of
     dow ← parseInt 1 (validateRange 1 7) "Incorrect day of week"
     cb a
   Hours24 a → do
-    hh ← parseInt 2 (exactLength *> (validateRange 0 23)) "Incorrect 24 hour"
+    hh ← parseInt 2 (validateRange 0 23 *> exactLength) "Incorrect 24 hour"
     lift $ modify _{hour = Just hh}
     cb a
   Hours12 a → do
-    hh ← parseInt 2 (exactLength *> (validateRange 0 11)) "Incorrect 12 hour"
+    hh ← parseInt 2 (validateRange 0 11 *> exactLength) "Incorrect 12 hour"
     lift $ modify _{hour = Just hh}
     cb a
   Meridiem a → do
@@ -471,7 +471,7 @@ unformatFParser cb = case _ of
     lift $ modify _{meridiem = Just m}
     cb a
   MinutesTwoDigits a → do
-    mm ← parseInt 2 (exactLength *> (validateRange 0 59)) "Incorrect 2-digit minute"
+    mm ← parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit minute"
     lift $ modify _{minute = Just mm}
     cb a
   Minutes a → do
@@ -479,7 +479,7 @@ unformatFParser cb = case _ of
     lift $ modify _{minute = Just mm}
     cb a
   SecondsTwoDigits a → do
-    ss ← parseInt 2 (exactLength *> (validateRange 0 59)) "Incorrect 2-digit second"
+    ss ← parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit second"
     lift $ modify _{second = Just ss}
     cb a
   Seconds a → do
