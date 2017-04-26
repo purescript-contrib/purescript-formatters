@@ -363,13 +363,11 @@ unformatAccumToDateTime a =
     | otherwise = Nothing
 
 
+-- NOTE `ReaderT s (Either e) Unit` forms Monoid where
+-- `mempty = lift $ Right unit` (noValidate) and `concat = (*>)`
+noValidate ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
+noValidate = lift $ Right unit
 
--- TODO remove
--- validateLength ∷ ∀ e. (Int → Boolean) → { length ∷ Int | e } → Either String Unit
--- validateLength f {length} = if f length then (Just unit)
---   else Just "Invalid number of digits"
-
--- TODO use MonadAsk in signature
 exactLength ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
 exactLength = ask >>= \({maxLength, length}) → if maxLength /= length
   then lift $ Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
