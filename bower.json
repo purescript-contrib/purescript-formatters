@@ -29,6 +29,6 @@
     "purescript-spec": "^0.14.0"
   },
   "resolutions": {
-    "purescript-datetime": "git://github.com/safareli/purescript-datetime.git#interval"
+    "purescript-datetime": "interval"
   }
 }
