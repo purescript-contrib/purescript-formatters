@@ -67,29 +67,7 @@ data FormatterF a
   | Placeholder String a
   | End
 
-instance functorFormatterF ∷ Functor FormatterF where
-  map f (YearFull a) = YearFull $ f a
-  map f (YearTwoDigits a) = YearTwoDigits $ f a
-  map f (YearAbsolute a) = YearAbsolute $ f a
-  map f (MonthFull a) = MonthFull $ f a
-  map f (MonthShort a) = MonthShort $ f a
-  map f (MonthTwoDigits a) = MonthTwoDigits $ f a
-  map f (DayOfMonthTwoDigits a) = DayOfMonthTwoDigits $ f a
-  map f (DayOfMonth a) = DayOfMonth $ f a
-  map f (UnixTimestamp a) = UnixTimestamp $ f a
-  map f (DayOfWeek a) = DayOfWeek $ f a
-  map f (Hours24 a) = Hours24 $ f a
-  map f (Hours12 a) = Hours12 $ f a
-  map f (Meridiem a) = Meridiem $ f a
-  map f (Minutes a) = Minutes $ f a
-  map f (MinutesTwoDigits a) = MinutesTwoDigits $ f a
-  map f (Seconds a) = Seconds $ f a
-  map f (SecondsTwoDigits a) = SecondsTwoDigits $ f a
-  map f (Milliseconds a) = Milliseconds $ f a
-  map f (MillisecondsShort a) = MillisecondsShort $ f a
-  map f (MillisecondsTwoDigits a) = MillisecondsTwoDigits $ f a
-  map f (Placeholder str a) = Placeholder str $ f a
-  map f End = End
+derive instance functorFormatterF :: Functor FormatterF
 
 instance showFormatterF ∷ Show a => Show (FormatterF a) where
   show (YearFull a) = "(YearFull " <> (show a) <> "c"
