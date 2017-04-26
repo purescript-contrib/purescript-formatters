@@ -16,7 +16,7 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 import Control.Monad.Aff (Aff)
 
-prop :: ∀ e e' f. Foldable f => String → f {str :: String | e'} → ({str :: String | e'} → Aff e Unit) → Spec e Unit
+prop ∷ ∀ e e' f. Foldable f => String → f {str ∷ String | e'} → ({str ∷ String | e'} → Aff e Unit) → Spec e Unit
 prop = forAll (show <<< _.str)
 
 intervalTest ∷ ∀ e. Spec e Unit
@@ -37,10 +37,10 @@ intervalTest = describe "Data.Formatter.Interval" do
     (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
 
-unsafeMkToIsoDuration :: I.Duration → I.IsoDuration
+unsafeMkToIsoDuration ∷ I.Duration → I.IsoDuration
 unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
 
-durations :: Array { str:: String, formatedStr:: String, dur :: I.IsoDuration }
+durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ I.IsoDuration }
 durations =
   [ { str: "P1W", formatedStr: "P7D", dur: I.day 7.0 }
   , { str: "P1.0W", formatedStr: "P7D", dur: I.day 7.0 }
@@ -56,7 +56,7 @@ durations =
   ] <#> (\a → a { dur = unsafeMkToIsoDuration a.dur })
 
 -- TODO error messages could be improved
-invalidDurations :: Array { err :: String, str :: String}
+invalidDurations ∷ Array { err ∷ String, str ∷ String}
 invalidDurations =
   [ { err: errInvalidISO <> "1:13", str: "P1DT1.5H0M1S" }
   , { err: errInvalidISO <> "1:10", str: "P1.5Y0.5M" }
@@ -82,7 +82,7 @@ invalidDurations =
   errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
 -- TODO error messages could be improved
-invalidIntervals :: Array {err :: String, str :: String}
+invalidIntervals ∷ Array {err ∷ String, str ∷ String}
 invalidIntervals =
   -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
   [ { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
@@ -104,13 +104,13 @@ invalidIntervals =
   , { err: "Expected EOF@1:8", str: "P1Y0.5M/P1Y0.5M" }
   ]
 
-recurrences ∷ Array { str :: String, rec :: Maybe Int }
+recurrences ∷ Array { str ∷ String, rec ∷ Maybe Int }
 recurrences =
   [ {str: "", rec: Nothing}
   , {str: "18", rec: Just 18}
   ]
 
-dates :: Array { str:: String, date :: DateTime }
+dates ∷ Array { str∷ String, date ∷ DateTime }
 dates =
   [ { str: "2015-07-23T11:12:13Z", date: makeDateTime 2015 7 23 11 12 13 0 }
   , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }

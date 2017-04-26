@@ -46,13 +46,13 @@ newtype Formatter = Formatter
   , sign ∷ Boolean
   }
 
-derive instance genericFormatter :: Generic Formatter _
-derive instance newtypeFormatter :: Newtype Formatter _
+derive instance genericFormatter ∷ Generic Formatter _
+derive instance newtypeFormatter ∷ Newtype Formatter _
 
-instance showFormatter :: Show Formatter where
+instance showFormatter ∷ Show Formatter where
   show = genericShow
 
-derive instance eqFormatter :: Eq Formatter
+derive instance eqFormatter ∷ Eq Formatter
 
 printFormatter ∷ Formatter → String
 printFormatter (Formatter f) =

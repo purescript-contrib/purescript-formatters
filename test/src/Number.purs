@@ -9,7 +9,7 @@ import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll)
 
-numberTest :: forall e. Spec e Unit
+numberTest ∷ forall e. Spec e Unit
 numberTest = describe "Data.Formatter.Number" do
   forAll _.str
     "should print formatter"
@@ -35,7 +35,7 @@ numberTest = describe "Data.Formatter.Number" do
     ]
     (\n →  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
 
-fmt1 :: Formatter
+fmt1 ∷ Formatter
 fmt1 = Formatter
   { comma: false
   , before: 3
@@ -44,7 +44,7 @@ fmt1 = Formatter
   , sign: false
   }
 
-fmt2 :: Formatter
+fmt2 ∷ Formatter
 fmt2 = Formatter
   { comma: true
   , before: one
@@ -53,7 +53,7 @@ fmt2 = Formatter
   , sign: true
   }
 
-fmt3 :: Formatter
+fmt3 ∷ Formatter
 fmt3 = Formatter
   { comma: false
   , before: 2
@@ -62,7 +62,7 @@ fmt3 = Formatter
   , sign: true
   }
 
-numberformatts :: Array { fmt :: Formatter, str :: String }
+numberformatts ∷ Array { fmt ∷ Formatter, str ∷ String }
 numberformatts =
   [ { str: "000.00"
     , fmt: fmt1

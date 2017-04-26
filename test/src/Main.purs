@@ -9,7 +9,7 @@ import Test.Spec.Reporter.Console (consoleReporter)
 import Control.Monad.Eff (Eff)
 import Test.Spec.Runner (RunnerEffects, run)
 
-main :: Eff (RunnerEffects ()) Unit
+main ∷ Eff (RunnerEffects ()) Unit
 main = run [consoleReporter] do
   intervalTest
   datetimeTest

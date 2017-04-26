@@ -15,7 +15,7 @@ import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 
-datetimeTest :: forall e. Spec e Unit
+datetimeTest ∷ forall e. Spec e Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime should formatt dateTime"
@@ -77,13 +77,13 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     (\({ date, format }) → FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))
 
 
-assertFormatting :: forall e. String → String → DateTime → Aff e Unit
+assertFormatting ∷ forall e. String → String → DateTime → Aff e Unit
 assertFormatting target' format dateTime = result `shouldEqual` target
   where
   result = FDT.formatDateTime format dateTime
   target = Right target'
 
-dates :: Array DateTime
+dates ∷ Array DateTime
 dates =
   [ makeDateTime 2017 4 12 11 3 4 234
   , makeDateTime 2017 4 1 0 0 0 0
@@ -92,13 +92,13 @@ dates =
   , makeDateTime (-1) 4 12 0 0 0 0
   ]
 
-invalidDateformats ∷ Array { str :: String , pos :: String }
+invalidDateformats ∷ Array { str ∷ String , pos ∷ String }
 invalidDateformats =
   [ { str: "YY-h-dddd HH:mm Z", pos: "1:4" }
   , { str: "YYYY-MM-DD M", pos: "1:12" }
   ]
 
-dateformats ∷ Array { str :: String , lossless :: Boolean, format :: FDT.Formatter }
+dateformats ∷ Array { str ∷ String , lossless ∷ Boolean, format ∷ FDT.Formatter }
 dateformats =
   [ { str: "YYYY-MM-DD"
     , lossless: false
@@ -169,5 +169,5 @@ dateformats =
     }
   ]
 
-filter :: ∀ m a. Alternative m => Monad m => (a → Boolean) → m a → m a
+filter ∷ ∀ m a. Alternative m => Monad m => (a → Boolean) → m a → m a
 filter f m = m >>= \x → if f x then pure x else empty
