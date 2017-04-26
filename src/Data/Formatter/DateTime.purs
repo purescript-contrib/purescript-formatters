@@ -28,7 +28,7 @@ import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
 import Data.Functor.Mu (Mu, unroll, roll)
 import Data.Int as Int
-import Data.Maybe (Maybe(..), maybe, isJust, fromMaybe)
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Data.Newtype (unwrap)
 import Data.String as Str
 import Data.Time as T
@@ -38,7 +38,6 @@ import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
-import Control.Monad.State.Class (class MonadState)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
