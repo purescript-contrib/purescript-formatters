@@ -487,17 +487,17 @@ unformatFParser cb = case _ of
     lift $ modify _{second = Just ss}
     cb a
   Milliseconds a → do
-    sss ← parseInt 3 (exactLength *> (validateRange 0 999)) "Incorrect millisecond"
+    sss ← parseInt 3 exactLength "Incorrect millisecond"
     lift $ modify _{millisecond = Just sss}
     cb a
   Placeholder s a →
     PS.string s *> cb a
   MillisecondsShort a → do
-    s ← parseInt 1 (exactLength *> (validateRange 0 9)) "Incorrect 1-digit millisecond"
+    s ← parseInt 1 exactLength "Incorrect 1-digit millisecond"
     lift $ modify _{millisecond = Just s}
     cb a
   MillisecondsTwoDigits a → do
-    ss ← parseInt 2 (exactLength *> (validateRange 0 99)) "Incorrect 2-digit millisecond"
+    ss ← parseInt 2 exactLength "Incorrect 2-digit millisecond"
     lift $ modify _{millisecond = Just ss}
     cb a
   End →
