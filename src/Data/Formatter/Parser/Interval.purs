@@ -12,8 +12,8 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Control.Alt ((<|>))
-import Data.Foldable (class Foldable, fold)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Foldable (class Foldable, fold, foldMap)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid, mempty)
 import Data.Either (Either, fromRight)
 import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
@@ -64,10 +64,7 @@ mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> 
     applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
 
     foldFoldableMaybe :: ∀ f a. Foldable f => Monoid a => f (Maybe a) -> a
-    foldFoldableMaybe = fold >>> unMaybe
-
-    unMaybe :: ∀ a. Monoid a => Maybe a -> a
-    unMaybe = maybe mempty id
+    foldFoldableMaybe = foldMap fold
 
     component ∷ String → P.Parser String Number
     component designator = parseNumber <* PS.string designator
