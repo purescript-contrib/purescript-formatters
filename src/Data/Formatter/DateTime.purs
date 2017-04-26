@@ -402,9 +402,9 @@ unformatFParser cb = case _ of
   YearTwoDigits a → _{year = _} `modifyWithParser`
     (parseInt 2 exactLength "Incorrect 2-digit year") *> cb a
   YearAbsolute a → _{year = _} `modifyWithParser`
-    (lift2 (*)
-      (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
-      (some parseDigit <#> foldDigits)) *> cb a
+    (pure (*)
+      <*> (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
+      <*> (some parseDigit <#> foldDigits)) *> cb a
   MonthFull a → _{month = _} `modifyWithParser`
     (fromEnum <$> parseMonth) *> cb a
   MonthShort a → _{month = _} `modifyWithParser`
@@ -455,7 +455,7 @@ unformatFParser cb = case _ of
     (parseInt 2 exactLength "Incorrect 2-digit millisecond") *> cb a
   End → pure unit
   where
-  modifyWithParser :: ∀ s x m. MonadState s m => (s -> Maybe x -> s) -> m x -> m Unit
+  modifyWithParser :: ∀ s' s x. (s -> Maybe x -> s) -> P.ParserT s' (State s) x -> P.ParserT s' (State s) Unit
   modifyWithParser f p = do
     v <- p
     lift $ modify (flip f (Just v))
