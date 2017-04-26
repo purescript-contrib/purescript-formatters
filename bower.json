@@ -27,5 +27,8 @@
     "purescript-console": "^3.0.0",
     "purescript-psci-support": "^3.0.0",
     "purescript-spec": "^0.14.0"
+  },
+  "resolutions": {
+    "purescript-datetime": "git://github.com/safareli/purescript-datetime.git#interval"
   }
 }
