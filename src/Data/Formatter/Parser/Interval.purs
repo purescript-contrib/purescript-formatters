@@ -31,10 +31,10 @@ parseRecurringInterval duration date =
 parseInterval :: ∀ a b. P.Parser String a -> P.Parser String b -> P.Parser String (I.Interval a b)
 parseInterval duration date = [startEnd, durationEnd, startDuration, justDuration] <#> PC.try # PC.choice
   where
-    startEnd = I.StartEnd <$> date <* PS.string "/" <*> date
-    durationEnd = I.DurationEnd <$> duration <* PS.string "/" <*> date
-    startDuration = I.StartDuration <$> date <* PS.string "/" <*> duration
-    justDuration = I.JustDuration <$> duration
+  startEnd = I.StartEnd <$> date <* PS.string "/" <*> date
+  durationEnd = I.DurationEnd <$> duration <* PS.string "/" <*> date
+  startDuration = I.StartDuration <$> date <* PS.string "/" <*> duration
+  justDuration = I.JustDuration <$> duration
 
 parseIsoDuration :: P.Parser String I.IsoDuration
 parseIsoDuration = do
@@ -46,10 +46,10 @@ parseIsoDuration = do
 parseDuration :: P.Parser String I.Duration
 parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   where
-    weekDuration = mkComponentsParser [ Tuple I.week "W" ]
-    fullDuration = (append <$> durationDatePart <*> durationTimePart) `notEmpty` "must contain valid duration components"
-    durationDatePart = PC.option mempty $ PC.try $ mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
-    durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
+  weekDuration = mkComponentsParser [ Tuple I.week "W" ]
+  fullDuration = (append <$> durationDatePart <*> durationTimePart) `notEmpty` "must contain valid duration components"
+  durationDatePart = PC.option mempty $ PC.try $ mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
+  durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
 
 
 notEmpty :: ∀ a. Monoid a => Eq a => P.Parser String a -> String -> P.Parser String a
@@ -57,17 +57,16 @@ notEmpty p str = p >>= \x -> if x == mempty then P.fail str else pure x
 
 mkComponentsParser :: Array (Tuple (Number -> I.Duration) String) -> P.Parser String I.Duration
 mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> (show $ snd <$> arr) <> ") were present")
-
   where
-    p = arr <#> applyDurations # sequence <#> foldFoldableMaybe
-    applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
-    applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
+  p = arr <#> applyDurations # sequence <#> foldFoldableMaybe
+  applyDurations :: Tuple (Number -> I.Duration) String -> P.Parser String (Maybe I.Duration)
+  applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
 
-    foldFoldableMaybe :: ∀ f a. Foldable f => Monoid a => f (Maybe a) -> a
-    foldFoldableMaybe = foldMap fold
+  foldFoldableMaybe :: ∀ f a. Foldable f => Monoid a => f (Maybe a) -> a
+  foldFoldableMaybe = foldMap fold
 
-    component ∷ String → P.Parser String Number
-    component designator = parseNumber <* PS.string designator
+  component ∷ String → P.Parser String Number
+  component designator = parseNumber <* PS.string designator
 
 
 -- parser for DateTime in UTC time zone using "extended format"
@@ -77,5 +76,5 @@ parseDateTime = unformatParser extendedDateTimeFormatInUTC
 extendedDateTimeFormatInUTC ∷ Formatter
 extendedDateTimeFormatInUTC = unEither $ parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
   where
-    unEither :: Either String Formatter -> Formatter
-    unEither = unsafePartialBecause "(this must be unrechable) error in parsing ISO date format" fromRight
+  unEither :: Either String Formatter -> Formatter
+  unEither = unsafePartialBecause "(this must be unrechable) error in parsing ISO date format" fromRight
