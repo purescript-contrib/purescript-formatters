@@ -67,7 +67,7 @@ data FormatterF a
   | Placeholder String a
   | End
 
-instance formatterFFunctor ∷ Functor FormatterF where
+instance functorFormatterF ∷ Functor FormatterF where
   map f (YearFull a) = YearFull $ f a
   map f (YearTwoDigits a) = YearTwoDigits $ f a
   map f (YearAbsolute a) = YearAbsolute $ f a
@@ -91,7 +91,7 @@ instance formatterFFunctor ∷ Functor FormatterF where
   map f (Placeholder str a) = Placeholder str $ f a
   map f End = End
 
-instance formatterFShow ∷ Show a => Show (FormatterF a) where
+instance showFormatterF ∷ Show a => Show (FormatterF a) where
   show (YearFull a) = "(YearFull " <> (show a) <> "c"
   show (YearTwoDigits a) = "(YearTwoDigits " <> (show a) <> ")"
   show (YearAbsolute a) = "(YearAbsolute " <> (show a) <> ")"
@@ -115,32 +115,9 @@ instance formatterFShow ∷ Show a => Show (FormatterF a) where
   show (Placeholder str a) = "(Placeholder " <> (show str) <> " "<> (show a) <> ")"
   show End = "End"
 
-instance formatterFEq ∷ Eq a => Eq (FormatterF a) where
-  eq (YearFull a) (YearFull b) = eq a b
-  eq (YearTwoDigits a) (YearTwoDigits b) = eq a b
-  eq (YearAbsolute a) (YearAbsolute b) = eq a b
-  eq (MonthFull a) (MonthFull b) = eq a b
-  eq (MonthShort a) (MonthShort b) = eq a b
-  eq (MonthTwoDigits a) (MonthTwoDigits b) = eq a b
-  eq (DayOfMonthTwoDigits a) (DayOfMonthTwoDigits b) = eq a b
-  eq (DayOfMonth a) (DayOfMonth b) = eq a b
-  eq (UnixTimestamp a) (UnixTimestamp b) = eq a b
-  eq (DayOfWeek a) (DayOfWeek b) = eq a b
-  eq (Hours24 a) (Hours24 b) = eq a b
-  eq (Hours12 a) (Hours12 b) = eq a b
-  eq (Meridiem a) (Meridiem b) = eq a b
-  eq (Minutes a) (Minutes b) = eq a b
-  eq (MinutesTwoDigits a) (MinutesTwoDigits b) = eq a b
-  eq (Seconds a) (Seconds b) = eq a b
-  eq (SecondsTwoDigits a) (SecondsTwoDigits b) = eq a b
-  eq (Milliseconds a) (Milliseconds b) = eq a b
-  eq (MillisecondsShort a) (MillisecondsShort b) = eq a b
-  eq (MillisecondsTwoDigits a) (MillisecondsTwoDigits b) = eq a b
-  eq (Placeholder stra a) (Placeholder strb b) = eq stra strb && eq a b
-  eq End End = true
-  eq _ _ = false
+derive instance eqFormatterF :: Eq a => Eq (FormatterF a)
 
-instance formatterFEq1 :: Eq1 FormatterF where
+instance eq1FormatterF :: Eq1 FormatterF where
   eq1 = eq
 
 
