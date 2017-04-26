@@ -33,9 +33,9 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
+import Data.Newtype (class Newtype)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Generic.Rep.Eq (genericEq)
 
 
 newtype Formatter = Formatter
@@ -47,12 +47,12 @@ newtype Formatter = Formatter
   }
 
 derive instance genericFormatter :: Generic Formatter _
+derive instance newtypeFormatter :: Newtype Formatter _
 
 instance showFormatter :: Show Formatter where
   show = genericShow
 
-instance eqFormatter :: Eq Formatter where
-  eq = genericEq
+derive instance eqFormatter :: Eq Formatter
 
 printFormatter ∷ Formatter → String
 printFormatter (Formatter f) =
