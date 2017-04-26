@@ -20,22 +20,22 @@ import Data.Int as Int
 import Data.Foldable (foldMap)
 import Data.Formatter.Parser.Interval (parseRecurringInterval, parseInterval, parseIsoDuration, parseDateTime, extendedDateTimeFormatInUTC)
 
-formatRecurringInterval :: I.RecurringInterval I.IsoDuration DateTime -> String
+formatRecurringInterval :: I.RecurringInterval I.IsoDuration DateTime → String
 formatRecurringInterval (I.RecurringInterval n i) = "R" <> (maybe "" formatInteger n) <> "/" <> (formatInterval i)
 
-formatInterval :: I.Interval I.IsoDuration DateTime -> String
+formatInterval :: I.Interval I.IsoDuration DateTime → String
 formatInterval (I.StartEnd x y) = (formatDateTime x) <> "/" <> (formatDateTime y)
 formatInterval (I.DurationEnd d x) = (formatIsoDuration d) <> "/" <> (formatDateTime x)
 formatInterval (I.StartDuration x d) = (formatDateTime x) <> "/" <> (formatIsoDuration d)
 formatInterval (I.JustDuration d) = (formatIsoDuration d)
 
-formatDateTime :: DateTime -> String
+formatDateTime :: DateTime → String
 formatDateTime = FDT.format extendedDateTimeFormatInUTC
 
-formatIsoDuration :: I.IsoDuration -> String
+formatIsoDuration :: I.IsoDuration → String
 formatIsoDuration = formatDuration <<< I.unIsoDuration
 
-formatDuration :: I.Duration -> String
+formatDuration :: I.Duration → String
 formatDuration (I.Duration m) = "P" <> datePart <> timePart
   where
   datePart = componentToString `foldMap` dateComponentsToStr
@@ -47,10 +47,10 @@ formatDuration (I.Duration m) = "P" <> datePart <> timePart
   dateComponentsToStr = [ Tuple I.Year "Y", Tuple I.Month "M", Tuple I.Day "D" ]
   timeComponentsToStr = [ Tuple I.Hours "H", Tuple I.Minutes "M", Tuple I.Seconds "S" ]
 
-formatInteger :: Int -> String
+formatInteger :: Int → String
 formatInteger = show
 
-formatNumber :: Number -> String
+formatNumber :: Number → String
 formatNumber n = if Int.toNumber (Int.floor n) == n then show (Int.floor n) else show n
 
 unformatRecurringInterval :: String → Either String (I.RecurringInterval I.IsoDuration DateTime)

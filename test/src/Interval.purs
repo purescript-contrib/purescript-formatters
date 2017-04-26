@@ -16,28 +16,28 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 import Control.Monad.Aff (Aff)
 
-prop :: ∀ e e' f. Foldable f => String -> f {str :: String | e'} -> ({str :: String | e'} -> Aff e Unit) -> Spec e Unit
+prop :: ∀ e e' f. Foldable f => String → f {str :: String | e'} → ({str :: String | e'} → Aff e Unit) → Spec e Unit
 prop = forAll (show <<< _.str)
 
 intervalTest ∷ ∀ e. Spec e Unit
 intervalTest = describe "Data.Formatter.Interval" do
-  prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) -> do
+  prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) → do
     (unformatInterval str) `shouldEqual` (Left $ err)
 
-  prop "shouldn't unformat invalid Duration" invalidDurations \({str, err}) -> do
+  prop "shouldn't unformat invalid Duration" invalidDurations \({str, err}) → do
     (runP parseIsoDuration str) `shouldEqual` (Left $ err)
 
-  prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) -> do
+  prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) → do
     (unformatRecurringInterval str) `shouldEqual` (Right interval)
 
-  prop "format (unformat s) = s" arbRecurringInterval \({ str, interval, formatedStr }) -> do
+  prop "format (unformat s) = s" arbRecurringInterval \({ str, interval, formatedStr }) → do
     (formatRecurringInterval <$> (unformatRecurringInterval str)) `shouldEqual` (Right formatedStr)
 
-  prop "unformat (format s) = s" arbRecurringInterval \({ str, interval, formatedStr }) -> do
+  prop "unformat (format s) = s" arbRecurringInterval \({ str, interval, formatedStr }) → do
     (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
 
-unsafeMkToIsoDuration :: I.Duration -> I.IsoDuration
+unsafeMkToIsoDuration :: I.Duration → I.IsoDuration
 unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
 
 durations :: Array { str:: String, formatedStr:: String, dur :: I.IsoDuration }
@@ -53,7 +53,7 @@ durations =
   , { str: "PT1M", formatedStr: "PT1M", dur: I.minutes 1.0 }
   , { str: "PT1S", formatedStr: "PT1S", dur: I.seconds 1.0 }
   , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hours 1.0 <> I.seconds 1.0 }
-  ] <#> (\a -> a { dur = unsafeMkToIsoDuration a.dur })
+  ] <#> (\a → a { dur = unsafeMkToIsoDuration a.dur })
 
 -- TODO error messages could be improved
 invalidDurations :: Array { err :: String, str :: String}

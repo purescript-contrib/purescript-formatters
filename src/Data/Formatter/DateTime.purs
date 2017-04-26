@@ -139,11 +139,11 @@ parseFormatString = runP formatParser
 -- | Formatting function that accepts a number that is a year,
 -- | and strips away the non-significant digits, leaving only the
 -- | ones and tens positions.
-formatYearTwoDigits :: Int -> String
+formatYearTwoDigits :: Int → String
 formatYearTwoDigits i = case dateLength of
-  1 -> "0" <> dateString
-  2 -> dateString
-  _ -> Str.drop (dateLength - 2) dateString
+  1 → "0" <> dateString
+  2 → dateString
+  _ → Str.drop (dateLength - 2) dateString
   where
   dateString = show $ abs i
   dateLength = Str.length $ dateString
@@ -199,7 +199,7 @@ formatF
 formatF cb dt@(DT.DateTime d t) = case _ of
   YearFull a →
     (show $ fromEnum $ D.year d) <> cb a
-  YearTwoDigits a ->
+  YearTwoDigits a →
     (formatYearTwoDigits $ fromEnum $ D.year d) <> cb a
   YearAbsolute a →
     show (fromEnum $ D.year d) <> cb a
@@ -242,12 +242,12 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     s <> cb a
   End → ""
 
-padSingleDigit :: Int -> String
+padSingleDigit :: Int → String
 padSingleDigit i
   | i < 10    = "0" <> (show i)
   | otherwise = show i
 
-padDoubleDigit :: Int -> String
+padDoubleDigit :: Int → String
 padDoubleDigit i
   | i < 10  = "00" <> (show i)
   | i < 100 = "0" <> (show i)
@@ -341,8 +341,8 @@ parseInt maxLength validators errMsg = do
   let length = List.length ds
   let num = foldDigits ds
   case runReaderT validators {length, num, maxLength} of
-    Left err -> P.fail $ errMsg <> "(" <> err <> ")"
-    Right _ -> pure num
+    Left err → P.fail $ errMsg <> "(" <> err <> ")"
+    Right _ → pure num
 
 -- take
 unformatFParser
@@ -409,7 +409,7 @@ unformatFParser cb = case _ of
     (parseInt 2 exactLength "Incorrect 2-digit millisecond") *> cb a
   End → pure unit
   where
-  modifyWithParser :: ∀ s' s x. (s -> Maybe x -> s) -> P.ParserT s' (State s) x -> P.ParserT s' (State s) Unit
+  modifyWithParser :: ∀ s' s x. (s → Maybe x → s) → P.ParserT s' (State s) x → P.ParserT s' (State s) Unit
   modifyWithParser f p = do
     v <- p
     lift $ modify (flip f (Just v))
@@ -421,9 +421,9 @@ unformatParser f' = do
   where
   rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
   rec f = unformatFParser rec $ unroll f
-  unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) -> n (Tuple (Either y UnformatAccum) x)
+  unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) → n (Tuple (Either y UnformatAccum) x)
   unState s = case runState s initialAccum of
-    Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
+    Tuple (Tuple e state) res → pure (Tuple (e $> res) state)
 
 
 

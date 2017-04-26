@@ -14,11 +14,11 @@ import Data.Date (canonicalDate)
 import Data.Time (Time(..))
 
 
-forAll :: ∀ e a f. Foldable f => (a -> String) -> String -> f a -> (a -> Aff e Unit) -> Spec e Unit
+forAll :: ∀ e a f. Foldable f => (a → String) → String → f a → (a → Aff e Unit) → Spec e Unit
 forAll itTitle title arb f = describe title do
-  for_ arb \a -> it (itTitle a) (f a)
+  for_ arb \a → it (itTitle a) (f a)
 
-makeDateTime ∷ Int -> Int -> Int -> Int -> Int -> Int -> Int -> DateTime
+makeDateTime ∷ Int → Int → Int → Int → Int → Int → Int → DateTime
 makeDateTime year month day hour minute second millisecond =
   DateTime
     (canonicalDate

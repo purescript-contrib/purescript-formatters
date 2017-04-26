@@ -17,7 +17,7 @@ import Test.Utils (forAll, makeDateTime)
 
 datetimeTest :: forall e. Spec e Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
-  forAll (\a -> a.format <> " | " <> a.dateStr)
+  forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime should formatt dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "MMMM", dateStr: "April" , date: makeDateTime 2017 4 12 11 3 4 234}
@@ -43,41 +43,41 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "hhmmssSS", dateStr: "11123012", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hhmmssS", dateStr: "1112301", date: makeDateTime 2017 4 10 11 12 30 123 }
     ]
-    (\({ format, dateStr, date }) -> (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr))
+    (\({ format, dateStr, date }) → (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr))
 
   describe "parseFormatString" do
     forAll
       _.str
       "should parse"
       dateformats
-      (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Right f.format))
+      (\f → (FDT.parseFormatString f.str) `shouldEqual` (Right f.format))
 
     forAll
       _.str
      "shouldn't parse"
       invalidDateformats
-      (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected to contain only valid characters@" <> f.pos))
+      (\f → (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected to contain only valid characters@" <> f.pos))
 
   forAll
-    (\a -> a.format <> " | " <> a.date)
+    (\a → a.format <> " | " <> a.date)
     "s ≡ format (unformat s)"
     [ {date: "2017-12-04 234", format: "YYYY-DD-MM SSS" }
     , {date: "3456-09-10 333", format: "YYYY-DD-MM SSS" }
     ]
-    (\({date, format}) -> (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date))
+    (\({date, format}) → (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date))
 
   forAll
-    (\a -> show a.date <> "|" <> FDT.printFormatter a.format)
+    (\a → show a.date <> "|" <> FDT.printFormatter a.format)
     "s ≡ unformat (format s)"
     (do
       format <- dateformats
       date <- dates
       guard format.lossless
       pure { date, format: format.format })
-    (\({ date, format }) -> FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))
+    (\({ date, format }) → FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))
 
 
-assertFormatting :: forall e. String -> String -> DateTime -> Aff e Unit
+assertFormatting :: forall e. String → String → DateTime → Aff e Unit
 assertFormatting target' format dateTime = result `shouldEqual` target
   where
   result = FDT.formatDateTime format dateTime
@@ -169,5 +169,5 @@ dateformats =
     }
   ]
 
-filter :: ∀ m a. Alternative m => Monad m => (a -> Boolean) -> m a -> m a
-filter f m = m >>= \x -> if f x then pure x else empty
+filter :: ∀ m a. Alternative m => Monad m => (a → Boolean) → m a → m a
+filter f m = m >>= \x → if f x then pure x else empty

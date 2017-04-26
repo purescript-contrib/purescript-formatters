@@ -14,17 +14,17 @@ numberTest = describe "Data.Formatter.Number" do
   forAll _.str
     "should print formatter"
     numberformatts
-    (\({fmt, str}) -> printFormatter fmt `shouldEqual` str)
+    (\({fmt, str}) → printFormatter fmt `shouldEqual` str)
 
   forAll _.str
     "parse format string"
     numberformatts
-    (\({fmt, str}) -> parseFormatString str `shouldEqual` (Right fmt))
+    (\({fmt, str}) → parseFormatString str `shouldEqual` (Right fmt))
 
   forAll show
     "unformat (format n) = n"
     [100.2, 100.1, 100.3, 10004000.0]
-    (\n -> unformat fmt1 (format fmt1 n) `shouldEqual` (Right n))
+    (\n → unformat fmt1 (format fmt1 n) `shouldEqual` (Right n))
 
   forAll show
     "format (unformat n) = n"
@@ -33,7 +33,7 @@ numberTest = describe "Data.Formatter.Number" do
     -- , "-012.12"
     -- , "-123.12"
     ]
-    (\n ->  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
+    (\n →  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
 
 fmt1 :: Formatter
 fmt1 = Formatter
