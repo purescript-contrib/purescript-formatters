@@ -75,11 +75,11 @@ invalidDurations =
   , { err: errEOF <> "1:4", str: "P1Y1W" }
   ]
   where
-    errInvalidComponent = "must contain valid duration components@"
-    errPrefix = "Expected \"P\"@"
-    errEOF = "Expected EOF@"
-    errInvalidISO = "extracted Duration is not valid ISO duration@"
-    errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
+  errInvalidComponent = "must contain valid duration components@"
+  errPrefix = "Expected \"P\"@"
+  errEOF = "Expected EOF@"
+  errInvalidISO = "extracted Duration is not valid ISO duration@"
+  errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
 -- TODO error messages could be improved
 invalidIntervals :: Array {err :: String, str :: String}

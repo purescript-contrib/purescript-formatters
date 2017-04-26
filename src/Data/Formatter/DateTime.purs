@@ -190,8 +190,8 @@ formatYearTwoDigits i = case dateLength of
   2 -> dateString
   _ -> Str.drop (dateLength - 2) dateString
   where
-    dateString = show $ abs i
-    dateLength = Str.length $ dateString
+  dateString = show $ abs i
+  dateLength = Str.length $ dateString
 
 
 placeholderContent ∷ P.Parser String String
@@ -464,11 +464,11 @@ unformatParser f' = do
   acc <- P.mapParserT unState $ rec f'
   either P.fail pure $ unformatAccumToDateTime acc
   where
-    rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
-    rec f = unformatFParser rec $ unroll f
-    unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) -> n (Tuple (Either y UnformatAccum) x)
-    unState s = case runState s initialAccum of
-      Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
+  rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
+  rec f = unformatFParser rec $ unroll f
+  unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) -> n (Tuple (Either y UnformatAccum) x)
+  unState s = case runState s initialAccum of
+    Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
 
 
 
