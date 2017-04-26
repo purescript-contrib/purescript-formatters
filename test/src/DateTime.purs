@@ -70,8 +70,8 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     (\a → show a.date <> "|" <> FDT.printFormatter a.format)
     "s ≡ unformat (format s)"
     (do
-      format <- dateformats
-      date <- dates
+      format ← dateformats
+      date ← dates
       guard format.lossless
       pure { date, format: format.format })
     (\({ date, format }) → FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))

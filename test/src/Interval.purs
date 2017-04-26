@@ -121,8 +121,8 @@ type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ 
 
 arbRecurringInterval ∷ ArbRecurringInterval
 arbRecurringInterval = do
-  rec <- recurrences
-  i <- arbInterval
+  rec ← recurrences
+  i ← arbInterval
   pure
     { str : "R" <> rec.str <> "/" <> i.str
     , formatedStr : "R" <> rec.str <> "/" <> i.formatedStr
@@ -139,8 +139,8 @@ arbInterval = fold
 
 arbIntervalStartEnd ∷ ArbInterval
 arbIntervalStartEnd = do
-  start <- dates
-  end <- dates
+  start ← dates
+  end ← dates
   pure
     { str: start.str <> "/" <> end.str
     , formatedStr: start.str <> "/" <> end.str
@@ -149,8 +149,8 @@ arbIntervalStartEnd = do
 
 arbIntervalDurationEnd ∷ ArbInterval
 arbIntervalDurationEnd = do
-  dur <- durations
-  end <- dates
+  dur ← durations
+  end ← dates
   pure
     { str: dur.str <> "/" <> end.str
     , formatedStr: dur.formatedStr <> "/" <> end.str
@@ -159,8 +159,8 @@ arbIntervalDurationEnd = do
 
 arbIntervalStartDuration ∷ ArbInterval
 arbIntervalStartDuration = do
-  dur <- durations
-  start <- dates
+  dur ← durations
+  start ← dates
   pure
     { str:  start.str <> "/" <> dur.str
     , formatedStr:  start.str <> "/" <> dur.formatedStr
@@ -169,7 +169,7 @@ arbIntervalStartDuration = do
 
 arbIntervalJustDuration ∷ ArbInterval
 arbIntervalJustDuration = do
-  dur <- durations
+  dur ← durations
   pure
     { str: dur.str
     , formatedStr: dur.formatedStr
