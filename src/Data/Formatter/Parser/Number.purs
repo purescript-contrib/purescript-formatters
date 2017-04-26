@@ -8,7 +8,7 @@ module Data.Formatter.Parser.Number
 import Prelude
 
 import Data.Int (toNumber)
-import Data.Array (some, many, length)
+import Data.Array (some)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Internal (foldDigits)
 import Data.Tuple (Tuple(..))
@@ -16,7 +16,7 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser.String as PS
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Foldable (foldMap)
 import Global (readFloat)
 
@@ -24,7 +24,7 @@ parseInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
 parseInteger = some parseDigit <#> foldDigits
 
 parseMaybeInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m (Maybe Int)
-parseMaybeInteger = many parseDigit <#> (\l -> if length l == 0 then Nothing else Just $ foldDigits l)
+parseMaybeInteger = PC.optionMaybe parseInteger
 
 parseFractional ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Number
 parseFractional = (some parseDigit) <#> (foldMap show >>> ("0." <> _) >>> readFloat)
