@@ -50,7 +50,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       _.str
      "shouldn't parse"
       invalidDateformats
-      (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Format contains invalid string@" <> f.pos))
+      (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected to contain only valid characters@" <> f.pos))
 
   forAll
     (\a -> a.format <> " | " <> a.date)

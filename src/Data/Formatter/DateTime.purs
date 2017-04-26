@@ -32,7 +32,6 @@ import Data.Maybe (Maybe(..), maybe, isJust, fromMaybe)
 import Data.Newtype (unwrap)
 import Data.String as Str
 import Data.Time as T
-import Control.Alt ((<|>))
 import Data.Eq (class Eq1)
 import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
@@ -230,7 +229,7 @@ formatterFParser cb =
     , (PC.try $ PS.string "S") *> map MillisecondsShort cb
     , (Placeholder <$> placeholderContent <*> cb)
     , (PS.eof $> End)
-    ] <|> (P.fail "Format contains invalid string")
+    ] PC.<?> "to contain only valid characters"
 
 formatParser ∷ P.Parser String Formatter
 formatParser =
