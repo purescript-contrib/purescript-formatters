@@ -81,7 +81,4 @@ extendedDateTimeFormatInUTC ∷ Formatter
 extendedDateTimeFormatInUTC = unEither $ parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
   where
     unEither :: Either String Formatter -> Formatter
-    unEither e = (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format") (fromRight e)
-    --TODO check why this are not working?
-    -- unEither = (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format") <<< fromRight
-    -- unEither = fromRight >>> (unsafePartialBecause "(this must be unrechable) error in parsing ISO date format")
+    unEither = unsafePartialBecause "(this must be unrechable) error in parsing ISO date format" fromRight
