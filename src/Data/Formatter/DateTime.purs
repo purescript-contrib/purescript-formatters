@@ -67,9 +67,9 @@ data FormatterF a
   | Placeholder String a
   | End
 
-derive instance functorFormatterF :: Functor FormatterF
+derive instance functorFormatterF ∷ Functor FormatterF
 
-instance showFormatterF ∷ Show a => Show (FormatterF a) where
+instance showFormatterF ∷ Show a ⇒ Show (FormatterF a) where
   show (YearFull a) = "(YearFull " <> (show a) <> "c"
   show (YearTwoDigits a) = "(YearTwoDigits " <> (show a) <> ")"
   show (YearAbsolute a) = "(YearAbsolute " <> (show a) <> ")"
@@ -93,9 +93,9 @@ instance showFormatterF ∷ Show a => Show (FormatterF a) where
   show (Placeholder str a) = "(Placeholder " <> (show str) <> " "<> (show a) <> ")"
   show End = "End"
 
-derive instance eqFormatterF :: Eq a => Eq (FormatterF a)
+derive instance eqFormatterF ∷ Eq a ⇒ Eq (FormatterF a)
 
-instance eq1FormatterF :: Eq1 FormatterF where
+instance eq1FormatterF ∷ Eq1 FormatterF where
   eq1 = eq
 
 
@@ -139,7 +139,7 @@ parseFormatString = runP formatParser
 -- | Formatting function that accepts a number that is a year,
 -- | and strips away the non-significant digits, leaving only the
 -- | ones and tens positions.
-formatYearTwoDigits :: Int → String
+formatYearTwoDigits ∷ Int → String
 formatYearTwoDigits i = case dateLength of
   1 → "0" <> dateString
   2 → dateString
@@ -242,12 +242,12 @@ formatF cb dt@(DT.DateTime d t) = case _ of
     s <> cb a
   End → ""
 
-padSingleDigit :: Int → String
+padSingleDigit ∷ Int → String
 padSingleDigit i
   | i < 10    = "0" <> (show i)
   | otherwise = show i
 
-padDoubleDigit :: Int → String
+padDoubleDigit ∷ Int → String
 padDoubleDigit i
   | i < 10  = "00" <> (show i)
   | i < 100 = "0" <> (show i)
@@ -330,7 +330,7 @@ validateRange min max = ask >>= \({num}) → if num < min || num > max
   then lift $ Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
   else lift $ Right unit
 
-parseInt :: ∀ m
+parseInt ∷ ∀ m
   . Monad m
   ⇒ Int
   → ReaderT { length ∷ Int, num ∷ Int, maxLength ∷ Int } (Either String) Unit
@@ -409,19 +409,19 @@ unformatFParser cb = case _ of
     (parseInt 2 exactLength "Incorrect 2-digit millisecond") *> cb a
   End → pure unit
   where
-  modifyWithParser :: ∀ s' s x. (s → Maybe x → s) → P.ParserT s' (State s) x → P.ParserT s' (State s) Unit
+  modifyWithParser ∷ ∀ s' s x. (s → Maybe x → s) → P.ParserT s' (State s) x → P.ParserT s' (State s) Unit
   modifyWithParser f p = do
-    v <- p
+    v ← p
     lift $ modify (flip f (Just v))
 
-unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m DT.DateTime
+unformatParser ∷ ∀ m. Monad m ⇒ Formatter → P.ParserT String m DT.DateTime
 unformatParser f' = do
-  acc <- P.mapParserT unState $ rec f'
+  acc ← P.mapParserT unState $ rec f'
   either P.fail pure $ unformatAccumToDateTime acc
   where
   rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
   rec f = unformatFParser rec $ unroll f
-  unState :: ∀ x y n. Monad n => State UnformatAccum (Tuple (Either y Unit) x) → n (Tuple (Either y UnformatAccum) x)
+  unState ∷ ∀ x y n. Monad n ⇒ State UnformatAccum (Tuple (Either y Unit) x) → n (Tuple (Either y UnformatAccum) x)
   unState s = case runState s initialAccum of
     Tuple (Tuple e state) res → pure (Tuple (e $> res) state)
 
