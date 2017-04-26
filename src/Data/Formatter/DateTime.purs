@@ -19,8 +19,8 @@ import Control.Monad.Trans.Class (lift)
 
 import Data.Ord (abs)
 import Data.Array (some)
+import Data.List.Lazy as List
 import Data.Tuple (Tuple(..))
-import Data.Array as Arr
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
@@ -37,6 +37,7 @@ import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
+import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
@@ -198,7 +199,7 @@ placeholderContent ∷ P.Parser String String
 placeholderContent =
   map Str.fromCharArray
     $ PC.try
-    $ Arr.some
+    $ some
     $ PS.noneOf
     $ Str.toCharArray "YMDEHhamsS"
 
@@ -362,6 +363,38 @@ unformatAccumToDateTime a =
     | otherwise = Nothing
 
 
+
+-- TODO remove
+-- validateLength ∷ ∀ e. (Int → Boolean) → { length ∷ Int | e } → Either String Unit
+-- validateLength f {length} = if f length then (Just unit)
+--   else Just "Invalid number of digits"
+
+-- TODO use MonadAsk in signature
+exactLength ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
+exactLength = ask >>= \({maxLength, length}) → if maxLength /= length
+  then lift $ Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
+  else lift $ Right unit
+
+validateRange ∷ ∀ e. Int → Int → ReaderT { num ∷ Int | e } (Either String) Unit
+validateRange min max = ask >>= \({num}) → if num < min || num > max
+  then lift $ Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
+  else lift $ Right unit
+
+parseInt :: ∀ m
+  . Monad m
+  ⇒ Int
+  → ReaderT { length ∷ Int, num ∷ Int, maxLength ∷ Int } (Either String) Unit
+  → String
+  → P.ParserT String m Int
+parseInt maxLength validators errMsg = do
+  ds ← List.take maxLength <$> (List.some parseDigit)
+  let length = List.length ds
+  let num = foldDigits ds
+  case runReaderT validators {length, num, maxLength} of
+    Left err -> P.fail $ errMsg <> "(" <> err <> ")"
+    Right _ -> pure num
+
+-- take
 unformatFParser
   ∷ ∀ a
   . (a → P.ParserT String (State UnformatAccum) Unit)
@@ -369,14 +402,11 @@ unformatFParser
   → P.ParserT String (State UnformatAccum) Unit
 unformatFParser cb = case _ of
   YearFull a → do
-    ds ← some parseDigit
-    when (Arr.length ds /= 4) $ P.fail "Incorrect full year"
-    lift $ modify _{year = Just $ foldDigits ds}
+    year ← parseInt 4 exactLength "Incorrect full year"
+    lift $ modify _{year = Just $ year}
     cb a
   YearTwoDigits a → do
-    ds ← some parseDigit
-    when (Arr.length ds /= 2) $ P.fail "Incorrect 2-digit year"
-    let y = foldDigits ds
+    y ← parseInt 2 exactLength "Incorrect 2-digit year"
     lift $ modify _{year = Just $ if y > 69 then y + 1900 else y + 2000}
     cb a
   YearAbsolute a → do
@@ -393,21 +423,15 @@ unformatFParser cb = case _ of
     lift $ modify _{month = Just $ fromEnum month}
     cb a
   MonthTwoDigits a → do
-    ds ← some parseDigit
-    let month = foldDigits ds
-    when (Arr.length ds /= 2 || month > 12 || month < 1) $ P.fail "Incorrect 2-digit month"
+    month ← parseInt 2 (exactLength *> (validateRange 1 12)) "Incorrect 2-digit month"
     lift $ modify _{month = Just month}
     cb a
   DayOfMonthTwoDigits a → do
-    ds ← some parseDigit
-    let dom = foldDigits ds
-    when (Arr.length ds /= 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
+    dom ← parseInt 2 (exactLength *> (validateRange 1 31)) "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   DayOfMonth a → do
-    ds ← some parseDigit
-    let dom = foldDigits ds
-    when (Arr.length ds > 2 || dom > 31 || dom < 1) $ P.fail "Incorrect day of month"
+    dom ← parseInt 2 (validateRange 1 31) "Incorrect day of month"
     lift $ modify _{day = Just dom}
     cb a
   UnixTimestamp a → do
@@ -426,22 +450,15 @@ unformatFParser cb = case _ of
                    }
         cb a
   DayOfWeek a → do
-    dow ← parseDigit
-    when (dow > 7 || dow < 1) $ P.fail "Incorrect day of week"
+  -- TODO we would need to use this value if we support date format using week number
+    dow ← parseInt 1 (validateRange 1 7) "Incorrect day of week"
     cb a
   Hours24 a → do
-    -- TODO because `some` is parsing digits it will consume more then 2
-    -- even when input is properly formatted in case of `HHmmss`
-    -- which results in need to add some seperators to format `HH:mm:ss`
-    ds ← some parseDigit
-    let hh = foldDigits ds
-    when (Arr.length ds /= 2 || hh < 0 || hh > 23) $ P.fail "Incorrect 24 hour"
+    hh ← parseInt 2 (exactLength *> (validateRange 0 23)) "Incorrect 24 hour"
     lift $ modify _{hour = Just hh}
     cb a
   Hours12 a → do
-    ds ← some parseDigit
-    let hh = foldDigits ds
-    when (Arr.length ds /= 2 || hh < 0 || hh > 11) $ P.fail "Incorrect 24 hour"
+    hh ← parseInt 2 (exactLength *> (validateRange 0 11)) "Incorrect 12 hour"
     lift $ modify _{hour = Just hh}
     cb a
   Meridiem a → do
@@ -454,47 +471,33 @@ unformatFParser cb = case _ of
     lift $ modify _{meridiem = Just m}
     cb a
   MinutesTwoDigits a → do
-    ds ← some parseDigit
-    let mm = foldDigits ds
-    when (Arr.length ds /= 2 || mm < 0 || mm > 59) $ P.fail "Incorrect 2-digit minute"
+    mm ← parseInt 2 (exactLength *> (validateRange 0 59)) "Incorrect 2-digit minute"
     lift $ modify _{minute = Just mm}
     cb a
   Minutes a → do
-    ds ← some parseDigit
-    let mm = foldDigits ds
-    when (Arr.length ds > 2 || mm < 0 || mm > 59) $ P.fail "Incorrect minute"
+    mm ← parseInt 2 (validateRange 0 59) "Incorrect minute"
     lift $ modify _{minute = Just mm}
     cb a
   SecondsTwoDigits a → do
-    ds ← some parseDigit
-    let ss = foldDigits ds
-    when (Arr.length ds /= 2 || ss < 0 || ss > 59) $ P.fail "Incorrect 2-digit second"
+    ss ← parseInt 2 (exactLength *> (validateRange 0 59)) "Incorrect 2-digit second"
     lift $ modify _{second = Just ss}
     cb a
   Seconds a → do
-    ds ← some parseDigit
-    let ss = foldDigits ds
-    when (Arr.length ds > 2 || ss < 0 || ss > 59) $ P.fail "Incorrect second"
+    ss ← parseInt 2 (validateRange 0 59) "Incorrect second"
     lift $ modify _{second = Just ss}
     cb a
   Milliseconds a → do
-    ds ← some parseDigit
-    let sss = foldDigits ds
-    when (Arr.length ds /= 3 || sss < 0 || sss > 999) $ P.fail "Incorrect millisecond"
+    sss ← parseInt 3 (exactLength *> (validateRange 0 999)) "Incorrect millisecond"
     lift $ modify _{millisecond = Just sss}
     cb a
   Placeholder s a →
     PS.string s *> cb a
   MillisecondsShort a → do
-    ds ← some parseDigit
-    let s = foldDigits ds
-    when (Arr.length ds /= 1 || s < 0 || s > 9) $ P.fail "Incorrect 1-digit millisecond"
+    s ← parseInt 1 (exactLength *> (validateRange 0 9)) "Incorrect 1-digit millisecond"
     lift $ modify _{millisecond = Just s}
     cb a
   MillisecondsTwoDigits a → do
-    ds ← some parseDigit
-    let ss = foldDigits ds
-    when (Arr.length ds /= 2 || ss < 0 || ss > 99) $ P.fail "Incorrect 2-digit millisecond"
+    ss ← parseInt 2 (exactLength *> (validateRange 0 99)) "Incorrect 2-digit millisecond"
     lift $ modify _{millisecond = Just ss}
     cb a
   End →
