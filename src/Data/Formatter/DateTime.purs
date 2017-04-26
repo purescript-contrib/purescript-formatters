@@ -38,7 +38,7 @@ import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
-
+import Control.Monad.State.Class (class MonadState)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
@@ -246,17 +246,15 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   YearFull a →
     (show $ fromEnum $ D.year d) <> cb a
   YearTwoDigits a ->
-    let y = (fromEnum $ D.year d)
-    in (formatYearTwoDigits y) <> cb a
+    (formatYearTwoDigits $ fromEnum $ D.year d) <> cb a
   YearAbsolute a →
     show (fromEnum $ D.year d) <> cb a
   MonthFull a →
     show (D.month d) <> cb a
   MonthShort a →
-    printShortMonth (D.month d) <> cb a
+    (printShortMonth $ D.month d) <> cb a
   MonthTwoDigits a →
-    let month = fromEnum $ D.month d
-    in (padSingleDigit month) <> cb a
+    (padSingleDigit $ fromEnum $ D.month d) <> cb a
   DayOfMonthTwoDigits a →
     (padSingleDigit $ fromEnum $ D.day d) <> cb a
   DayOfMonth a →
@@ -399,39 +397,24 @@ unformatFParser
   → FormatterF a
   → P.ParserT String (State UnformatAccum) Unit
 unformatFParser cb = case _ of
-  YearFull a → do
-    year ← parseInt 4 exactLength "Incorrect full year"
-    lift $ modify _{year = Just $ year}
-    cb a
-  YearTwoDigits a → do
-    y ← parseInt 2 exactLength "Incorrect 2-digit year"
-    lift $ modify _{year = Just $ if y > 69 then y + 1900 else y + 2000}
-    cb a
-  YearAbsolute a → do
-    sign ← PC.optionMaybe $ PC.try $ PS.string "-"
-    year ← map foldDigits $ some parseDigit
-    lift $ modify _{year = Just $ (if isJust sign then -1 else 1) * year}
-    cb a
-  MonthFull a → do
-    month ← parseMonth
-    lift $ modify _{month = Just $ fromEnum month}
-    cb a
-  MonthShort a → do
-    month ← parseShortMonth
-    lift $ modify _{month = Just $ fromEnum month}
-    cb a
-  MonthTwoDigits a → do
-    month ← parseInt 2 (validateRange 1 12 *> exactLength) "Incorrect 2-digit month"
-    lift $ modify _{month = Just month}
-    cb a
-  DayOfMonthTwoDigits a → do
-    dom ← parseInt 2 (validateRange 1 31 *> exactLength) "Incorrect day of month"
-    lift $ modify _{day = Just dom}
-    cb a
-  DayOfMonth a → do
-    dom ← parseInt 2 (validateRange 1 31) "Incorrect day of month"
-    lift $ modify _{day = Just dom}
-    cb a
+  YearFull a → _{year = _} `modifyWithParser`
+    (parseInt 4 exactLength "Incorrect full year") *> cb a
+  YearTwoDigits a → _{year = _} `modifyWithParser`
+    (parseInt 2 exactLength "Incorrect 2-digit year") *> cb a
+  YearAbsolute a → _{year = _} `modifyWithParser`
+    (lift2 (*)
+      (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
+      (some parseDigit <#> foldDigits)) *> cb a
+  MonthFull a → _{month = _} `modifyWithParser`
+    (fromEnum <$> parseMonth) *> cb a
+  MonthShort a → _{month = _} `modifyWithParser`
+    (fromEnum <$> parseShortMonth) *> cb a
+  MonthTwoDigits a → _{month = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 12 *> exactLength) "Incorrect 2-digit month") *> cb a
+  DayOfMonthTwoDigits a → _{day = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 31 *> exactLength) "Incorrect day of month") *> cb a
+  DayOfMonth a → _{day = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 31) "Incorrect day of month") *> cb a
   UnixTimestamp a → do
     s ← map foldDigits $ some parseDigit
     case map toDateTime $ instant $ Dur.Milliseconds $ 1000.0 * Int.toNumber s of
@@ -447,59 +430,35 @@ unformatFParser cb = case _ of
                    , meridiem: (Nothing ∷ Maybe Meridiem)
                    }
         cb a
-  DayOfWeek a → do
   -- TODO we would need to use this value if we support date format using week number
-    dow ← parseInt 1 (validateRange 1 7) "Incorrect day of week"
-    cb a
-  Hours24 a → do
-    hh ← parseInt 2 (validateRange 0 23 *> exactLength) "Incorrect 24 hour"
-    lift $ modify _{hour = Just hh}
-    cb a
-  Hours12 a → do
-    hh ← parseInt 2 (validateRange 0 11 *> exactLength) "Incorrect 12 hour"
-    lift $ modify _{hour = Just hh}
-    cb a
-  Meridiem a → do
-    m ←
-      PC.choice [ PC.try $ PS.string "am" $> AM
-                , PC.try $ PS.string "AM" $> AM
-                , PC.try $ PS.string "pm" $> PM
-                , PC.try $ PS.string "PM" $> PM
-                ]
-    lift $ modify _{meridiem = Just m}
-    cb a
-  MinutesTwoDigits a → do
-    mm ← parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit minute"
-    lift $ modify _{minute = Just mm}
-    cb a
-  Minutes a → do
-    mm ← parseInt 2 (validateRange 0 59) "Incorrect minute"
-    lift $ modify _{minute = Just mm}
-    cb a
-  SecondsTwoDigits a → do
-    ss ← parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit second"
-    lift $ modify _{second = Just ss}
-    cb a
-  Seconds a → do
-    ss ← parseInt 2 (validateRange 0 59) "Incorrect second"
-    lift $ modify _{second = Just ss}
-    cb a
-  Milliseconds a → do
-    sss ← parseInt 3 exactLength "Incorrect millisecond"
-    lift $ modify _{millisecond = Just sss}
-    cb a
-  Placeholder s a →
-    PS.string s *> cb a
-  MillisecondsShort a → do
-    s ← parseInt 1 exactLength "Incorrect 1-digit millisecond"
-    lift $ modify _{millisecond = Just s}
-    cb a
-  MillisecondsTwoDigits a → do
-    ss ← parseInt 2 exactLength "Incorrect 2-digit millisecond"
-    lift $ modify _{millisecond = Just ss}
-    cb a
-  End →
-    pure unit
+  DayOfWeek a → (parseInt 1 (validateRange 1 7) "Incorrect day of week") *> cb a
+  Hours24 a → _{hour = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 23 *> exactLength) "Incorrect 24 hour") *> cb a
+  Hours12 a → _{hour = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 11 *> exactLength) "Incorrect 12 hour") *> cb a
+  Meridiem a → _{meridiem = _} `modifyWithParser`
+    parseMeridiem *> cb a
+  MinutesTwoDigits a → _{minute = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit minute") *> cb a
+  Minutes a → _{minute = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59) "Incorrect minute") *> cb a
+  SecondsTwoDigits a → _{second = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit second") *> cb a
+  Seconds a → _{second = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59) "Incorrect second") *> cb a
+  Milliseconds a → _{millisecond = _} `modifyWithParser`
+    (parseInt 3 exactLength "Incorrect millisecond") *> cb a
+  Placeholder s a → PS.string s *> cb a
+  MillisecondsShort a → _{millisecond = _} `modifyWithParser`
+    (parseInt 1 exactLength "Incorrect 1-digit millisecond") *> cb a
+  MillisecondsTwoDigits a → _{millisecond = _} `modifyWithParser`
+    (parseInt 2 exactLength "Incorrect 2-digit millisecond") *> cb a
+  End → pure unit
+  where
+  modifyWithParser :: ∀ s x m. MonadState s m => (s -> Maybe x -> s) -> m x -> m Unit
+  modifyWithParser f p = do
+    v <- p
+    lift $ modify (flip f (Just v))
 
 unformatParser ∷ ∀ m. Monad m => Formatter → P.ParserT String m DT.DateTime
 unformatParser f' = do
@@ -517,6 +476,14 @@ unformatParser f' = do
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= flip unformat str
+
+parseMeridiem ∷ ∀ m. Monad m ⇒ P.ParserT String m Meridiem
+parseMeridiem =  (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "am" AM
+  , Tuple "AM" AM
+  , Tuple "pm" PM
+  , Tuple "PM" PM
+  ]
 
 parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
 parseMonth = (PC.try <<< PS.string) `oneOfAs`
