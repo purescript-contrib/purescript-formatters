@@ -52,7 +52,7 @@ parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
 
 
-notEmpty ∷ ∀ a. Monoid a => Eq a => P.Parser String a → String → P.Parser String a
+notEmpty ∷ ∀ a. Monoid a ⇒ Eq a ⇒ P.Parser String a → String → P.Parser String a
 notEmpty p str = p >>= \x → if x == mempty then P.fail str else pure x
 
 mkComponentsParser ∷ Array (Tuple (Number → I.Duration) String) → P.Parser String I.Duration
@@ -62,7 +62,7 @@ mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> 
   applyDurations ∷ Tuple (Number → I.Duration) String → P.Parser String (Maybe I.Duration)
   applyDurations (Tuple f c) = PC.optionMaybe $ PC.try (f <$> component c)
 
-  foldFoldableMaybe ∷ ∀ f a. Foldable f => Monoid a => f (Maybe a) → a
+  foldFoldableMaybe ∷ ∀ f a. Foldable f ⇒ Monoid a ⇒ f (Maybe a) → a
   foldFoldableMaybe = foldMap fold
 
   component ∷ String → P.Parser String Number
@@ -70,7 +70,7 @@ mkComponentsParser arr = p `notEmpty` ("none of valid duration components (" <> 
 
 
 -- parser for DateTime in UTC time zone using "extended format"
-parseDateTime ∷ ∀ m. Monad m => P.ParserT String m DateTime
+parseDateTime ∷ ∀ m. Monad m ⇒ P.ParserT String m DateTime
 parseDateTime = unformatParser extendedDateTimeFormatInUTC
 
 extendedDateTimeFormatInUTC ∷ Formatter

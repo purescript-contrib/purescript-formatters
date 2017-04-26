@@ -16,7 +16,7 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 import Control.Monad.Aff (Aff)
 
-prop ∷ ∀ e e' f. Foldable f => String → f {str ∷ String | e'} → ({str ∷ String | e'} → Aff e Unit) → Spec e Unit
+prop ∷ ∀ e e' f. Foldable f ⇒ String → f {str ∷ String | e'} → ({str ∷ String | e'} → Aff e Unit) → Spec e Unit
 prop = forAll (show <<< _.str)
 
 intervalTest ∷ ∀ e. Spec e Unit

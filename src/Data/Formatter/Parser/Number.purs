@@ -20,22 +20,22 @@ import Data.Maybe (Maybe)
 import Data.Foldable (foldMap)
 import Global (readFloat)
 
-parseInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
+parseInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
 parseInteger = some parseDigit <#> foldDigits
 
-parseMaybeInteger ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m (Maybe Int)
+parseMaybeInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m (Maybe Int)
 parseMaybeInteger = PC.optionMaybe parseInteger
 
-parseFractional ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Number
+parseFractional ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
 parseFractional = (some parseDigit) <#> (foldMap show >>> ("0." <> _) >>> readFloat)
 
-parseNumber ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Number
+parseNumber ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
 parseNumber = (+)
   <$> (parseInteger <#> toNumber)
   <*> (PC.option 0.0 $ PC.try $ PS.oneOf ['.', ','] *> parseFractional)
 
 
-parseDigit ∷ ∀ s m. Monad m => PS.StringLike s => P.ParserT s m Int
+parseDigit ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
   [ Tuple '0' 0
   , Tuple '1' 1
