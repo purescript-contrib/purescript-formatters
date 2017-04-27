@@ -16,7 +16,6 @@ import Prelude
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.State.Class (get)
-import Debug.Trace (traceAnyA)
 import Data.Ord (abs)
 import Data.Array as Array
 import Data.List as List
@@ -195,7 +194,7 @@ format f d = foldMap (formatCommand d) f
 
 formatDateTime ∷ String → DT.DateTime → Either String String
 formatDateTime pattern datetime =
-  parseFormatString pattern <#> flip format datetime
+  parseFormatString pattern <#> (_ `format` datetime)
 
 unformat ∷ Formatter → String → Either String DT.DateTime
 unformat = runP <<< unformatParser
@@ -352,7 +351,7 @@ unformatParser f = do
 
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
-  parseFormatString pattern >>= flip unformat str
+  parseFormatString pattern >>= (_ `unformat` str)
 
 parseMeridiem ∷ ∀ m. Monad m ⇒ P.ParserT String m Meridiem
 parseMeridiem =  (PC.try <<< PS.string) `oneOfAs`
