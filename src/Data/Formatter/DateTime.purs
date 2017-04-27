@@ -315,10 +315,6 @@ unformatAccumToDateTime a =
     | otherwise = Nothing
 
 
--- NOTE `ReaderT s (Either e) Unit` forms Monoid where
--- `mempty = lift $ Right unit` (noValidate) and `concat = (*>)`
-noValidate ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
-noValidate = lift $ Right unit
 
 exactLength ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
 exactLength = ask >>= \({maxLength, length}) → if maxLength /= length
@@ -364,9 +360,9 @@ unformatFParser cb = case _ of
   MonthShort a → _{month = _} `modifyWithParser`
     (fromEnum <$> parseShortMonth) *> cb a
   MonthTwoDigits a → _{month = _} `modifyWithParser`
-    (parseInt 2 (validateRange 1 12 *> exactLength) "Incorrect 2-digit month") *> cb a
+    (parseInt 2 (validateRange 1 12 <> exactLength) "Incorrect 2-digit month") *> cb a
   DayOfMonthTwoDigits a → _{day = _} `modifyWithParser`
-    (parseInt 2 (validateRange 1 31 *> exactLength) "Incorrect day of month") *> cb a
+    (parseInt 2 (validateRange 1 31 <> exactLength) "Incorrect day of month") *> cb a
   DayOfMonth a → _{day = _} `modifyWithParser`
     (parseInt 2 (validateRange 1 31) "Incorrect day of month") *> cb a
   UnixTimestamp a → do
@@ -387,17 +383,17 @@ unformatFParser cb = case _ of
   -- TODO we would need to use this value if we support date format using week number
   DayOfWeek a → (parseInt 1 (validateRange 1 7) "Incorrect day of week") *> cb a
   Hours24 a → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 23 *> exactLength) "Incorrect 24 hour") *> cb a
+    (parseInt 2 (validateRange 0 23 <> exactLength) "Incorrect 24 hour") *> cb a
   Hours12 a → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 11 *> exactLength) "Incorrect 12 hour") *> cb a
+    (parseInt 2 (validateRange 0 11 <> exactLength) "Incorrect 12 hour") *> cb a
   Meridiem a → _{meridiem = _} `modifyWithParser`
     parseMeridiem *> cb a
   MinutesTwoDigits a → _{minute = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit minute") *> cb a
+    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute") *> cb a
   Minutes a → _{minute = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 59) "Incorrect minute") *> cb a
   SecondsTwoDigits a → _{second = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59 *> exactLength) "Incorrect 2-digit second") *> cb a
+    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit second") *> cb a
   Seconds a → _{second = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 59) "Incorrect second") *> cb a
   Milliseconds a → _{millisecond = _} `modifyWithParser`

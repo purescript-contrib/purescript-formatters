@@ -20,6 +20,7 @@
     "purescript-parsing": "^4.2.1",
     "purescript-fixed-points": "^4.0.0",
     "purescript-datetime": "git://github.com/safareli/purescript-datetime.git#interval",
+    "purescript-transformers": "git://github.com/safareli/purescript-transformers.git#readermonoid",
     "purescript-lists": "git://github.com/safareli/purescript-lists.git#somemany",
     "purescript-generics-rep": "^5.0.0"
   },
@@ -31,6 +32,7 @@
   },
   "resolutions": {
     "purescript-lists": "somemany",
+    "purescript-transformers": "readermonoid",
     "purescript-datetime": "interval"
   }
 }
