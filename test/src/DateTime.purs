@@ -5,10 +5,10 @@ import Prelude
 
 import Data.Formatter.DateTime as FDT
 import Control.Monad.Aff (Aff)
+import Data.List (fromFoldable)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Control.MonadZero (guard)
-import Data.Functor.Mu (roll)
 import Control.Alternative (class Alternative, empty)
 
 import Test.Spec (describe, Spec)
@@ -56,7 +56,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       _.str
      "shouldn't parse"
       invalidDateformats
-      (\f → (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected to contain only valid characters@" <> f.pos))
+      (\f → (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected EOF@" <> f.pos))
 
   forAll
     (\a → a.format <> " | " <> a.date)
@@ -96,76 +96,77 @@ invalidDateformats ∷ Array { str ∷ String , pos ∷ String }
 invalidDateformats =
   [ { str: "YY-h-dddd HH:mm Z", pos: "1:4" }
   , { str: "YYYY-MM-DD M", pos: "1:12" }
+  , { str: "YYYYM", pos: "1:5" }
   ]
 
 dateformats ∷ Array { str ∷ String , lossless ∷ Boolean, format ∷ FDT.Formatter }
 dateformats =
   [ { str: "YYYY-MM-DD"
     , lossless: false
-    , format:
-      roll $ FDT.YearFull $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.MonthTwoDigits $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.DayOfMonthTwoDigits $
-      roll FDT.End
+    , format: fromFoldable
+      [ FDT.YearFull
+      , FDT.Placeholder "-"
+      , FDT.MonthTwoDigits
+      , FDT.Placeholder "-"
+      , FDT.DayOfMonthTwoDigits
+      ]
     }
   , { str: "Y-MM-DD HH:mm:ss:SSS"
     , lossless: true
-    , format:
-      roll $ FDT.YearAbsolute $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.MonthTwoDigits $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.DayOfMonthTwoDigits $
-      roll $ FDT.Placeholder " " $
-      roll $ FDT.Hours24 $
-      roll $ FDT.Placeholder ":" $
-      roll $ FDT.MinutesTwoDigits $
-      roll $ FDT.Placeholder ":" $
-      roll $ FDT.SecondsTwoDigits $
-      roll $ FDT.Placeholder ":" $
-      roll $ FDT.Milliseconds $
-      roll FDT.End
+    , format: fromFoldable
+      [ FDT.YearAbsolute
+      , FDT.Placeholder "-"
+      , FDT.MonthTwoDigits
+      , FDT.Placeholder "-"
+      , FDT.DayOfMonthTwoDigits
+      , FDT.Placeholder " "
+      , FDT.Hours24
+      , FDT.Placeholder ":"
+      , FDT.MinutesTwoDigits
+      , FDT.Placeholder ":"
+      , FDT.SecondsTwoDigits
+      , FDT.Placeholder ":"
+      , FDT.Milliseconds
+      ]
     }
   , { str: "YY-Z-DD HH:mm Z"
     , lossless: false
-    , format:
-      roll $ FDT.YearTwoDigits $
-      roll $ FDT.Placeholder "-Z-" $
-      roll $ FDT.DayOfMonthTwoDigits $
-      roll $ FDT.Placeholder " " $
-      roll $ FDT.Hours24 $
-      roll $ FDT.Placeholder ":" $
-      roll $ FDT.MinutesTwoDigits $
-      roll $ FDT.Placeholder " Z" $
-      roll FDT.End
+    , format: fromFoldable
+      [ FDT.YearTwoDigits
+      , FDT.Placeholder "-Z-"
+      , FDT.DayOfMonthTwoDigits
+      , FDT.Placeholder " "
+      , FDT.Hours24
+      , FDT.Placeholder ":"
+      , FDT.MinutesTwoDigits
+      , FDT.Placeholder " Z"
+      ]
     }
   , { str: "DD-MM-YYYY trololo HH-:-mm"
     , lossless: false
-    , format:
-      roll $ FDT.DayOfMonthTwoDigits $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.MonthTwoDigits $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.YearFull $
-      roll $ FDT.Placeholder " trololo " $
-      roll $ FDT.Hours24 $
-      roll $ FDT.Placeholder "-:-" $
-      roll $ FDT.MinutesTwoDigits $
-      roll FDT.End
+    , format: fromFoldable
+      [ FDT.DayOfMonthTwoDigits
+      , FDT.Placeholder "-"
+      , FDT.MonthTwoDigits
+      , FDT.Placeholder "-"
+      , FDT.YearFull
+      , FDT.Placeholder " trololo "
+      , FDT.Hours24
+      , FDT.Placeholder "-:-"
+      , FDT.MinutesTwoDigits
+      ]
     }
   , { str: "YYYY-DD-MM SSS"
     , lossless: false
-    , format:
-      roll $ FDT.YearFull $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.DayOfMonthTwoDigits $
-      roll $ FDT.Placeholder "-" $
-      roll $ FDT.MonthTwoDigits $
-      roll $ FDT.Placeholder " " $
-      roll $ FDT.Milliseconds $
-      roll FDT.End
+    , format: fromFoldable
+      [ FDT.YearFull
+      , FDT.Placeholder "-"
+      , FDT.DayOfMonthTwoDigits
+      , FDT.Placeholder "-"
+      , FDT.MonthTwoDigits
+      , FDT.Placeholder " "
+      , FDT.Milliseconds
+      ]
     }
   ]
 

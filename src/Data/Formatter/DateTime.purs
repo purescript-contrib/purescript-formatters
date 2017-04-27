@@ -1,6 +1,6 @@
 module Data.Formatter.DateTime
   ( Formatter
-  , FormatterF(..)
+  , FormatterCommand(..)
   , Meridiem
   , printFormatter
   , parseFormatString
@@ -13,26 +13,27 @@ module Data.Formatter.DateTime
 
 import Prelude
 
-import Control.Lazy as Lazy
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
-
+import Control.Monad.State.Class (get)
+import Debug.Trace (traceAnyA)
 import Data.Ord (abs)
-import Data.Array (some)
-import Data.List.Lazy as List
+import Data.Array as Array
+import Data.List as List
+import Data.List.Lazy as LazyList
 import Data.Tuple (Tuple(..))
+import Data.Foldable (foldMap)
+import Control.Alt ((<|>))
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
-import Data.Functor.Mu (Mu, unroll, roll)
 import Data.Int as Int
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Data.Newtype (unwrap)
 import Data.String as Str
 import Data.Time as T
-import Data.Eq (class Eq1)
 import Data.Time.Duration as Dur
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
@@ -40,101 +41,104 @@ import Data.Formatter.Parser.Utils (runP, oneOfAs)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
+import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.String as PS
 
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 
-data FormatterF a
-  = YearFull a
-  | YearTwoDigits a
-  | YearAbsolute a
-  | MonthFull a
-  | MonthShort a
-  | MonthTwoDigits a
-  | DayOfMonthTwoDigits a
-  | DayOfMonth a
-  | UnixTimestamp a
-  | DayOfWeek a
-  | Hours24 a
-  | Hours12 a
-  | Meridiem a
-  | Minutes a
-  | MinutesTwoDigits a
-  | Seconds a
-  | SecondsTwoDigits a
-  | Milliseconds a
-  | MillisecondsShort a
-  | MillisecondsTwoDigits a
-  | Placeholder String a
-  | End
+data FormatterCommand
+  = YearFull
+  | YearTwoDigits
+  | YearAbsolute
+  | MonthFull
+  | MonthShort
+  | MonthTwoDigits
+  | DayOfMonthTwoDigits
+  | DayOfMonth
+  | UnixTimestamp
+  | DayOfWeek
+  | Hours24
+  | Hours12
+  | Meridiem
+  | Minutes
+  | MinutesTwoDigits
+  | Seconds
+  | SecondsTwoDigits
+  | Milliseconds
+  | MillisecondsShort
+  | MillisecondsTwoDigits
+  | Placeholder String
 
-derive instance functorFormatterF ∷ Functor FormatterF
+derive instance eqFormatterCommand ∷ Eq (FormatterCommand)
+derive instance genericFormatter ∷ Generic FormatterCommand _
+instance showFormatter ∷ Show FormatterCommand where
+  show = genericShow
 
-instance showFormatterF ∷ Show a ⇒ Show (FormatterF a) where
-  show (YearFull a) = "(YearFull " <> (show a) <> "c"
-  show (YearTwoDigits a) = "(YearTwoDigits " <> (show a) <> ")"
-  show (YearAbsolute a) = "(YearAbsolute " <> (show a) <> ")"
-  show (MonthFull a) = "(MonthFull " <> (show a) <> ")"
-  show (MonthShort a) = "(MonthShort " <> (show a) <> ")"
-  show (MonthTwoDigits a) = "(MonthTwoDigits " <> (show a) <> ")"
-  show (DayOfMonthTwoDigits a) = "(DayOfMonthTwoDigits " <> (show a) <> ")"
-  show (DayOfMonth a) = "(DayOfMonth " <> (show a) <> ")"
-  show (UnixTimestamp a) = "(UnixTimestamp " <> (show a) <> ")"
-  show (DayOfWeek a) = "(DayOfWeek " <> (show a) <> ")"
-  show (Hours24 a) = "(Hours24 " <> (show a) <> ")"
-  show (Hours12 a) = "(Hours12 " <> (show a) <> ")"
-  show (Meridiem a) = "(Meridiem " <> (show a) <> ")"
-  show (Minutes a) = "(Minutes " <> (show a) <> ")"
-  show (MinutesTwoDigits a) = "(MinutesTwoDigits " <> (show a) <> ")"
-  show (Seconds a) = "(Seconds " <> (show a) <> ")"
-  show (SecondsTwoDigits a) = "(SecondsTwoDigits " <> (show a) <> ")"
-  show (Milliseconds a) = "(Milliseconds " <> (show a) <> ")"
-  show (MillisecondsShort a) = "(MillisecondsShort " <> (show a) <> ")"
-  show (MillisecondsTwoDigits a) = "(MillisecondsTwoDigits " <> (show a) <> ")"
-  show (Placeholder str a) = "(Placeholder " <> (show str) <> " "<> (show a) <> ")"
-  show End = "End"
+type Formatter = List.List FormatterCommand
 
-derive instance eqFormatterF ∷ Eq a ⇒ Eq (FormatterF a)
-
-instance eq1FormatterF ∷ Eq1 FormatterF where
-  eq1 = eq
-
-
-type Formatter = Mu FormatterF
-
-printFormatterF
-  ∷ ∀ a
-  . (a → String)
-  → FormatterF a
-  → String
-printFormatterF cb = case _ of
-  YearFull a → "YYYY" <> cb a
-  YearTwoDigits a → "YY" <> cb a
-  YearAbsolute a → "Y" <> cb a
-  MonthFull a → "MMMM" <> cb a
-  MonthShort a → "MMM" <> cb a
-  MonthTwoDigits a → "MM" <> cb a
-  DayOfMonthTwoDigits a → "DD" <> cb a
-  DayOfMonth a → "D" <> cb a
-  UnixTimestamp a → "X" <> cb a
-  DayOfWeek a → "E" <> cb a
-  Hours24 a → "HH" <> cb a
-  Hours12 a → "hh" <> cb a
-  Meridiem a → "a" <> cb a
-  Minutes a → "m" <> cb a
-  MinutesTwoDigits a → "mm" <> cb a
-  Seconds a → "s" <> cb a
-  SecondsTwoDigits a → "ss" <> cb a
-  MillisecondsShort a → "S" <> cb a
-  MillisecondsTwoDigits a → "SS" <> cb a
-  Milliseconds a → "SSS" <> cb a
-  Placeholder s a → s <> cb a
-  End → ""
+printFormatterCommand ∷ FormatterCommand → String
+printFormatterCommand = case _ of
+  YearFull → "YYYY"
+  YearTwoDigits → "YY"
+  YearAbsolute → "Y"
+  MonthFull → "MMMM"
+  MonthShort → "MMM"
+  MonthTwoDigits → "MM"
+  DayOfMonthTwoDigits → "DD"
+  DayOfMonth → "D"
+  UnixTimestamp → "X"
+  DayOfWeek → "E"
+  Hours24 → "HH"
+  Hours12 → "hh"
+  Meridiem → "a"
+  Minutes → "m"
+  MinutesTwoDigits → "mm"
+  Seconds → "s"
+  SecondsTwoDigits → "ss"
+  MillisecondsShort → "S"
+  MillisecondsTwoDigits → "SS"
+  Milliseconds → "SSS"
+  Placeholder s → s
 
 printFormatter ∷ Formatter → String
-printFormatter f = printFormatterF printFormatter $ unroll f
+printFormatter = foldMap printFormatterCommand
 
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
+
+placeholderContent ∷ P.Parser String String
+placeholderContent =
+  Str.toCharArray "YMDEHhamsS"
+  # PS.noneOf
+  # Array.some
+  <#> Str.fromCharArray
+
+formatterCommandParser ∷ P.Parser String FormatterCommand
+formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "YYYY" YearFull
+  , Tuple "YY" YearTwoDigits
+  , Tuple "Y" YearAbsolute
+  , Tuple "MMMM" MonthFull
+  , Tuple "MMM" MonthShort
+  , Tuple "MM" MonthTwoDigits
+  , Tuple "DD" DayOfMonthTwoDigits
+  , Tuple "D" DayOfMonth
+  , Tuple "E" DayOfWeek
+  , Tuple "HH" Hours24
+  , Tuple "hh" Hours12
+  , Tuple "a" Meridiem
+  , Tuple "mm" MinutesTwoDigits
+  , Tuple "m" Minutes
+  , Tuple "ss" SecondsTwoDigits
+  , Tuple "s" Seconds
+  , Tuple "SSS" Milliseconds
+  , Tuple "SS" MillisecondsTwoDigits
+  , Tuple "S" MillisecondsShort
+  ] <|> (Placeholder <$> placeholderContent)
+
+formatParser ∷ P.Parser String Formatter
+formatParser = List.some formatterCommandParser
 
 -- | Formatting function that accepts a number that is a year,
 -- | and strips away the non-significant digits, leaving only the
@@ -148,99 +152,32 @@ formatYearTwoDigits i = case dateLength of
   dateString = show $ abs i
   dateLength = Str.length $ dateString
 
+fix12 ∷ Int -> Int
+fix12 h = if h == 0 then 12 else h
 
-placeholderContent ∷ P.Parser String String
-placeholderContent =
-  map Str.fromCharArray
-    $ PC.try
-    $ some
-    $ PS.noneOf
-    $ Str.toCharArray "YMDEHhamsS"
-
-formatterFParser
-  ∷ ∀ a
-  . P.Parser String a
-  → P.Parser String (FormatterF a)
-formatterFParser cb =
-  PC.choice
-    [ (PC.try $ PS.string "YYYY") *> map YearFull cb
-    , (PC.try $ PS.string "YY") *> map YearTwoDigits cb
-    , (PC.try $ PS.string "Y") *> map YearAbsolute cb
-    , (PC.try $ PS.string "MMMM") *> map MonthFull cb
-    , (PC.try $ PS.string "MMM") *> map MonthShort cb
-    , (PC.try $ PS.string "MM") *> map MonthTwoDigits cb
-    , (PC.try $ PS.string "DD") *> map DayOfMonthTwoDigits cb
-    , (PC.try $ PS.string "D") *> map DayOfMonth cb
-    , (PC.try $ PS.string "E") *> map DayOfWeek cb
-    , (PC.try $ PS.string "HH") *> map Hours24 cb
-    , (PC.try $ PS.string "hh") *> map Hours12 cb
-    , (PC.try $ PS.string "a") *> map Meridiem cb
-    , (PC.try $ PS.string "mm") *> map MinutesTwoDigits cb
-    , (PC.try $ PS.string "m") *> map Minutes cb
-    , (PC.try $ PS.string "ss") *> map SecondsTwoDigits cb
-    , (PC.try $ PS.string "s") *> map Seconds cb
-    , (PC.try $ PS.string "SSS") *> map Milliseconds cb
-    , (PC.try $ PS.string "SS") *> map MillisecondsTwoDigits cb
-    , (PC.try $ PS.string "S") *> map MillisecondsShort cb
-    , (Placeholder <$> placeholderContent <*> cb)
-    , (PS.eof $> End)
-    ] PC.<?> "to contain only valid characters"
-
-formatParser ∷ P.Parser String Formatter
-formatParser =
-  Lazy.fix \f → map roll $ formatterFParser f
-
-formatF
-  ∷ ∀ a
-  . (a → String)
-  → DT.DateTime
-  → FormatterF a
-  → String
-formatF cb dt@(DT.DateTime d t) = case _ of
-  YearFull a →
-    (show $ fromEnum $ D.year d) <> cb a
-  YearTwoDigits a →
-    (formatYearTwoDigits $ fromEnum $ D.year d) <> cb a
-  YearAbsolute a →
-    show (fromEnum $ D.year d) <> cb a
-  MonthFull a →
-    show (D.month d) <> cb a
-  MonthShort a →
-    (printShortMonth $ D.month d) <> cb a
-  MonthTwoDigits a →
-    (padSingleDigit $ fromEnum $ D.month d) <> cb a
-  DayOfMonthTwoDigits a →
-    (padSingleDigit $ fromEnum $ D.day d) <> cb a
-  DayOfMonth a →
-    show (fromEnum $ D.day d) <> cb a
-  UnixTimestamp a →
-    (show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt) <> cb a
-  DayOfWeek a →
-    show (fromEnum $ D.weekday d) <> cb a
-  Hours24 a →
-    padSingleDigit (fromEnum $ T.hour t) <> cb a
-  Hours12 a →
-    let fix12 h = if h == 0 then 12 else h
-    in (padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
-  Meridiem a →
-    (if (fromEnum $ T.hour t) >= 12 then "PM" else "AM") <> cb a
-  Minutes a →
-    show (fromEnum $ T.minute t) <> cb a
-  MinutesTwoDigits a →
-    (padSingleDigit <<< fromEnum $ T.minute t) <> cb a
-  Seconds a →
-    show (fromEnum $ T.second t) <> cb a
-  SecondsTwoDigits a →
-    (padSingleDigit <<< fromEnum $ T.second t) <> cb a
-  Milliseconds a →
-    (padDoubleDigit <<< fromEnum $ T.millisecond t) <> cb a
-  MillisecondsShort a →
-    (show $ (_ / 100) $ fromEnum $ T.millisecond t) <> cb a
-  MillisecondsTwoDigits a →
-    (padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t) <> cb a
-  Placeholder s a →
-    s <> cb a
-  End → ""
+formatCommand ∷ DT.DateTime → FormatterCommand → String
+formatCommand dt@(DT.DateTime d t) = case _ of
+  YearFull → show $ fromEnum $ D.year d
+  YearTwoDigits → formatYearTwoDigits $ fromEnum $ D.year d
+  YearAbsolute → show $ fromEnum $ D.year d
+  MonthFull → show $ D.month d
+  MonthShort → printShortMonth $ D.month d
+  MonthTwoDigits → padSingleDigit $ fromEnum $ D.month d
+  DayOfMonthTwoDigits → padSingleDigit $ fromEnum $ D.day d
+  DayOfMonth → show $ fromEnum $ D.day d
+  UnixTimestamp → show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt
+  DayOfWeek → show $ fromEnum $ D.weekday d
+  Hours24 → padSingleDigit (fromEnum $ T.hour t)
+  Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
+  Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
+  Minutes → show $ fromEnum $ T.minute t
+  MinutesTwoDigits → padSingleDigit <<< fromEnum $ T.minute t
+  Seconds → show $ fromEnum $ T.second t
+  SecondsTwoDigits → padSingleDigit <<< fromEnum $ T.second t
+  Milliseconds → padDoubleDigit <<< fromEnum $ T.millisecond t
+  MillisecondsShort → show $ (_ / 100) $ fromEnum $ T.millisecond t
+  MillisecondsTwoDigits → padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t
+  Placeholder s → s
 
 padSingleDigit ∷ Int → String
 padSingleDigit i
@@ -254,7 +191,7 @@ padDoubleDigit i
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
-format f dt = formatF (flip format dt) dt $ unroll f
+format f d = foldMap (formatCommand d) f
 
 formatDateTime ∷ String → DT.DateTime → Either String String
 formatDateTime pattern datetime =
@@ -333,77 +270,69 @@ parseInt ∷ ∀ m
   → String
   → P.ParserT String m Int
 parseInt maxLength validators errMsg = do
-  ds ← List.take maxLength <$> (List.some parseDigit)
-  let length = List.length ds
+  ds ← LazyList.take maxLength <$> (LazyList.some parseDigit)
+  let length = LazyList.length ds
   let num = foldDigits ds
   case runReaderT validators {length, num, maxLength} of
     Left err → P.fail $ errMsg <> "(" <> err <> ")"
     Right _ → pure num
 
--- take
-unformatFParser
-  ∷ ∀ a
-  . (a → P.ParserT String (State UnformatAccum) Unit)
-  → FormatterF a
-  → P.ParserT String (State UnformatAccum) Unit
-unformatFParser cb = case _ of
-  YearFull a → _{year = _} `modifyWithParser`
-    (parseInt 4 exactLength "Incorrect full year") *> cb a
-  YearTwoDigits a → _{year = _} `modifyWithParser`
-    (parseInt 2 exactLength "Incorrect 2-digit year") *> cb a
-  YearAbsolute a → _{year = _} `modifyWithParser`
+unformatCommandParser ∷ FormatterCommand → P.ParserT String (State UnformatAccum) Unit
+unformatCommandParser = case _ of
+  YearFull → _{year = _} `modifyWithParser`
+    (parseInt 4 exactLength "Incorrect full year")
+  YearTwoDigits → _{year = _} `modifyWithParser`
+    (parseInt 2 exactLength "Incorrect 2-digit year")
+  YearAbsolute → _{year = _} `modifyWithParser`
     (pure (*)
       <*> (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
-      <*> (some parseDigit <#> foldDigits)) *> cb a
-  MonthFull a → _{month = _} `modifyWithParser`
-    (fromEnum <$> parseMonth) *> cb a
-  MonthShort a → _{month = _} `modifyWithParser`
-    (fromEnum <$> parseShortMonth) *> cb a
-  MonthTwoDigits a → _{month = _} `modifyWithParser`
-    (parseInt 2 (validateRange 1 12 <> exactLength) "Incorrect 2-digit month") *> cb a
-  DayOfMonthTwoDigits a → _{day = _} `modifyWithParser`
-    (parseInt 2 (validateRange 1 31 <> exactLength) "Incorrect day of month") *> cb a
-  DayOfMonth a → _{day = _} `modifyWithParser`
-    (parseInt 2 (validateRange 1 31) "Incorrect day of month") *> cb a
-  UnixTimestamp a → do
-    s ← map foldDigits $ some parseDigit
+      <*> (List.some parseDigit <#> foldDigits))
+  MonthFull → _{month = _} `modifyWithParser`
+    (fromEnum <$> parseMonth)
+  MonthShort → _{month = _} `modifyWithParser`
+    (fromEnum <$> parseShortMonth)
+  MonthTwoDigits → _{month = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 12 <> exactLength) "Incorrect 2-digit month")
+  DayOfMonthTwoDigits → _{day = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 31 <> exactLength) "Incorrect day of month")
+  DayOfMonth → _{day = _} `modifyWithParser`
+    (parseInt 2 (validateRange 1 31) "Incorrect day of month")
+  UnixTimestamp → do
+    s ← map foldDigits $ List.some parseDigit
     case map toDateTime $ instant $ Dur.Milliseconds $ 1000.0 * Int.toNumber s of
       Nothing → P.fail "Incorrect timestamp"
-      Just (DT.DateTime d t) → do
-        lift $ put { year: Just $ fromEnum $ D.year d
-                   , month: Just $ fromEnum $ D.month d
-                   , day: Just $ fromEnum $ D.day d
-                   , hour: Just $ fromEnum $ T.hour t
-                   , minute: Just $ fromEnum $ T.minute t
-                   , second: Just $ fromEnum $ T.second t
-                   , millisecond: Just $ fromEnum $ T.millisecond t
-                   , meridiem: (Nothing ∷ Maybe Meridiem)
-                   }
-        cb a
+      Just (DT.DateTime d t) → lift $ put
+        { year: Just $ fromEnum $ D.year d
+        , month: Just $ fromEnum $ D.month d
+        , day: Just $ fromEnum $ D.day d
+        , hour: Just $ fromEnum $ T.hour t
+        , minute: Just $ fromEnum $ T.minute t
+        , second: Just $ fromEnum $ T.second t
+        , millisecond: Just $ fromEnum $ T.millisecond t
+        , meridiem: (Nothing ∷ Maybe Meridiem)
+        }
   -- TODO we would need to use this value if we support date format using week number
-  DayOfWeek a → (parseInt 1 (validateRange 1 7) "Incorrect day of week") *> cb a
-  Hours24 a → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 23 <> exactLength) "Incorrect 24 hour") *> cb a
-  Hours12 a → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 11 <> exactLength) "Incorrect 12 hour") *> cb a
-  Meridiem a → _{meridiem = _} `modifyWithParser`
-    parseMeridiem *> cb a
-  MinutesTwoDigits a → _{minute = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute") *> cb a
-  Minutes a → _{minute = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59) "Incorrect minute") *> cb a
-  SecondsTwoDigits a → _{second = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit second") *> cb a
-  Seconds a → _{second = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 59) "Incorrect second") *> cb a
-  Milliseconds a → _{millisecond = _} `modifyWithParser`
-    (parseInt 3 exactLength "Incorrect millisecond") *> cb a
-  Placeholder s a → PS.string s *> cb a
-  MillisecondsShort a → _{millisecond = _} `modifyWithParser`
-    (parseInt 1 exactLength "Incorrect 1-digit millisecond") *> cb a
-  MillisecondsTwoDigits a → _{millisecond = _} `modifyWithParser`
-    (parseInt 2 exactLength "Incorrect 2-digit millisecond") *> cb a
-  End → pure unit
+  DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
+  Hours24 → _{hour = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 23 <> exactLength) "Incorrect 24 hour")
+  Hours12 → _{hour = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 11 <> exactLength) "Incorrect 12 hour")
+  Meridiem → _{meridiem = _} `modifyWithParser` parseMeridiem
+  MinutesTwoDigits → _{minute = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute")
+  Minutes → _{minute = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59) "Incorrect minute")
+  SecondsTwoDigits → _{second = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit second")
+  Seconds → _{second = _} `modifyWithParser`
+    (parseInt 2 (validateRange 0 59) "Incorrect second")
+  Milliseconds → _{millisecond = _} `modifyWithParser`
+    (parseInt 3 exactLength "Incorrect millisecond")
+  Placeholder s → void $ PS.string s
+  MillisecondsShort → _{millisecond = _} `modifyWithParser`
+    (parseInt 1 exactLength "Incorrect 1-digit millisecond")
+  MillisecondsTwoDigits → _{millisecond = _} `modifyWithParser`
+    (parseInt 2 exactLength "Incorrect 2-digit millisecond")
   where
   modifyWithParser ∷ ∀ s' s x. (s → Maybe x → s) → P.ParserT s' (State s) x → P.ParserT s' (State s) Unit
   modifyWithParser f p = do
@@ -411,12 +340,10 @@ unformatFParser cb = case _ of
     lift $ modify (flip f (Just v))
 
 unformatParser ∷ ∀ m. Monad m ⇒ Formatter → P.ParserT String m DT.DateTime
-unformatParser f' = do
-  acc ← P.mapParserT unState $ rec f'
+unformatParser f = do
+  acc ← P.mapParserT unState $ foldMap unformatCommandParser f
   either P.fail pure $ unformatAccumToDateTime acc
   where
-  rec ∷ Formatter → P.ParserT String (State UnformatAccum) Unit
-  rec f = unformatFParser rec $ unroll f
   unState ∷ ∀ x y n. Monad n ⇒ State UnformatAccum (Tuple (Either y Unit) x) → n (Tuple (Either y UnformatAccum) x)
   unState s = case runState s initialAccum of
     Tuple (Tuple e state) res → pure (Tuple (e $> res) state)
