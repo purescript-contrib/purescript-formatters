@@ -15,7 +15,6 @@ import Prelude
 
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.State.Class (get)
 import Data.Ord (abs)
 import Data.Array as Array
 import Data.List as List
@@ -40,7 +39,6 @@ import Data.Formatter.Parser.Utils (runP, oneOfAs)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.String as PS
 
 import Data.Generic.Rep (class Generic)
