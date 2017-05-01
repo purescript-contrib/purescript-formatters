@@ -13,15 +13,17 @@ module Data.Formatter.DateTime
 
 import Prelude
 
+import Debug.Trace as Trace
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
 import Data.Ord (abs)
 import Data.Array as Array
 import Data.List as List
-import Data.List.Lazy as LazyList
 import Data.Tuple (Tuple(..))
 import Data.Foldable (foldMap)
+import Control.Lazy as Z
 import Control.Alt ((<|>))
+import Control.Alternative (class Alternative)
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
@@ -260,6 +262,25 @@ validateRange min max = ask >>= \({num}) → if num < min || num > max
   then lift $ Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
   else lift $ Right unit
 
+-- NOTE related discussion: https://github.com/purescript-contrib/purescript-parsing/issues/57
+-- | Attempt a computation `n` times, requiring at least one success.
+-- |
+-- | The `Lazy` constraint is used to generate the result lazily, to ensure
+-- | termination.
+takeSome :: forall f a. Alternative f => Z.Lazy (f (List.List  a)) => Int -> f a -> f (List.List  a)
+takeSome 0 _ = pure List.Nil
+takeSome n v = List.Cons <$> v <*> Z.defer (\_ -> takeMany (n - 1) v)
+
+-- | Attempt a computation `n` times, returning as many successful results
+-- | as possible (possibly zero).
+-- |
+-- | The `Lazy` constraint is used to generate the result lazily, to ensure
+-- | termination.
+takeMany :: forall f a. Alternative f => Z.Lazy (f (List.List a)) => Int -> f a -> f (List.List a)
+takeMany 0 _ = pure List.Nil
+takeMany n v = takeSome n v <|> pure List.Nil
+
+
 parseInt ∷ ∀ m
   . Monad m
   ⇒ Int
@@ -267,8 +288,8 @@ parseInt ∷ ∀ m
   → String
   → P.ParserT String m Int
 parseInt maxLength validators errMsg = do
-  ds ← LazyList.take maxLength <$> (LazyList.some parseDigit)
-  let length = LazyList.length ds
+  ds ← takeSome maxLength parseDigit
+  let length = List.length ds
   let num = foldDigits ds
   case runReaderT validators {length, num, maxLength} of
     Left err → P.fail $ errMsg <> "(" <> err <> ")"

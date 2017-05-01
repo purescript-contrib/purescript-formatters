@@ -2,7 +2,6 @@ module Test.DateTime (datetimeTest) where
 
 import Prelude
 
-
 import Data.Formatter.DateTime as FDT
 import Control.Monad.Aff (Aff)
 import Data.List (fromFoldable)
@@ -10,7 +9,6 @@ import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Control.MonadZero (guard)
 import Control.Alternative (class Alternative, empty)
-
 import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
@@ -18,7 +16,7 @@ import Test.Utils (forAll, makeDateTime)
 datetimeTest ∷ ∀ e. Spec e Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
-    "formatDateTime should formatt dateTime"
+    "formatDateTime/unformaDateTime should formatt/unforma dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "MMMM", dateStr: "April" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: makeDateTime 2017 4 12 11 3 4 234}
@@ -42,8 +40,13 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "hhmmssSSS", dateStr: "111230003", date: makeDateTime 2017 4 10 11 12 30 3 }
     , { format: "hhmmssSS", dateStr: "11123012", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hhmmssS", dateStr: "1112301", date: makeDateTime 2017 4 10 11 12 30 123 }
+    , { format: "HHmmssSSS", dateStr: "134530123", date: makeDateTime 2017 4 10 13 45 30 123 }
+    , { format: "HHmm", dateStr: "1345", date: makeDateTime 2017 4 10 13 45 30 123 }
     ]
-    (\({ format, dateStr, date }) → (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr))
+    (\({ format, dateStr, date }) → do
+      (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr)
+      (void $ format `FDT.unformatDateTime` dateStr) `shouldEqual` (Right unit)
+    )
 
   describe "parseFormatString" do
     forAll
@@ -77,11 +80,6 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     (\({ date, format }) → FDT.unformat format (FDT.format format date) `shouldEqual` (Right date))
 
 
-assertFormatting ∷ ∀ e. String → String → DateTime → Aff e Unit
-assertFormatting target' format dateTime = result `shouldEqual` target
-  where
-  result = FDT.formatDateTime format dateTime
-  target = Right target'
 
 dates ∷ Array DateTime
 dates =
