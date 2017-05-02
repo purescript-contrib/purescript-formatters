@@ -13,7 +13,6 @@ module Data.Formatter.DateTime
 
 import Prelude
 
-import Debug.Trace as Trace
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
 import Data.Ord (abs)
