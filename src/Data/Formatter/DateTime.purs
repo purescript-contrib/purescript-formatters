@@ -347,9 +347,9 @@ unformatCommandParser = case _ of
     (parseInt 3 exactLength "Incorrect millisecond")
   Placeholder s → void $ PS.string s
   MillisecondsShort → _{millisecond = _} `modifyWithParser`
-    (parseInt 1 exactLength "Incorrect 1-digit millisecond")
+    (parseInt 1 exactLength "Incorrect 1-digit millisecond" <#> (_ * 100))
   MillisecondsTwoDigits → _{millisecond = _} `modifyWithParser`
-    (parseInt 2 exactLength "Incorrect 2-digit millisecond")
+    (parseInt 2 exactLength "Incorrect 2-digit millisecond" <#> (_ * 10))
   where
   modifyWithParser ∷ ∀ s' s x. (s → Maybe x → s) → P.ParserT s' (State s) x → P.ParserT s' (State s) Unit
   modifyWithParser f p = do

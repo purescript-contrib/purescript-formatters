@@ -66,6 +66,10 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     "s ≡ format (unformat s)"
     [ {date: "2017-12-04 234", format: "YYYY-DD-MM SSS" }
     , {date: "3456-09-10 333", format: "YYYY-DD-MM SSS" }
+    , {date: "111230003", format: "hhmmssSSS"}
+    , {date: "11123012", format: "hhmmssSS"}
+    , {date: "1112301", format: "hhmmssS"}
+
     ]
     (\({date, format}) → (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date))
 
