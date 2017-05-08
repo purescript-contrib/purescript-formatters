@@ -3,6 +3,7 @@ module Data.Formatter.DateTime
   , FormatterCommand(..)
   , Meridiem
   , printFormatter
+  , printFormatterCommand
   , parseFormatString
   , format
   , formatDateTime
