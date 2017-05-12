@@ -209,7 +209,7 @@ formatF cb dt@(DT.DateTime d t) = case _ of
   DayOfWeek a →
     show (fromEnum $ D.weekday d) <> cb a
   Hours24 a →
-    show (fromEnum $ T.hour t) <> cb a
+    padSingleDigit (fromEnum $ T.hour t) <> cb a
   Hours12 a →
     let fix12 h = if h == 0 then 12 else h
     in (padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12) <> cb a
