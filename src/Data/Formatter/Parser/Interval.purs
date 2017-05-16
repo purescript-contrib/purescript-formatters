@@ -49,7 +49,7 @@ parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   weekDuration = mkComponentsParser [ Tuple I.week "W" ]
   fullDuration = (append <$> durationDatePart <*> durationTimePart) `notEmpty` "must contain valid duration components"
   durationDatePart = PC.option mempty $ PC.try $ mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
-  durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hours "H" , Tuple I.minutes "M" , Tuple I.seconds "S" ])
+  durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hour "H" , Tuple I.minute "M" , Tuple I.second "S" ])
 
 
 notEmpty ∷ ∀ a. Monoid a ⇒ Eq a ⇒ P.Parser String a → String → P.Parser String a

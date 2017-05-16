@@ -44,15 +44,15 @@ durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ I.IsoDuratio
 durations =
   [ { str: "P1W", formatedStr: "P7D", dur: I.day 7.0 }
   , { str: "P1.0W", formatedStr: "P7D", dur: I.day 7.0 }
-  , { str: "P1DT1H1M1S", formatedStr: "P1DT1H1M1S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.0 }
+  , { str: "P1DT1H1M1S", formatedStr: "P1DT1H1M1S", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.0 <> I.second 1.0 }
   , { str: "P1.9748600D", formatedStr: "P1.97486D", dur: I.day 1.97486 }
-  , { str: "P1DT1H1M0S", formatedStr: "P1DT1H1M0S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 0.0 }
-  , { str: "P1DT1H1M1.5S", formatedStr: "P1DT1H1M1.5S", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.0 <> I.seconds 1.5 }
-  , { str: "P1DT1H1.5M", formatedStr: "P1DT1H1.5M", dur: I.day 1.0 <> I.hours 1.0 <> I.minutes 1.5 }
-  , { str: "P1DT1.5H", formatedStr: "P1DT1.5H", dur: I.day 1.0 <> I.hours 1.5 }
-  , { str: "PT1M", formatedStr: "PT1M", dur: I.minutes 1.0 }
-  , { str: "PT1S", formatedStr: "PT1S", dur: I.seconds 1.0 }
-  , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hours 1.0 <> I.seconds 1.0 }
+  , { str: "P1DT1H1M0S", formatedStr: "P1DT1H1M0S", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.0 <> I.second 0.0 }
+  , { str: "P1DT1H1M1.5S", formatedStr: "P1DT1H1M1.5S", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.0 <> I.second 1.5 }
+  , { str: "P1DT1H1.5M", formatedStr: "P1DT1H1.5M", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.5 }
+  , { str: "P1DT1.5H", formatedStr: "P1DT1.5H", dur: I.day 1.0 <> I.hour 1.5 }
+  , { str: "PT1M", formatedStr: "PT1M", dur: I.minute 1.0 }
+  , { str: "PT1S", formatedStr: "PT1S", dur: I.second 1.0 }
+  , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hour 1.0 <> I.second 1.0 }
   ] <#> (\a → a { dur = unsafeMkToIsoDuration a.dur })
 
 -- TODO error messages could be improved

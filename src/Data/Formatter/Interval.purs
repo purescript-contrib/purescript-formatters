@@ -45,7 +45,7 @@ formatDuration (I.Duration m) = "P" <> datePart <> timePart
   componentToString (Tuple k s) = maybe "" (formatComponent s) $ lookup k m
   formatComponent designator num = formatNumber num <> designator
   dateComponentsToStr = [ Tuple I.Year "Y", Tuple I.Month "M", Tuple I.Day "D" ]
-  timeComponentsToStr = [ Tuple I.Hours "H", Tuple I.Minutes "M", Tuple I.Seconds "S" ]
+  timeComponentsToStr = [ Tuple I.Hour "H", Tuple I.Minute "M", Tuple I.Second "S" ]
 
 formatInteger ∷ Int → String
 formatInteger = show
