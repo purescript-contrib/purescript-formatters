@@ -3,7 +3,6 @@ module Test.DateTime (datetimeTest) where
 import Prelude
 
 import Data.Formatter.DateTime as FDT
-import Control.Monad.Aff (Aff)
 import Data.List (fromFoldable)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
