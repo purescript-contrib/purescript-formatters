@@ -7,41 +7,43 @@ module Data.Formatter.Parser.Interval
   ) where
 
 import Prelude
-import Data.Interval as I
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+
 import Control.Alt ((<|>))
-import Data.Foldable (class Foldable, fold, foldMap)
-import Data.Maybe (Maybe(..))
-import Data.Monoid (class Monoid, mempty)
-import Data.Either (Either, fromRight)
-import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
 import Data.DateTime (DateTime)
+import Data.Either (Either(..), fromRight)
+import Data.Foldable (class Foldable, fold, foldMap, intercalate)
+import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
+import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
+import Data.Interval as I
+import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration, prettyError)
+import Data.Maybe (Maybe)
+import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
 import Partial.Unsafe (unsafePartial)
-
-import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
+import Text.Parsing.Parser as P
+import Text.Parsing.Parser.Combinators as PC
+import Text.Parsing.Parser.String as PS
 
 parseRecurringInterval ∷ ∀ a b. P.Parser String a → P.Parser String b → P.Parser String (I.RecurringInterval a b)
 parseRecurringInterval duration date =
   I.RecurringInterval <$> (PS.string "R" *> parseMaybeInteger) <*> (PS.string "/" *> parseInterval duration date)
 
 parseInterval ∷ ∀ a b. P.Parser String a → P.Parser String b → P.Parser String (I.Interval a b)
-parseInterval duration date = [startEnd, durationEnd, startDuration, justDuration] <#> PC.try # PC.choice
+parseInterval duration date = [startEnd, durationEnd, startDuration, durationOnly] <#> PC.try # PC.choice
   where
   startEnd = I.StartEnd <$> date <* PS.string "/" <*> date
   durationEnd = I.DurationEnd <$> duration <* PS.string "/" <*> date
   startDuration = I.StartDuration <$> date <* PS.string "/" <*> duration
-  justDuration = I.JustDuration <$> duration
+  durationOnly = I.DurationOnly <$> duration
 
-parseIsoDuration ∷ P.Parser String I.IsoDuration
+parseIsoDuration ∷ P.Parser String IsoDuration
 parseIsoDuration = do
   dur ← parseDuration
-  case I.mkIsoDuration dur of
-    Nothing → P.fail "extracted Duration is not valid ISO duration"
-    Just a → pure a
+  case mkIsoDuration dur of
+    Left errs → let errorStr = intercalate ", " (prettyError <$> errs)
+      in P.fail $ "extracted Duration is not valid ISO duration (" <> errorStr <> ")"
+    Right a → pure a
 
 parseDuration ∷ P.Parser String I.Duration
 parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)

@@ -2,19 +2,20 @@ module Test.Interval (intervalTest) where
 
 import Prelude
 
+import Control.Monad.Aff (Aff)
 import Data.DateTime (DateTime)
-import Data.Interval as I
+import Data.Either (Either(..), fromRight)
 import Data.Foldable (class Foldable, fold)
 import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval, formatRecurringInterval)
 import Data.Formatter.Parser.Interval (parseIsoDuration)
 import Data.Formatter.Parser.Utils (runP)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Interval as I
+import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration)
+import Data.Maybe (Maybe(..))
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
-import Control.Monad.Aff (Aff)
 
 prop ∷ ∀ e e' f. Foldable f ⇒ String → f {str ∷ String | e'} → ({str ∷ String | e'} → Aff e Unit) → Spec e Unit
 prop = forAll (show <<< _.str)
@@ -37,14 +38,14 @@ intervalTest = describe "Data.Formatter.Interval" do
     (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
 
-unsafeMkToIsoDuration ∷ I.Duration → I.IsoDuration
-unsafeMkToIsoDuration d = I.mkIsoDuration d
-  # unsafePartial fromJust -- the duration must be valid ISO duration
+unsafeMkToIsoDuration ∷ I.Duration → IsoDuration
+unsafeMkToIsoDuration d = mkIsoDuration d
+  # unsafePartial fromRight -- the duration must be valid ISO duration
 
-durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ I.IsoDuration }
+durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ IsoDuration }
 durations =
-  [ { str: "P1W", formatedStr: "P7D", dur: I.day 7.0 }
-  , { str: "P1.0W", formatedStr: "P7D", dur: I.day 7.0 }
+  [ { str: "P1W", formatedStr: "P1W", dur: I.week 1.0 }
+  , { str: "P1.0W", formatedStr: "P1W", dur: I.week 1.0 }
   , { str: "P1DT1H1M1S", formatedStr: "P1DT1H1M1S", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.0 <> I.second 1.0 }
   , { str: "P1.9748600D", formatedStr: "P1.97486D", dur: I.day 1.97486 }
   , { str: "P1DT1H1M0S", formatedStr: "P1DT1H1M0S", dur: I.day 1.0 <> I.hour 1.0 <> I.minute 1.0 <> I.second 0.0 }
@@ -59,10 +60,10 @@ durations =
 -- TODO error messages could be improved
 invalidDurations ∷ Array { err ∷ String, str ∷ String}
 invalidDurations =
-  [ { err: errInvalidISO <> "1:13", str: "P1DT1.5H0M1S" }
-  , { err: errInvalidISO <> "1:10", str: "P1.5Y0.5M" }
-  , { err: errInvalidISO <> "1:8", str: "P1.5Y1M" }
-  , { err: errInvalidISO <> "1:12", str: "P1.5MT10.5S" }
+  [ { err: errInvalidISO "Hour" <> "1:13", str: "P1DT1.5H0M1S" }
+  , { err: errInvalidISO "Year" <> "1:10", str: "P1.5Y0.5M" }
+  , { err: errInvalidISO "Year" <> "1:8", str: "P1.5Y1M" }
+  , { err: errInvalidISO "Month" <> "1:12", str: "P1.5MT10.5S" }
   , { err: errInvalidComponent <> "1:2", str: "P" }
   , { err: errInvalidComponent <> "1:2", str: "PW" }
   , { err: errInvalidComponent <> "1:2", str: "PD" }
@@ -79,7 +80,9 @@ invalidDurations =
   errInvalidComponent = "must contain valid duration components@"
   errPrefix = "Expected \"P\"@"
   errEOF = "Expected EOF@"
-  errInvalidISO = "extracted Duration is not valid ISO duration@"
+  errInvalidISO c =
+    "extracted Duration is not valid ISO duration " <>
+    "(Invalid usage of Fractional value at component `" <> c <> "`)@"
   errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
 -- TODO error messages could be improved
@@ -117,8 +120,8 @@ dates =
   , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
   ]
 
-type ArbRecurringInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.RecurringInterval I.IsoDuration DateTime}
-type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.Interval I.IsoDuration DateTime}
+type ArbRecurringInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.RecurringInterval IsoDuration DateTime}
+type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.Interval IsoDuration DateTime}
 
 arbRecurringInterval ∷ ArbRecurringInterval
 arbRecurringInterval = do
@@ -135,7 +138,7 @@ arbInterval = fold
   [ arbIntervalStartEnd
   , arbIntervalDurationEnd
   , arbIntervalStartDuration
-  , arbIntervalJustDuration
+  , arbIntervalDurationOnly
   ]
 
 arbIntervalStartEnd ∷ ArbInterval
@@ -168,11 +171,11 @@ arbIntervalStartDuration = do
     , interval: I.StartDuration start.date dur.dur
     }
 
-arbIntervalJustDuration ∷ ArbInterval
-arbIntervalJustDuration = do
+arbIntervalDurationOnly ∷ ArbInterval
+arbIntervalDurationOnly = do
   dur ← durations
   pure
     { str: dur.str
     , formatedStr: dur.formatedStr
-    , interval: I.JustDuration dur.dur
+    , interval: I.DurationOnly dur.dur
     }
