@@ -10,7 +10,7 @@ import Data.Formatter.Parser.Interval (parseIsoDuration)
 import Data.Formatter.Parser.Utils (runP)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust)
-import Partial.Unsafe (unsafePartialBecause)
+import Partial.Unsafe (unsafePartial)
 import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
@@ -38,7 +38,8 @@ intervalTest = describe "Data.Formatter.Interval" do
 
 
 unsafeMkToIsoDuration ∷ I.Duration → I.IsoDuration
-unsafeMkToIsoDuration d = unsafePartialBecause "the duration must be valid ISO duration" fromJust $ I.mkIsoDuration d
+unsafeMkToIsoDuration d = I.mkIsoDuration d
+  # unsafePartial fromJust -- the duration must be valid ISO duration
 
 durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ I.IsoDuration }
 durations =

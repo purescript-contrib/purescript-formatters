@@ -20,7 +20,7 @@ import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
 import Data.DateTime (DateTime)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
-import Partial.Unsafe (unsafePartialBecause)
+import Partial.Unsafe (unsafePartial)
 
 import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
 
@@ -74,7 +74,5 @@ parseDateTime ∷ ∀ m. Monad m ⇒ P.ParserT String m DateTime
 parseDateTime = unformatParser extendedDateTimeFormatInUTC
 
 extendedDateTimeFormatInUTC ∷ Formatter
-extendedDateTimeFormatInUTC = unEither $ parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
-  where
-  unEither ∷ Either String Formatter → Formatter
-  unEither = unsafePartialBecause "(this must be unrechable) error in parsing ISO date format" fromRight
+extendedDateTimeFormatInUTC = parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
+  # unsafePartial fromRight -- the format must be valid ISO date format
