@@ -76,13 +76,13 @@ invalidDurations =
   , { err: errEOF <> "1:4", str: "P1Y1W" }
   ]
   where
-  errInvalidComponent = "must contain valid duration components@"
+  errInvalidComponent = "Must contain valid duration components@"
   errPrefix = "Expected \"P\"@"
   errEOF = "Expected EOF@"
   errInvalidISO c =
-    "extracted Duration is not valid ISO duration " <>
+    "Extracted Duration is not valid ISO duration " <>
     "(Invalid usage of Fractional value at component `" <> c <> "`)@"
-  errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
+  errNoTimeComponent = "None of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
 invalidIntervals ∷ Array {err ∷ String, str ∷ String}
 invalidIntervals =
