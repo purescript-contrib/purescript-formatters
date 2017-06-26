@@ -19,7 +19,7 @@
     "purescript-prelude": "^3.0.0",
     "purescript-parsing": "^4.2.1",
     "purescript-fixed-points": "^4.0.0",
-    "purescript-datetime": "git://github.com/safareli/purescript-datetime.git#interval",
+    "purescript-datetime": "^v3.3.0",
     "purescript-transformers": "^3.4.0",
     "purescript-lists": "^4.3.0",
     "purescript-generics-rep": "^5.0.0"
