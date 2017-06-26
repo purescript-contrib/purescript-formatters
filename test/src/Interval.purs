@@ -57,7 +57,6 @@ durations =
   , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hour 1.0 <> I.second 1.0 }
   ] <#> (\a → a { dur = unsafeMkToIsoDuration a.dur })
 
--- TODO error messages could be improved
 invalidDurations ∷ Array { err ∷ String, str ∷ String}
 invalidDurations =
   [ { err: errInvalidISO "Hour" <> "1:13", str: "P1DT1.5H0M1S" }
@@ -85,10 +84,8 @@ invalidDurations =
     "(Invalid usage of Fractional value at component `" <> c <> "`)@"
   errNoTimeComponent = "none of valid duration components ([\"H\",\"M\",\"S\"]) were present@"
 
--- TODO error messages could be improved
 invalidIntervals ∷ Array {err ∷ String, str ∷ String}
 invalidIntervals =
-  -- TODO add some more from https://github.com/arnau/ISO8601/blob/master/spec/iso8601/time_interval_spec.rb
   [ { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
   , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z-P1Y2M10D" }
   , { err: "Expected \"P\"@1:1", str: "2007-03-01T13:00:00Z~P1Y2M10D" }
