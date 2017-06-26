@@ -253,14 +253,14 @@ unformatAccumToDateTime a =
 
 
 exactLength ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
-exactLength = ask >>= \({maxLength, length}) → if maxLength /= length
-  then lift $ Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
-  else lift $ Right unit
+exactLength = ask >>= \({maxLength, length}) → lift if maxLength /= length
+  then Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
+  else Right unit
 
 validateRange ∷ ∀ e. Int → Int → ReaderT { num ∷ Int | e } (Either String) Unit
-validateRange min max = ask >>= \({num}) → if num < min || num > max
-  then lift $ Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
-  else lift $ Right unit
+validateRange min max = ask >>= \({num}) → lift if num < min || num > max
+  then Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
+  else Right unit
 
 -- NOTE related discussion: https://github.com/purescript-contrib/purescript-parsing/issues/57
 -- | Attempt a computation `n` times, requiring at least one success.
