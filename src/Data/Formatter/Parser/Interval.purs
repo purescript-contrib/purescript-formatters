@@ -50,16 +50,16 @@ parseDuration ∷ P.Parser String I.Duration
 parseDuration = PS.string "P" *> (weekDuration <|> fullDuration)
   where
   weekDuration = mkComponentsParser [ Tuple I.week "W" ]
-  fullDuration = (append <$> durationDatePart <*> durationTimePart) `notEmpty` "Must contain valid duration components"
+  fullDuration = (append <$> durationDatePart <*> durationTimePart) `failIfEmpty` "Must contain valid duration components"
   durationDatePart = PC.option mempty $ PC.try $ mkComponentsParser [ Tuple I.year "Y" , Tuple I.month "M" , Tuple I.day "D" ]
   durationTimePart = PC.option mempty $ (PC.try $ PS.string "T") *> (mkComponentsParser [ Tuple I.hour "H" , Tuple I.minute "M" , Tuple I.second "S" ])
 
 
-notEmpty ∷ ∀ a. Monoid a ⇒ Eq a ⇒ P.Parser String a → String → P.Parser String a
-notEmpty p str = p >>= \x → if x == mempty then P.fail str else pure x
+failIfEmpty ∷ ∀ a. Monoid a ⇒ Eq a ⇒ P.Parser String a → String → P.Parser String a
+failIfEmpty p str = p >>= \x → if x == mempty then P.fail str else pure x
 
 mkComponentsParser ∷ Array (Tuple (Number → I.Duration) String) → P.Parser String I.Duration
-mkComponentsParser arr = p `notEmpty` ("None of valid duration components (" <> (show $ snd <$> arr) <> ") were present")
+mkComponentsParser arr = p `failIfEmpty` ("None of valid duration components (" <> (show $ snd <$> arr) <> ") were present")
   where
   p = arr <#> applyDurations # sequence <#> foldFoldableMaybe
   applyDurations ∷ Tuple (Number → I.Duration) String → P.Parser String (Maybe I.Duration)
