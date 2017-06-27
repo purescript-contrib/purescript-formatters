@@ -41,7 +41,8 @@ parseIsoDuration ∷ P.Parser String IsoDuration
 parseIsoDuration = do
   dur ← parseDuration
   case mkIsoDuration dur of
-    Left errs → let errorStr = intercalate ", " (prettyError <$> errs)
+    Left errs →
+      let errorStr = intercalate ", " (prettyError <$> errs)
       in P.fail $ "Extracted Duration is not valid ISO duration (" <> errorStr <> ")"
     Right a → pure a
 
