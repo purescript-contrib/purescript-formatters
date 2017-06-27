@@ -328,7 +328,7 @@ unformatCommandParser = case _ of
         , minute: Just $ fromEnum $ T.minute t
         , second: Just $ fromEnum $ T.second t
         , millisecond: Just $ fromEnum $ T.millisecond t
-        , meridiem: (Nothing ∷ Maybe Meridiem)
+        , meridiem: Nothing
         }
   -- TODO we would need to use this value if we support date format using week number
   DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
