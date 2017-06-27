@@ -14,37 +14,37 @@ module Data.Formatter.DateTime
 
 import Prelude
 
-import Control.Monad.State (State, modify, put, runState)
-import Control.Monad.Trans.Class (lift)
-import Data.Ord (abs)
-import Data.Array as Array
-import Data.List as List
-import Data.Tuple (Tuple(..))
-import Data.Foldable (foldMap)
-import Control.Lazy as Z
 import Control.Alt ((<|>))
 import Control.Alternative (class Alternative)
+import Control.Apply (lift2)
+import Control.Lazy as Z
+import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
+import Control.Monad.State (State, modify, put, runState)
+import Control.Monad.Trans.Class (lift)
+import Data.Array as Array
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
-import Data.Int as Int
-import Data.Maybe (Maybe(..), maybe, fromMaybe)
-import Data.Newtype (unwrap)
-import Data.String as Str
-import Data.Time as T
-import Data.Time.Duration as Dur
+import Data.Foldable (foldMap)
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
-import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.Int as Int
+import Data.List as List
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.Newtype (unwrap)
+import Data.Ord (abs)
+import Data.String as Str
+import Data.Time as T
+import Data.Time.Duration as Dur
+import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
-
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 
 data FormatterCommand
   = YearFull
@@ -303,9 +303,9 @@ unformatCommandParser = case _ of
   YearTwoDigits → _{year = _} `modifyWithParser`
     (parseInt 2 exactLength "Incorrect 2-digit year")
   YearAbsolute → _{year = _} `modifyWithParser`
-    (pure (*)
-      <*> (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
-      <*> (List.some parseDigit <#> foldDigits))
+    (lift2 (*)
+      (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
+      (List.some parseDigit <#> foldDigits))
   MonthFull → _{month = _} `modifyWithParser`
     (fromEnum <$> parseMonth)
   MonthShort → _{month = _} `modifyWithParser`
