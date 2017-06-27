@@ -289,8 +289,9 @@ parseInt ∷ ∀ m
   → P.ParserT String m Int
 parseInt maxLength validators errMsg = do
   ds ← takeSome maxLength parseDigit
-  let length = List.length ds
-  let num = foldDigits ds
+  let
+    length = List.length ds
+    num = foldDigits ds
   case runReaderT validators {length, num, maxLength} of
     Left err → P.fail $ errMsg <> "(" <> err <> ")"
     Right _ → pure num
