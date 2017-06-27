@@ -151,7 +151,7 @@ formatYearTwoDigits i = case dateLength of
   dateString = show $ abs i
   dateLength = Str.length $ dateString
 
-fix12 ∷ Int -> Int
+fix12 ∷ Int → Int
 fix12 h = if h == 0 then 12 else h
 
 formatCommand ∷ DT.DateTime → FormatterCommand → String
@@ -267,16 +267,16 @@ validateRange min max = ask >>= \({num}) → lift if num < min || num > max
 -- |
 -- | The `Lazy` constraint is used to generate the result lazily, to ensure
 -- | termination.
-takeSome :: forall f a. Alternative f => Z.Lazy (f (List.List  a)) => Int -> f a -> f (List.List  a)
+takeSome :: ∀ f a. Alternative f ⇒ Z.Lazy (f (List.List  a)) ⇒ Int → f a → f (List.List  a)
 takeSome 0 _ = pure List.Nil
-takeSome n v = List.Cons <$> v <*> Z.defer (\_ -> takeMany (n - 1) v)
+takeSome n v = List.Cons <$> v <*> Z.defer (\_ → takeMany (n - 1) v)
 
 -- | Attempt a computation `n` times, returning as many successful results
 -- | as possible (possibly zero).
 -- |
 -- | The `Lazy` constraint is used to generate the result lazily, to ensure
 -- | termination.
-takeMany :: forall f a. Alternative f => Z.Lazy (f (List.List a)) => Int -> f a -> f (List.List a)
+takeMany :: ∀ f a. Alternative f ⇒ Z.Lazy (f (List.List a)) ⇒ Int → f a → f (List.List a)
 takeMany 0 _ = pure List.Nil
 takeMany n v = takeSome n v <|> pure List.Nil
 
