@@ -156,7 +156,7 @@ fix12 h = if h == 0 then 12 else h
 
 formatCommand ∷ DT.DateTime → FormatterCommand → String
 formatCommand dt@(DT.DateTime d t) = case _ of
-  YearFull → show $ fromEnum $ D.year d
+  YearFull → padQuadrupleDigit $ fromEnum $ D.year d
   YearTwoDigits → formatYearTwoDigits $ fromEnum $ D.year d
   YearAbsolute → show $ fromEnum $ D.year d
   MonthFull → show $ D.month d
@@ -178,6 +178,8 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   MillisecondsTwoDigits → padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t
   Placeholder s → s
 
+--TODO we need leftpad here
+
 padSingleDigit ∷ Int → String
 padSingleDigit i
   | i < 10    = "0" <> (show i)
@@ -187,6 +189,13 @@ padDoubleDigit ∷ Int → String
 padDoubleDigit i
   | i < 10  = "00" <> (show i)
   | i < 100 = "0" <> (show i)
+  | otherwise = show i
+
+padQuadrupleDigit ∷ Int → String
+padQuadrupleDigit i
+  | i < 10   = "000" <> (show i)
+  | i < 100  = "00" <> (show i)
+  | i < 1000 = "0" <> (show i)
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
