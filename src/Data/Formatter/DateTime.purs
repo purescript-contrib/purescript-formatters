@@ -36,6 +36,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.List as List
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.Monoid (mempty)
 import Data.Newtype (unwrap)
 import Data.Ord (abs)
 import Data.String as Str
@@ -299,7 +300,7 @@ parseInt maxLength validators errMsg = do
 unformatCommandParser ∷ FormatterCommand → P.ParserT String (State UnformatAccum) Unit
 unformatCommandParser = case _ of
   YearFull → _{year = _} `modifyWithParser`
-    (parseInt 4 exactLength "Incorrect full year")
+    (parseInt 4 mempty "Incorrect full year")
   YearTwoDigits → _{year = _} `modifyWithParser`
     (parseInt 2 exactLength "Incorrect 2-digit year")
   YearAbsolute → _{year = _} `modifyWithParser`
