@@ -17,6 +17,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime/unformaDateTime should formatt/unforma dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
+    , { format: "YYYY", dateStr: "0017" , date: makeDateTime 17 0 0 0 0 0 0}
     , { format: "MMMM", dateStr: "April" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YYYY-DD-MM", dateStr: "2017-12-04" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YYYY-MMM", dateStr: "2017-Apr" , date: makeDateTime 2017 4 12 11 3 4 234}
