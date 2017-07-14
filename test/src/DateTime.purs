@@ -2,13 +2,13 @@ module Test.DateTime (datetimeTest) where
 
 import Prelude
 
-import Data.Formatter.DateTime as FDT
-import Data.List (fromFoldable)
+import Control.Alternative (class Alternative, empty)
+import Control.MonadZero (guard)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
-import Control.MonadZero (guard)
-import Control.Alternative (class Alternative, empty)
-import Test.Spec (describe, Spec)
+import Data.Formatter.DateTime as FDT
+import Data.List (fromFoldable)
+import Test.Spec (describe, Spec, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 
@@ -28,6 +28,8 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12 0 0 0 0} -- Format 0 with YY
     , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12 0 0 0 0} -- Format -1 with YY
     , { format: "hh:m:s a", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh a", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh a", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
     , { format: "hh:mm:ss a", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.023", date: makeDateTime 2017 4 10 11 12 30 23 }
@@ -47,6 +49,13 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr)
       (void $ format `FDT.unformatDateTime` dateStr) `shouldEqual` (Right unit)
     )
+
+  describe "hour {12,24} {am,pm}" do
+    let format = "hh a"
+    it "00 AM" $ FDT.unformatDateTime format "00 AM" `shouldEqual` (Right $ makeDateTime 0 1 1 0  0 0 0 )
+    it "00 PM" $ FDT.unformatDateTime format "00 PM" `shouldEqual` (Right $ makeDateTime 0 1 1 12 0 0 0 )
+    it "12 PM" $ FDT.unformatDateTime format "12 PM" `shouldEqual` (Right $ makeDateTime 0 1 1 12 0 0 0 )
+    it "12 AM" $ FDT.unformatDateTime format "12 AM" `shouldEqual` (Right $ makeDateTime 0 1 1 0  0 0 0 )
 
   describe "parseFormatString" do
     forAll
