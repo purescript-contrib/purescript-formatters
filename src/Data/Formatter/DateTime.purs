@@ -247,17 +247,19 @@ unformatAccumToDateTime a =
            <$> (maybe
                   (Left "Incorrect hour") pure
                   $ toEnum
-                  =<< (adjustMeridiem $ fromMaybe zero a.hour))
+                  $ fromMaybe zero
+                  $ adjustMeridiem a.meridiem <$> a.hour)
            <*> (maybe (Left "Incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
            <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
            <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
-  where
-  adjustMeridiem ∷ Int → Maybe Int
-  adjustMeridiem inp
-    | a.meridiem /= Just PM = Just inp
-    | inp == 12 = pure 0
-    | inp < 12 = pure $ inp + 12
-    | otherwise = Nothing
+
+adjustMeridiem ∷ Maybe Meridiem → Int → Int
+adjustMeridiem (Just AM) 12 = 0
+adjustMeridiem (Just PM) 12 = 12
+adjustMeridiem (Just PM) n  = n + 12
+adjustMeridiem (Just AM) n  = n
+adjustMeridiem Nothing   24 = 0
+adjustMeridiem Nothing   n  = n
 
 
 
@@ -342,9 +344,9 @@ unformatCommandParser = case _ of
   -- TODO we would need to use this value if we support date format using week number
   DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
   Hours24 → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 23 <> exactLength) "Incorrect 24 hour")
+    (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 11 <> exactLength) "Incorrect 12 hour")
+    (parseInt 2 (validateRange 0 12 <> exactLength) "Incorrect 12 hour")
   Meridiem → _{meridiem = _} `modifyWithParser` parseMeridiem
   MinutesTwoDigits → _{minute = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute")
