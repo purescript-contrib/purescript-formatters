@@ -242,7 +242,10 @@ unformatAccumToDateTime a =
     <$> (D.canonicalDate
            <$> (maybe (Left "Incorrect year") pure $ toEnum $ fromMaybe zero a.year)
            <*> (maybe (Left "Incorrect month") pure $ toEnum $ fromMaybe one a.month)
-           <*> (maybe (Left "Incorrect day") pure $ toEnum $ fromMaybe one a.day))
+           <*> (maybe (Left "Incorrect day") pure $ toEnum
+                  $ adjustDay a.meridiem a.hour
+                  $ fromMaybe one a.day))
+
     <*> (T.Time
            <$> (maybe
                   (Left "Incorrect hour") pure
@@ -252,6 +255,10 @@ unformatAccumToDateTime a =
            <*> (maybe (Left "Incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
            <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
            <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
+
+adjustDay ∷ Maybe Meridiem → Maybe Int → Int → Int
+adjustDay Nothing (Just 24) n = n + 1
+adjustDay _       _         n = n
 
 adjustMeridiem ∷ Maybe Meridiem → Int → Int
 adjustMeridiem (Just AM) 12 = 0
