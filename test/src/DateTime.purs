@@ -50,7 +50,12 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       (void $ format `FDT.unformatDateTime` dateStr) `shouldEqual` (Right unit)
     )
 
-  describe "hour {12,24} {am,pm}" do
+  describe "hour 24" do
+    it "+1" $ shouldEqual
+      (FDT.unformatDateTime "YYYY-DD-MM HH:mm:ss" "0000-01-01 24:59:59" )
+      (Right $ makeDateTime 0 1 2 0  59 59 0 )
+
+  describe "hour {0,12} {am,pm}" do
     let format = "hh a"
     it "00 AM" $ FDT.unformatDateTime format "00 AM" `shouldEqual` (Right $ makeDateTime 0 1 1 0  0 0 0 )
     it "00 PM" $ FDT.unformatDateTime format "00 PM" `shouldEqual` (Right $ makeDateTime 0 1 1 12 0 0 0 )
