@@ -1,6 +1,5 @@
 module Data.Formatter.DateTime
-  ( Formatter
-  , FormatterCommand(..)
+  ( module FMT
   , Meridiem
   , printFormatter
   , printFormatterCommand
@@ -10,9 +9,18 @@ module Data.Formatter.DateTime
   , unformat
   , unformatDateTime
   , unformatParser
+  , class PrintFormat
+  , printFormat
+  , fromDateFormatter
+  , fromTimeFormatter
   ) where
 
 import Prelude
+
+import Data.Formatter.DateTime.Types (FProxy, kind FormatList)
+import Data.Formatter.DateTime.Unsafe.Date (Formatter(..)) as FDate
+import Data.Formatter.DateTime.Unsafe.Formatter (class PrintFormatI, class ValidDateTime, printFormatI)
+import Data.Formatter.DateTime.Unsafe.Time (Formatter(..)) as FTime
 
 import Control.Alt ((<|>))
 import Control.Alternative (class Alternative)
@@ -28,11 +36,13 @@ import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
 import Data.Foldable (foldMap)
+import Data.Formatter.DateTime.Unsafe.DateTime (Formatter(..))
+import Data.Formatter.DateTime.Unsafe.DateTime (Formatter) as FMT
+import Data.Formatter.DateTime.Commands (FormatterCommand(..))
+import Data.Formatter.DateTime.Commands (FormatterCommand(..)) as FMT
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.List as List
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
@@ -45,36 +55,6 @@ import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
-
-data FormatterCommand
-  = YearFull
-  | YearTwoDigits
-  | YearAbsolute
-  | MonthFull
-  | MonthShort
-  | MonthTwoDigits
-  | DayOfMonthTwoDigits
-  | DayOfMonth
-  | UnixTimestamp
-  | DayOfWeek
-  | Hours24
-  | Hours12
-  | Meridiem
-  | Minutes
-  | MinutesTwoDigits
-  | Seconds
-  | SecondsTwoDigits
-  | Milliseconds
-  | MillisecondsShort
-  | MillisecondsTwoDigits
-  | Placeholder String
-
-derive instance eqFormatterCommand ∷ Eq (FormatterCommand)
-derive instance genericFormatter ∷ Generic FormatterCommand _
-instance showFormatter ∷ Show FormatterCommand where
-  show = genericShow
-
-type Formatter = List.List FormatterCommand
 
 printFormatterCommand ∷ FormatterCommand → String
 printFormatterCommand = case _ of
@@ -101,7 +81,7 @@ printFormatterCommand = case _ of
   Placeholder s → s
 
 printFormatter ∷ Formatter → String
-printFormatter = foldMap printFormatterCommand
+printFormatter (Formatter fmt)= foldMap printFormatterCommand fmt
 
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
@@ -137,7 +117,7 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   ] <|> (Placeholder <$> placeholderContent)
 
 formatParser ∷ P.Parser String Formatter
-formatParser = List.some formatterCommandParser
+formatParser = List.some formatterCommandParser <#> Formatter
 
 -- | Formatting function that accepts a number that is a year,
 -- | and strips away the non-significant digits, leaving only the
@@ -199,7 +179,7 @@ padQuadrupleDigit i
   | otherwise = show i
 
 format ∷ Formatter → DT.DateTime → String
-format f d = foldMap (formatCommand d) f
+format (Formatter fmt) d = foldMap (formatCommand d) fmt
 
 formatDateTime ∷ String → DT.DateTime → Either String String
 formatDateTime pattern datetime =
@@ -368,8 +348,8 @@ unformatCommandParser = case _ of
     lift $ modify (flip f (Just v))
 
 unformatParser ∷ ∀ m. Monad m ⇒ Formatter → P.ParserT String m DT.DateTime
-unformatParser f = do
-  acc ← P.mapParserT unState $ foldMap unformatCommandParser f
+unformatParser (Formatter fmt) = do
+  acc ← P.mapParserT unState $ foldMap unformatCommandParser fmt
   either P.fail pure $ unformatAccumToDateTime acc
   where
   unState ∷ ∀ x y n. Monad n ⇒ State UnformatAccum (Tuple (Either y Unit) x) → n (Tuple (Either y UnformatAccum) x)
@@ -436,3 +416,19 @@ printShortMonth = case _ of
   D.October → "Oct"
   D.November → "Nov"
   D.December → "Dec"
+
+
+class PrintFormat (fmt ∷ FormatList) where
+  printFormat ∷ FProxy fmt → Formatter
+
+instance pf ∷
+  ( ValidDateTime a
+  , PrintFormatI a
+  ) ⇒ PrintFormat a where
+  printFormat prx = Formatter $ printFormatI prx List.Nil
+
+fromDateFormatter ∷ FDate.Formatter -> Formatter
+fromDateFormatter (FDate.Formatter fmt) = Formatter fmt
+
+fromTimeFormatter ∷ FTime.Formatter -> Formatter
+fromTimeFormatter (FTime.Formatter fmt) = Formatter fmt
