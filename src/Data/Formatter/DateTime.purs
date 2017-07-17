@@ -16,7 +16,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Control.Alternative (class Alternative)
-import Control.Apply (lift2)
+import Control.Apply (applySecond, lift2)
 import Control.Lazy as Z
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 import Control.Monad.State (State, modify, put, runState)
@@ -27,7 +27,7 @@ import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
-import Data.Foldable (foldMap)
+import Data.Foldable (foldMap, for_)
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
@@ -237,15 +237,14 @@ initialAccum =
   }
 
 unformatAccumToDateTime ∷ UnformatAccum → Either String DT.DateTime
-unformatAccumToDateTime a =
+unformatAccumToDateTime a = applySecond (validAccum a) $
   DT.DateTime
     <$> (D.canonicalDate
            <$> (maybe (Left "Incorrect year") pure $ toEnum $ fromMaybe zero a.year)
            <*> (maybe (Left "Incorrect month") pure $ toEnum $ fromMaybe one a.month)
            <*> (maybe (Left "Incorrect day") pure $ toEnum
-                  $ adjustDay a.meridiem a.hour
+                  $ adjustDay a.hour
                   $ fromMaybe one a.day))
-
     <*> (T.Time
            <$> (maybe
                   (Left "Incorrect hour") pure
@@ -256,9 +255,15 @@ unformatAccumToDateTime a =
            <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
            <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
 
-adjustDay ∷ Maybe Meridiem → Maybe Int → Int → Int
-adjustDay Nothing (Just 24) n = n + 1
-adjustDay _       _         n = n
+validAccum :: UnformatAccum → Either String Unit
+validAccum { hour, minute, second, millisecond } = case hour of
+    Just 24 → for_ [minute, second, millisecond] \val ->
+      when (fromMaybe 0 val > 0) $ Left "When hour is 24, other time component must be 0"
+    _ -> pure unit
+
+adjustDay ∷ Maybe Int → Int → Int
+adjustDay (Just 24) n = n + 1
+adjustDay _         n = n
 
 adjustMeridiem ∷ Maybe Meridiem → Int → Int
 adjustMeridiem (Just AM) 12 = 0
