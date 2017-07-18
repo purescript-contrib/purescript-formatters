@@ -258,7 +258,7 @@ unformatAccumToDateTime a = applySecond (validAccum a) $
 validAccum :: UnformatAccum → Either String Unit
 validAccum { hour, minute, second, millisecond } = case hour of
     Just 24 → for_ [minute, second, millisecond] \val ->
-      when (fromMaybe 0 val > 0) $ Left "When hour is 24, other time component must be 0"
+      when (fromMaybe 0 val > 0) $ Left "When hour is 24, other time components must be 0"
     _ -> pure unit
 
 adjustDay ∷ Maybe Int → Int → Int

@@ -52,7 +52,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
 
   describe "hour 24" do
     it "24 hour and more then 0 time component" $ do
-      let err = (Left "When hour is 24, other time component must be 0@1:24")
+      let err = (Left "When hour is 24, other time components must be 0@1:24")
       shouldEqual (FDT.unformatDateTime "YYYY-DD-MM HH:mm:ss:SSS" "0000-01-01 24:00:00:001") err
       shouldEqual (FDT.unformatDateTime "YYYY-DD-MM HH:mm:ss:SSS" "0000-01-01 24:00:01:000") err
       shouldEqual (FDT.unformatDateTime "YYYY-DD-MM HH:mm:ss:SSS" "0000-01-01 24:01:00:000") err
