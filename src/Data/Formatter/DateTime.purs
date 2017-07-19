@@ -16,7 +16,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Control.Alternative (class Alternative)
-import Control.Apply (lift2)
+import Control.Apply (applySecond, lift2)
 import Control.Lazy as Z
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 import Control.Monad.State (State, modify, put, runState)
@@ -27,7 +27,7 @@ import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Enum (fromEnum, toEnum)
-import Data.Foldable (foldMap)
+import Data.Foldable (foldMap, for_)
 import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
@@ -237,27 +237,41 @@ initialAccum =
   }
 
 unformatAccumToDateTime ∷ UnformatAccum → Either String DT.DateTime
-unformatAccumToDateTime a =
+unformatAccumToDateTime a = applySecond (validAccum a) $
   DT.DateTime
     <$> (D.canonicalDate
            <$> (maybe (Left "Incorrect year") pure $ toEnum $ fromMaybe zero a.year)
            <*> (maybe (Left "Incorrect month") pure $ toEnum $ fromMaybe one a.month)
-           <*> (maybe (Left "Incorrect day") pure $ toEnum $ fromMaybe one a.day))
+           <*> (maybe (Left "Incorrect day") pure $ toEnum
+                  $ adjustDay a.hour
+                  $ fromMaybe one a.day))
     <*> (T.Time
            <$> (maybe
                   (Left "Incorrect hour") pure
                   $ toEnum
-                  =<< (adjustMeridiem $ fromMaybe zero a.hour))
+                  $ fromMaybe zero
+                  $ adjustMeridiem a.meridiem <$> a.hour)
            <*> (maybe (Left "Incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
            <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
            <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond))
-  where
-  adjustMeridiem ∷ Int → Maybe Int
-  adjustMeridiem inp
-    | a.meridiem /= Just PM = Just inp
-    | inp == 12 = pure 0
-    | inp < 12 = pure $ inp + 12
-    | otherwise = Nothing
+
+validAccum :: UnformatAccum → Either String Unit
+validAccum { hour, minute, second, millisecond } = case hour of
+    Just 24 → for_ [minute, second, millisecond] \val ->
+      when (fromMaybe 0 val > 0) $ Left "When hour is 24, other time components must be 0"
+    _ -> pure unit
+
+adjustDay ∷ Maybe Int → Int → Int
+adjustDay (Just 24) n = n + 1
+adjustDay _         n = n
+
+adjustMeridiem ∷ Maybe Meridiem → Int → Int
+adjustMeridiem (Just AM) 12 = 0
+adjustMeridiem (Just PM) 12 = 12
+adjustMeridiem (Just PM) n  = n + 12
+adjustMeridiem (Just AM) n  = n
+adjustMeridiem Nothing   24 = 0
+adjustMeridiem Nothing   n  = n
 
 
 
@@ -342,9 +356,9 @@ unformatCommandParser = case _ of
   -- TODO we would need to use this value if we support date format using week number
   DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
   Hours24 → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 23 <> exactLength) "Incorrect 24 hour")
+    (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
-    (parseInt 2 (validateRange 0 11 <> exactLength) "Incorrect 12 hour")
+    (parseInt 2 (validateRange 0 12 <> exactLength) "Incorrect 12 hour")
   Meridiem → _{meridiem = _} `modifyWithParser` parseMeridiem
   MinutesTwoDigits → _{minute = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute")
