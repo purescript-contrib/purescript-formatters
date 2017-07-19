@@ -21,7 +21,7 @@ runP ∷ ∀ s a. PS.StringLike s ⇒ Parser s a → s → Either String a
 runP p s = lmap printError $ runParser s (p <* PS.eof)
 
 printError ∷ ParseError → String
-printError err = parseErrorMessage err  <> "@" <> (printPosition $ parseErrorPosition err)
+printError err = parseErrorMessage err  <> " " <> (printPosition $ parseErrorPosition err)
 
 printPosition ∷ Position → String
-printPosition (Position {line, column}) = show line <> ":" <> show column
+printPosition (Position {line, column}) = "(line " <> show line <> ", col " <>show column <> ")"
