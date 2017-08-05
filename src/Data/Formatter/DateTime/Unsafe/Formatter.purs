@@ -51,29 +51,29 @@ instance vht3 ∷ ValidHoursType NoHours
 class ValidateHours (fmt ∷ FormatList) (i ∷ HoursType) (o ∷ HoursType) | fmt i → o
 
 instance vh0  ∷ ValidateHours FNil t t
-instance vh1  ∷ ValidateHours rest HoursType24 o  ⇒ ValidateHours (Hours24                : rest) NoHours o
-instance vh2  ∷ ValidateHours rest Hours12Only o  ⇒ ValidateHours (Hours12                : rest) NoHours o
-instance vh3  ∷ ValidateHours rest MeridiemOnly o ⇒ ValidateHours (Meridiem               : rest) NoHours o
-instance vh4  ∷ ValidateHours rest HoursType12 o  ⇒ ValidateHours (Meridiem               : rest) Hours12Only o
-instance vh5  ∷ ValidateHours rest HoursType12 o  ⇒ ValidateHours (Hours12                : rest) MeridiemOnly o
-instance vh6  ∷ ValidateHours rest i o            ⇒ ValidateHours (YearFull               : rest) i o
-instance vh7  ∷ ValidateHours rest i o            ⇒ ValidateHours (YearTwoDigits          : rest) i o
-instance vh8  ∷ ValidateHours rest i o            ⇒ ValidateHours (YearAbsolute           : rest) i o
-instance vh9  ∷ ValidateHours rest i o            ⇒ ValidateHours (MonthFull              : rest) i o
-instance vh10 ∷ ValidateHours rest i o            ⇒ ValidateHours (MonthShort             : rest) i o
-instance vh11 ∷ ValidateHours rest i o            ⇒ ValidateHours (MonthTwoDigits         : rest) i o
-instance vh12 ∷ ValidateHours rest i o            ⇒ ValidateHours (DayOfMonthTwoDigits    : rest) i o
-instance vh13 ∷ ValidateHours rest i o            ⇒ ValidateHours (DayOfMonth             : rest) i o
-instance vh14 ∷ ValidateHours rest i o            ⇒ ValidateHours (UnixTimestamp          : rest) i o
-instance vh15 ∷ ValidateHours rest i o            ⇒ ValidateHours (DayOfWeek              : rest) i o
-instance vh16 ∷ ValidateHours rest i o            ⇒ ValidateHours (Minutes                : rest) i o
-instance vh17 ∷ ValidateHours rest i o            ⇒ ValidateHours (MinutesTwoDigits       : rest) i o
-instance vh18 ∷ ValidateHours rest i o            ⇒ ValidateHours (Seconds                : rest) i o
-instance vh19 ∷ ValidateHours rest i o            ⇒ ValidateHours (SecondsTwoDigits       : rest) i o
-instance vh20 ∷ ValidateHours rest i o            ⇒ ValidateHours (Milliseconds           : rest) i o
-instance vh21 ∷ ValidateHours rest i o            ⇒ ValidateHours (MillisecondsShort      : rest) i o
-instance vh22 ∷ ValidateHours rest i o            ⇒ ValidateHours (MillisecondsTwoDigits  : rest) i o
-instance vh23 ∷ ValidateHours rest i o            ⇒ ValidateHours (Placeholder s          : rest) i o
+instance vh1  ∷ ValidateHours rest HoursType24 o  ⇒ ValidateHours (Hours24  : rest) NoHours o
+instance vh2  ∷ ValidateHours rest Hours12Only o  ⇒ ValidateHours (Hours12  : rest) NoHours o
+instance vh3  ∷ ValidateHours rest MeridiemOnly o ⇒ ValidateHours (Meridiem : rest) NoHours o
+instance vh4  ∷ ValidateHours rest HoursType12 o  ⇒ ValidateHours (Meridiem : rest) Hours12Only o
+instance vh5  ∷ ValidateHours rest HoursType12 o  ⇒ ValidateHours (Hours12  : rest) MeridiemOnly o
+instance vh6  ∷ ValidateHours rest i o ⇒ ValidateHours (YearFull               : rest) i o
+instance vh7  ∷ ValidateHours rest i o ⇒ ValidateHours (YearTwoDigits          : rest) i o
+instance vh8  ∷ ValidateHours rest i o ⇒ ValidateHours (YearAbsolute           : rest) i o
+instance vh9  ∷ ValidateHours rest i o ⇒ ValidateHours (MonthFull              : rest) i o
+instance vh10 ∷ ValidateHours rest i o ⇒ ValidateHours (MonthShort             : rest) i o
+instance vh11 ∷ ValidateHours rest i o ⇒ ValidateHours (MonthTwoDigits         : rest) i o
+instance vh12 ∷ ValidateHours rest i o ⇒ ValidateHours (DayOfMonthTwoDigits    : rest) i o
+instance vh13 ∷ ValidateHours rest i o ⇒ ValidateHours (DayOfMonth             : rest) i o
+instance vh14 ∷ ValidateHours rest i o ⇒ ValidateHours (UnixTimestamp          : rest) i o
+instance vh15 ∷ ValidateHours rest i o ⇒ ValidateHours (DayOfWeek              : rest) i o
+instance vh16 ∷ ValidateHours rest i o ⇒ ValidateHours (Minutes                : rest) i o
+instance vh17 ∷ ValidateHours rest i o ⇒ ValidateHours (MinutesTwoDigits       : rest) i o
+instance vh18 ∷ ValidateHours rest i o ⇒ ValidateHours (Seconds                : rest) i o
+instance vh19 ∷ ValidateHours rest i o ⇒ ValidateHours (SecondsTwoDigits       : rest) i o
+instance vh20 ∷ ValidateHours rest i o ⇒ ValidateHours (Milliseconds           : rest) i o
+instance vh21 ∷ ValidateHours rest i o ⇒ ValidateHours (MillisecondsShort      : rest) i o
+instance vh22 ∷ ValidateHours rest i o ⇒ ValidateHours (MillisecondsTwoDigits  : rest) i o
+instance vh23 ∷ ValidateHours rest i o ⇒ ValidateHours (Placeholder s          : rest) i o
 
 
 
@@ -85,35 +85,35 @@ foreign import data MinutesUsed ∷ MinutesType -- one minute is present
 foreign import data MinutesInvalid ∷ MinutesType -- more then one minute is present
 
 class ValidMinutesType (ht ∷ MinutesType)
-instance vmt1 ∷ ValidMinutesType MinutesUsed
-instance vmt3 ∷ ValidMinutesType NoMinutes
+instance vmint1 ∷ ValidMinutesType MinutesUsed
+instance vmint3 ∷ ValidMinutesType NoMinutes
 
 class ValidateMinutes (fmt ∷ FormatList) (i ∷ MinutesType) (o ∷ MinutesType) | fmt i → o
 
-instance vm0  ∷ ValidateMinutes FNil t t
-instance vm1  ∷ ValidateMinutes rest MinutesUsed o    ⇒ ValidateMinutes (MinutesTwoDigits      : rest) NoMinutes o
-instance vm2  ∷ ValidateMinutes rest MinutesUsed o    ⇒ ValidateMinutes (Minutes               : rest) NoMinutes o
-instance vm3  ∷ ValidateMinutes rest MinutesInvalid o ⇒ ValidateMinutes (MinutesTwoDigits      : rest) MinutesUsed o
-instance vm4  ∷ ValidateMinutes rest MinutesInvalid o ⇒ ValidateMinutes (Minutes               : rest) MinutesUsed o
-instance vm6  ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (YearFull              : rest) i o
-instance vm7  ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (YearTwoDigits         : rest) i o
-instance vm8  ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (YearAbsolute          : rest) i o
-instance vm9  ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (MonthFull             : rest) i o
-instance vm10 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (MonthShort            : rest) i o
-instance vm11 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (MonthTwoDigits        : rest) i o
-instance vm12 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (DayOfMonthTwoDigits   : rest) i o
-instance vm13 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (DayOfMonth            : rest) i o
-instance vm14 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (UnixTimestamp         : rest) i o
-instance vm15 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (DayOfWeek             : rest) i o
-instance vm16 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Hours24               : rest) i o
-instance vm17 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Hours12               : rest) i o
-instance vm18 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Meridiem              : rest) i o
-instance vm19 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Seconds               : rest) i o
-instance vm20 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (SecondsTwoDigits      : rest) i o
-instance vm21 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Milliseconds          : rest) i o
-instance vm22 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (MillisecondsShort     : rest) i o
-instance vm23 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (MillisecondsTwoDigits : rest) i o
-instance vm24 ∷ ValidateMinutes rest i o              ⇒ ValidateMinutes (Placeholder a         : rest) i o
+instance vmin0  ∷ ValidateMinutes FNil t t
+instance vmin1  ∷ ValidateMinutes rest MinutesUsed o    ⇒ ValidateMinutes (MinutesTwoDigits : rest) NoMinutes o
+instance vmin2  ∷ ValidateMinutes rest MinutesUsed o    ⇒ ValidateMinutes (Minutes          : rest) NoMinutes o
+instance vmin3  ∷ ValidateMinutes rest MinutesInvalid o ⇒ ValidateMinutes (MinutesTwoDigits : rest) MinutesUsed o
+instance vmin4  ∷ ValidateMinutes rest MinutesInvalid o ⇒ ValidateMinutes (Minutes          : rest) MinutesUsed o
+instance vmin6  ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (YearFull              : rest) i o
+instance vmin7  ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (YearTwoDigits         : rest) i o
+instance vmin8  ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (YearAbsolute          : rest) i o
+instance vmin9  ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (MonthFull             : rest) i o
+instance vmin10 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (MonthShort            : rest) i o
+instance vmin11 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (MonthTwoDigits        : rest) i o
+instance vmin12 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (DayOfMonthTwoDigits   : rest) i o
+instance vmin13 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (DayOfMonth            : rest) i o
+instance vmin14 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (UnixTimestamp         : rest) i o
+instance vmin15 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (DayOfWeek             : rest) i o
+instance vmin16 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Hours24               : rest) i o
+instance vmin17 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Hours12               : rest) i o
+instance vmin18 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Meridiem              : rest) i o
+instance vmin19 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Seconds               : rest) i o
+instance vmin20 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (SecondsTwoDigits      : rest) i o
+instance vmin21 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Milliseconds          : rest) i o
+instance vmin22 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (MillisecondsShort     : rest) i o
+instance vmin23 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (MillisecondsTwoDigits : rest) i o
+instance vmin24 ∷ ValidateMinutes rest i o ⇒ ValidateMinutes (Placeholder a         : rest) i o
 
 
 
@@ -131,29 +131,29 @@ instance vst3 ∷ ValidSecondsType NoSeconds
 class ValidateSeconds (fmt ∷ FormatList) (i ∷ SecondsType) (o ∷ SecondsType) | fmt i → o
 
 instance vs0  ∷ ValidateSeconds FNil t t
-instance vs1  ∷ ValidateSeconds rest SecondsUsed o    ⇒ ValidateSeconds (SecondsTwoDigits      : rest) NoSeconds o
-instance vs2  ∷ ValidateSeconds rest SecondsUsed o    ⇒ ValidateSeconds (Seconds               : rest) NoSeconds o
-instance vs3  ∷ ValidateSeconds rest SecondsInvalid o ⇒ ValidateSeconds (SecondsTwoDigits      : rest) SecondsUsed o
-instance vs4  ∷ ValidateSeconds rest SecondsInvalid o ⇒ ValidateSeconds (Seconds               : rest) SecondsUsed o
-instance vs6  ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (YearFull              : rest) i o
-instance vs7  ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (YearTwoDigits         : rest) i o
-instance vs8  ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (YearAbsolute          : rest) i o
-instance vs9  ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MonthFull             : rest) i o
-instance vs10 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MonthShort            : rest) i o
-instance vs11 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MonthTwoDigits        : rest) i o
-instance vs12 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (DayOfMonthTwoDigits   : rest) i o
-instance vs13 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (DayOfMonth            : rest) i o
-instance vs14 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (UnixTimestamp         : rest) i o
-instance vs15 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (DayOfWeek             : rest) i o
-instance vs16 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Hours24               : rest) i o
-instance vs17 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Hours12               : rest) i o
-instance vs18 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Meridiem              : rest) i o
-instance vs19 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Minutes               : rest) i o
-instance vs20 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MinutesTwoDigits      : rest) i o
-instance vs21 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Milliseconds          : rest) i o
-instance vs22 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MillisecondsShort     : rest) i o
-instance vs23 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (MillisecondsTwoDigits : rest) i o
-instance vs24 ∷ ValidateSeconds rest i o              ⇒ ValidateSeconds (Placeholder a         : rest) i o
+instance vs1  ∷ ValidateSeconds rest SecondsUsed o    ⇒ ValidateSeconds (SecondsTwoDigits : rest) NoSeconds o
+instance vs2  ∷ ValidateSeconds rest SecondsUsed o    ⇒ ValidateSeconds (Seconds          : rest) NoSeconds o
+instance vs3  ∷ ValidateSeconds rest SecondsInvalid o ⇒ ValidateSeconds (SecondsTwoDigits : rest) SecondsUsed o
+instance vs4  ∷ ValidateSeconds rest SecondsInvalid o ⇒ ValidateSeconds (Seconds          : rest) SecondsUsed o
+instance vs6  ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (YearFull              : rest) i o
+instance vs7  ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (YearTwoDigits         : rest) i o
+instance vs8  ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (YearAbsolute          : rest) i o
+instance vs9  ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MonthFull             : rest) i o
+instance vs10 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MonthShort            : rest) i o
+instance vs11 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MonthTwoDigits        : rest) i o
+instance vs12 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (DayOfMonthTwoDigits   : rest) i o
+instance vs13 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (DayOfMonth            : rest) i o
+instance vs14 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (UnixTimestamp         : rest) i o
+instance vs15 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (DayOfWeek             : rest) i o
+instance vs16 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Hours24               : rest) i o
+instance vs17 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Hours12               : rest) i o
+instance vs18 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Meridiem              : rest) i o
+instance vs19 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Minutes               : rest) i o
+instance vs20 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MinutesTwoDigits      : rest) i o
+instance vs21 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Milliseconds          : rest) i o
+instance vs22 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MillisecondsShort     : rest) i o
+instance vs23 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (MillisecondsTwoDigits : rest) i o
+instance vs24 ∷ ValidateSeconds rest i o ⇒ ValidateSeconds (Placeholder a         : rest) i o
 
 
 
@@ -179,26 +179,145 @@ instance vms3  ∷ ValidateMilliseconds rest MillisecondsUsed o    ⇒ ValidateM
 instance vms4  ∷ ValidateMilliseconds rest MillisecondsInvalid o ⇒ ValidateMilliseconds (MillisecondsTwoDigits : rest) MillisecondsUsed o
 instance vms6  ∷ ValidateMilliseconds rest MillisecondsInvalid o ⇒ ValidateMilliseconds (MillisecondsShort     : rest) MillisecondsUsed o
 instance vms7  ∷ ValidateMilliseconds rest MillisecondsInvalid o ⇒ ValidateMilliseconds (Milliseconds          : rest) MillisecondsUsed o
-instance vms8  ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (YearFull                   : rest) i o
-instance vms9  ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (YearTwoDigits              : rest) i o
-instance vms10 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (YearAbsolute               : rest) i o
-instance vms11 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (MonthFull                  : rest) i o
-instance vms12 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (MonthShort                 : rest) i o
-instance vms13 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (MonthTwoDigits             : rest) i o
-instance vms14 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (DayOfMonthTwoDigits        : rest) i o
-instance vms15 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (DayOfMonth                 : rest) i o
-instance vms16 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (UnixTimestamp              : rest) i o
-instance vms17 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (DayOfWeek                  : rest) i o
-instance vms18 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Hours24                    : rest) i o
-instance vms19 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Hours12                    : rest) i o
-instance vms20 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Meridiem                   : rest) i o
-instance vms21 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Minutes                    : rest) i o
-instance vms22 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (MinutesTwoDigits           : rest) i o
-instance vms24 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Seconds                    : rest) i o
-instance vms25 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (SecondsTwoDigits           : rest) i o
-instance vms26 ∷ ValidateMilliseconds rest i o              ⇒ ValidateMilliseconds (Placeholder a              : rest) i o
+instance vms8  ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (YearFull            : rest) i o
+instance vms9  ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (YearTwoDigits       : rest) i o
+instance vms10 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (YearAbsolute        : rest) i o
+instance vms11 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (MonthFull           : rest) i o
+instance vms12 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (MonthShort          : rest) i o
+instance vms13 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (MonthTwoDigits      : rest) i o
+instance vms14 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (DayOfMonthTwoDigits : rest) i o
+instance vms15 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (DayOfMonth          : rest) i o
+instance vms16 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (UnixTimestamp       : rest) i o
+instance vms17 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (DayOfWeek           : rest) i o
+instance vms18 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Hours24             : rest) i o
+instance vms19 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Hours12             : rest) i o
+instance vms20 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Meridiem            : rest) i o
+instance vms21 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Minutes             : rest) i o
+instance vms22 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (MinutesTwoDigits    : rest) i o
+instance vms24 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Seconds             : rest) i o
+instance vms25 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (SecondsTwoDigits    : rest) i o
+instance vms26 ∷ ValidateMilliseconds rest i o ⇒ ValidateMilliseconds (Placeholder a       : rest) i o
 
 
+
+
+
+foreign import kind YearType
+foreign import data NoYear ∷ YearType -- initial state
+foreign import data YearUsed ∷ YearType -- one Year is present
+foreign import data YearInvalid ∷ YearType -- more then one Year is present
+
+class ValidYearType (ht ∷ YearType)
+instance vyt1 ∷ ValidYearType YearUsed
+instance vyt2 ∷ ValidYearType NoYear
+
+class ValidateYear (fmt ∷ FormatList) (i ∷ YearType) (o ∷ YearType) | fmt i → o
+
+instance vy0  ∷ ValidateYear rest YearUsed o    ⇒ ValidateYear (YearFull      : rest) NoYear o
+instance vy1  ∷ ValidateYear rest YearUsed o    ⇒ ValidateYear (YearTwoDigits : rest) NoYear o
+instance vy2  ∷ ValidateYear rest YearUsed o    ⇒ ValidateYear (YearAbsolute  : rest) NoYear o
+instance vy3  ∷ ValidateYear rest YearInvalid o ⇒ ValidateYear (YearFull      : rest) YearUsed o
+instance vy4  ∷ ValidateYear rest YearInvalid o ⇒ ValidateYear (YearTwoDigits : rest) YearUsed o
+instance vy5  ∷ ValidateYear rest YearInvalid o ⇒ ValidateYear (YearAbsolute  : rest) YearUsed o
+
+instance vy6  ∷ ValidateYear FNil t t
+instance vy7  ∷ ValidateYear rest i o ⇒ ValidateYear (MillisecondsTwoDigits : rest) i o
+instance vy8  ∷ ValidateYear rest i o ⇒ ValidateYear (MillisecondsShort     : rest) i o
+instance vy9  ∷ ValidateYear rest i o ⇒ ValidateYear (Milliseconds          : rest) i o
+instance vy10 ∷ ValidateYear rest i o ⇒ ValidateYear (MonthFull             : rest) i o
+instance vy11 ∷ ValidateYear rest i o ⇒ ValidateYear (MonthShort            : rest) i o
+instance vy12 ∷ ValidateYear rest i o ⇒ ValidateYear (MonthTwoDigits        : rest) i o
+instance vy13 ∷ ValidateYear rest i o ⇒ ValidateYear (DayOfMonthTwoDigits   : rest) i o
+instance vy14 ∷ ValidateYear rest i o ⇒ ValidateYear (DayOfMonth            : rest) i o
+instance vy15 ∷ ValidateYear rest i o ⇒ ValidateYear (UnixTimestamp         : rest) i o
+instance vy16 ∷ ValidateYear rest i o ⇒ ValidateYear (DayOfWeek             : rest) i o
+instance vy17 ∷ ValidateYear rest i o ⇒ ValidateYear (Hours24               : rest) i o
+instance vy18 ∷ ValidateYear rest i o ⇒ ValidateYear (Hours12               : rest) i o
+instance vy19 ∷ ValidateYear rest i o ⇒ ValidateYear (Meridiem              : rest) i o
+instance vy20 ∷ ValidateYear rest i o ⇒ ValidateYear (Minutes               : rest) i o
+instance vy21 ∷ ValidateYear rest i o ⇒ ValidateYear (MinutesTwoDigits      : rest) i o
+instance vy22 ∷ ValidateYear rest i o ⇒ ValidateYear (Seconds               : rest) i o
+instance vy24 ∷ ValidateYear rest i o ⇒ ValidateYear (SecondsTwoDigits      : rest) i o
+instance vy26 ∷ ValidateYear rest i o ⇒ ValidateYear (Placeholder a         : rest) i o
+
+
+
+
+foreign import kind MonthType
+foreign import data NoMonth ∷ MonthType -- initial state
+foreign import data MonthUsed ∷ MonthType -- one Month is present
+foreign import data MonthInvalid ∷ MonthType -- more then one Month is present
+
+class ValidMonthType (ht ∷ MonthType)
+instance vmt0 ∷ ValidMonthType MonthUsed
+instance vmt1 ∷ ValidMonthType NoMonth
+
+class ValidateMonth (fmt ∷ FormatList) (i ∷ MonthType) (o ∷ MonthType) | fmt i → o
+
+instance vm0  ∷ ValidateMonth rest MonthUsed o    ⇒ ValidateMonth (MonthFull      : rest) NoMonth o
+instance vm1  ∷ ValidateMonth rest MonthUsed o    ⇒ ValidateMonth (MonthShort     : rest) NoMonth o
+instance vm2  ∷ ValidateMonth rest MonthUsed o    ⇒ ValidateMonth (MonthTwoDigits : rest) NoMonth o
+instance vm3  ∷ ValidateMonth rest MonthInvalid o ⇒ ValidateMonth (MonthFull      : rest) MonthUsed o
+instance vm4  ∷ ValidateMonth rest MonthInvalid o ⇒ ValidateMonth (MonthShort     : rest) MonthUsed o
+instance vm5  ∷ ValidateMonth rest MonthInvalid o ⇒ ValidateMonth (MonthTwoDigits : rest) MonthUsed o
+
+instance vm6  ∷ ValidateMonth FNil t t
+instance vm7  ∷ ValidateMonth rest i o ⇒ ValidateMonth (MillisecondsTwoDigits : rest) i o
+instance vm8  ∷ ValidateMonth rest i o ⇒ ValidateMonth (MillisecondsShort     : rest) i o
+instance vm9  ∷ ValidateMonth rest i o ⇒ ValidateMonth (Milliseconds          : rest) i o
+instance vm10 ∷ ValidateMonth rest i o ⇒ ValidateMonth (YearFull              : rest) i o
+instance vm11 ∷ ValidateMonth rest i o ⇒ ValidateMonth (YearTwoDigits         : rest) i o
+instance vm12 ∷ ValidateMonth rest i o ⇒ ValidateMonth (YearAbsolute          : rest) i o
+instance vm13 ∷ ValidateMonth rest i o ⇒ ValidateMonth (DayOfMonthTwoDigits   : rest) i o
+instance vm14 ∷ ValidateMonth rest i o ⇒ ValidateMonth (DayOfMonth            : rest) i o
+instance vm15 ∷ ValidateMonth rest i o ⇒ ValidateMonth (UnixTimestamp         : rest) i o
+instance vm16 ∷ ValidateMonth rest i o ⇒ ValidateMonth (DayOfWeek             : rest) i o
+instance vm17 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Hours24               : rest) i o
+instance vm18 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Hours12               : rest) i o
+instance vm19 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Meridiem              : rest) i o
+instance vm20 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Minutes               : rest) i o
+instance vm21 ∷ ValidateMonth rest i o ⇒ ValidateMonth (MinutesTwoDigits      : rest) i o
+instance vm22 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Seconds               : rest) i o
+instance vm24 ∷ ValidateMonth rest i o ⇒ ValidateMonth (SecondsTwoDigits      : rest) i o
+instance vm26 ∷ ValidateMonth rest i o ⇒ ValidateMonth (Placeholder a         : rest) i o
+
+-- TODO add cases for DayOfWeek once we support actually support day of week
+foreign import kind DayType
+foreign import data NoDay ∷ DayType -- initial state
+foreign import data DayUsed ∷ DayType -- one Day is present
+foreign import data DayInvalid ∷ DayType -- more then one Day is present
+
+class ValidDayType (ht ∷ DayType)
+instance vdt0 ∷ ValidDayType DayUsed
+instance vdt1 ∷ ValidDayType NoDay
+
+class ValidateDay (fmt ∷ FormatList) (i ∷ DayType) (o ∷ DayType) | fmt i → o
+
+instance vd0  ∷ ValidateDay rest DayUsed o    ⇒ ValidateDay (DayOfMonthTwoDigits : rest) NoDay o
+instance vd1  ∷ ValidateDay rest DayUsed o    ⇒ ValidateDay (DayOfMonth : rest) NoDay o
+instance vd2  ∷ ValidateDay rest DayInvalid o ⇒ ValidateDay (DayOfMonthTwoDigits : rest) DayUsed o
+instance vd3  ∷ ValidateDay rest DayInvalid o ⇒ ValidateDay (DayOfMonth : rest) DayUsed o
+
+instance vd4  ∷ ValidateDay FNil t t
+instance vd5  ∷ ValidateDay rest i o              ⇒ ValidateDay (MillisecondsTwoDigits      : rest) i o
+instance vd6  ∷ ValidateDay rest i o              ⇒ ValidateDay (MillisecondsShort          : rest) i o
+instance vd7  ∷ ValidateDay rest i o              ⇒ ValidateDay (Milliseconds               : rest) i o
+instance vd8  ∷ ValidateDay rest i o              ⇒ ValidateDay (YearFull                   : rest) i o
+instance vd9  ∷ ValidateDay rest i o              ⇒ ValidateDay (YearTwoDigits              : rest) i o
+instance vd10 ∷ ValidateDay rest i o              ⇒ ValidateDay (YearAbsolute               : rest) i o
+instance vd11 ∷ ValidateDay rest i o              ⇒ ValidateDay (MonthFull                  : rest) i o
+instance vd12 ∷ ValidateDay rest i o              ⇒ ValidateDay (MonthShort                 : rest) i o
+instance vd13 ∷ ValidateDay rest i o              ⇒ ValidateDay (MonthTwoDigits             : rest) i o
+instance vd14 ∷ ValidateDay rest i o              ⇒ ValidateDay (UnixTimestamp              : rest) i o
+instance vd15 ∷ ValidateDay rest i o              ⇒ ValidateDay (DayOfWeek                  : rest) i o
+instance vd16 ∷ ValidateDay rest i o              ⇒ ValidateDay (Hours24                    : rest) i o
+instance vd17 ∷ ValidateDay rest i o              ⇒ ValidateDay (Hours12                    : rest) i o
+instance vd18 ∷ ValidateDay rest i o              ⇒ ValidateDay (Meridiem                   : rest) i o
+instance vd19 ∷ ValidateDay rest i o              ⇒ ValidateDay (Minutes                    : rest) i o
+instance vd20 ∷ ValidateDay rest i o              ⇒ ValidateDay (MinutesTwoDigits           : rest) i o
+instance vd21 ∷ ValidateDay rest i o              ⇒ ValidateDay (Seconds                    : rest) i o
+instance vd22 ∷ ValidateDay rest i o              ⇒ ValidateDay (SecondsTwoDigits           : rest) i o
+instance vd24 ∷ ValidateDay rest i o              ⇒ ValidateDay (Placeholder a              : rest) i o
 
 foreign import kind EmptyType
 foreign import data IsEmpty ∷ EmptyType
@@ -335,7 +454,11 @@ instance vd ∷
   ) ⇒ ValidDate a
 
 class ValidDatePart (a ∷ FormatList)
-instance vdi ∷ ValidDatePart a
+instance vdi ∷
+  ( ValidateYear a NoYear yearOut, ValidYearType yearOut
+  , ValidateMonth a NoMonth monthOut, ValidMonthType monthOut
+  , ValidateDay a NoDay dayOut, ValidDayType dayOut
+  ) ⇒ ValidDatePart a
 
 
 
