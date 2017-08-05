@@ -311,14 +311,14 @@ instance vdo28 ∷ ValidateOnlyDate rest i o ⇒ ValidateOnlyDate (Placeholder a
 
 class ValidTime (a ∷ FormatList)
 instance vt ∷
-  ( ValidTimeI a
+  ( ValidTimePart a
   , ValidateOnlyTime a IsOnlyTime onlyTimeout
   , ValidOnlyTimeType onlyTimeout
   , ValidateEmpty a IsEmpty emptyOut
   , ValidEmptyType emptyOut
   ) ⇒ ValidTime a
 
-class ValidTimeI (a ∷ FormatList)
+class ValidTimePart (a ∷ FormatList)
 instance vti ∷
   ( ValidateHours a NoHours hoursOut
   , ValidHoursType hoursOut
@@ -328,30 +328,30 @@ instance vti ∷
   , ValidSecondsType secondsOut
   , ValidateMilliseconds a NoMilliseconds millisecondsOut
   , ValidMillisecondsType millisecondsOut
-  ) ⇒ ValidTimeI a
+  ) ⇒ ValidTimePart a
 
 
 
 
 class ValidDate (a ∷ FormatList)
 instance vd ∷
-  ( ValidDateI a
+  ( ValidDatePart a
   , ValidateOnlyDate a IsOnlyDate onlyDateout
   , ValidOnlyDateType onlyDateout
   , ValidateEmpty a IsEmpty emptyOut
   , ValidEmptyType emptyOut
   ) ⇒ ValidDate a
 
-class ValidDateI (a ∷ FormatList)
-instance vdi ∷ ValidDateI a
+class ValidDatePart (a ∷ FormatList)
+instance vdi ∷ ValidDatePart a
 
 
 
 
 class ValidDateTime (a ∷ FormatList)
 instance vdt ∷
-  ( ValidTimeI a
-  , ValidDateI a
+  ( ValidTimePart a
+  , ValidDatePart a
   , ValidateEmpty a IsEmpty emptyOut
   , ValidEmptyType emptyOut
   ) ⇒ ValidDateTime a
@@ -366,25 +366,25 @@ instance rdi0 ∷ PrintFormatI FNil where
   printFormatI _ acc = acc
 
 instance rdi1 ∷ (IsSymbol s, PrintFormatI rest) ⇒ PrintFormatI (Placeholder s : rest) where
-  printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc $ FC.Placeholder $ reflectSymbol (SProxy ∷ SProxy s))
+  printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< (Cons $ FC.Placeholder $ reflectSymbol (SProxy ∷ SProxy s))
 
-instance rdi2  ∷ PrintFormatI rest ⇒ PrintFormatI (YearFull              : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.YearFull)
-instance rdi3  ∷ PrintFormatI rest ⇒ PrintFormatI (YearTwoDigits         : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.YearTwoDigits)
-instance rdi4  ∷ PrintFormatI rest ⇒ PrintFormatI (YearAbsolute          : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.YearAbsolute)
-instance rdi5  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthFull             : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MonthFull)
-instance rdi6  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthShort            : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MonthShort)
-instance rdi7  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthTwoDigits        : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MonthTwoDigits)
-instance rdi8  ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfMonthTwoDigits   : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.DayOfMonthTwoDigits)
-instance rdi9  ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfMonth            : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.DayOfMonth)
-instance rdi10 ∷ PrintFormatI rest ⇒ PrintFormatI (UnixTimestamp         : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.UnixTimestamp)
-instance rdi11 ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfWeek             : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.DayOfWeek)
-instance rdi12 ∷ PrintFormatI rest ⇒ PrintFormatI (Hours24               : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Hours24)
-instance rdi13 ∷ PrintFormatI rest ⇒ PrintFormatI (Hours12               : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Hours12)
-instance rdi14 ∷ PrintFormatI rest ⇒ PrintFormatI (Meridiem              : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Meridiem)
-instance rdi15 ∷ PrintFormatI rest ⇒ PrintFormatI (Minutes               : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Minutes)
-instance rdi16 ∷ PrintFormatI rest ⇒ PrintFormatI (MinutesTwoDigits      : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MinutesTwoDigits)
-instance rdi17 ∷ PrintFormatI rest ⇒ PrintFormatI (Seconds               : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Seconds)
-instance rdi18 ∷ PrintFormatI rest ⇒ PrintFormatI (SecondsTwoDigits      : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.SecondsTwoDigits)
-instance rdi19 ∷ PrintFormatI rest ⇒ PrintFormatI (Milliseconds          : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.Milliseconds)
-instance rdi20 ∷ PrintFormatI rest ⇒ PrintFormatI (MillisecondsShort     : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MillisecondsShort)
-instance rdi21 ∷ PrintFormatI rest ⇒ PrintFormatI (MillisecondsTwoDigits : rest) where printFormatI _ acc = printFormatI (FProxy ∷ FProxy rest) (flip Cons acc FC.MillisecondsTwoDigits)
+instance rdi2  ∷ PrintFormatI rest ⇒ PrintFormatI (YearFull              : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.YearFull
+instance rdi3  ∷ PrintFormatI rest ⇒ PrintFormatI (YearTwoDigits         : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.YearTwoDigits
+instance rdi4  ∷ PrintFormatI rest ⇒ PrintFormatI (YearAbsolute          : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.YearAbsolute
+instance rdi5  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthFull             : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MonthFull
+instance rdi6  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthShort            : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MonthShort
+instance rdi7  ∷ PrintFormatI rest ⇒ PrintFormatI (MonthTwoDigits        : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MonthTwoDigits
+instance rdi8  ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfMonthTwoDigits   : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.DayOfMonthTwoDigits
+instance rdi9  ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfMonth            : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.DayOfMonth
+instance rdi10 ∷ PrintFormatI rest ⇒ PrintFormatI (UnixTimestamp         : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.UnixTimestamp
+instance rdi11 ∷ PrintFormatI rest ⇒ PrintFormatI (DayOfWeek             : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.DayOfWeek
+instance rdi12 ∷ PrintFormatI rest ⇒ PrintFormatI (Hours24               : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Hours24
+instance rdi13 ∷ PrintFormatI rest ⇒ PrintFormatI (Hours12               : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Hours12
+instance rdi14 ∷ PrintFormatI rest ⇒ PrintFormatI (Meridiem              : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Meridiem
+instance rdi15 ∷ PrintFormatI rest ⇒ PrintFormatI (Minutes               : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Minutes
+instance rdi16 ∷ PrintFormatI rest ⇒ PrintFormatI (MinutesTwoDigits      : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MinutesTwoDigits
+instance rdi17 ∷ PrintFormatI rest ⇒ PrintFormatI (Seconds               : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Seconds
+instance rdi18 ∷ PrintFormatI rest ⇒ PrintFormatI (SecondsTwoDigits      : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.SecondsTwoDigits
+instance rdi19 ∷ PrintFormatI rest ⇒ PrintFormatI (Milliseconds          : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.Milliseconds
+instance rdi20 ∷ PrintFormatI rest ⇒ PrintFormatI (MillisecondsShort     : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MillisecondsShort
+instance rdi21 ∷ PrintFormatI rest ⇒ PrintFormatI (MillisecondsTwoDigits : rest) where printFormatI _ = printFormatI (FProxy ∷ FProxy rest) <<< Cons FC.MillisecondsTwoDigits
