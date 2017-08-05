@@ -312,22 +312,16 @@ instance vdo28 ∷ ValidateOnlyDate rest i o ⇒ ValidateOnlyDate (Placeholder a
 class ValidTime (a ∷ FormatList)
 instance vt ∷
   ( ValidTimePart a
-  , ValidateOnlyTime a IsOnlyTime onlyTimeout
-  , ValidOnlyTimeType onlyTimeout
-  , ValidateEmpty a IsEmpty emptyOut
-  , ValidEmptyType emptyOut
+  , ValidateOnlyTime a IsOnlyTime onlyTimeout, ValidOnlyTimeType onlyTimeout
+  , ValidateEmpty a IsEmpty emptyOut, ValidEmptyType emptyOut
   ) ⇒ ValidTime a
 
 class ValidTimePart (a ∷ FormatList)
 instance vti ∷
-  ( ValidateHours a NoHours hoursOut
-  , ValidHoursType hoursOut
-  , ValidateMinutes a NoMinutes minutesOut
-  , ValidMinutesType minutesOut
-  , ValidateSeconds a NoSeconds secondsOut
-  , ValidSecondsType secondsOut
-  , ValidateMilliseconds a NoMilliseconds millisecondsOut
-  , ValidMillisecondsType millisecondsOut
+  ( ValidateHours a NoHours hoursOut, ValidHoursType hoursOut
+  , ValidateMinutes a NoMinutes minutesOut, ValidMinutesType minutesOut
+  , ValidateSeconds a NoSeconds secondsOut, ValidSecondsType secondsOut
+  , ValidateMilliseconds a NoMilliseconds millisecondsOut, ValidMillisecondsType millisecondsOut
   ) ⇒ ValidTimePart a
 
 
@@ -336,10 +330,8 @@ instance vti ∷
 class ValidDate (a ∷ FormatList)
 instance vd ∷
   ( ValidDatePart a
-  , ValidateOnlyDate a IsOnlyDate onlyDateout
-  , ValidOnlyDateType onlyDateout
-  , ValidateEmpty a IsEmpty emptyOut
-  , ValidEmptyType emptyOut
+  , ValidateOnlyDate a IsOnlyDate onlyDateout, ValidOnlyDateType onlyDateout
+  , ValidateEmpty a IsEmpty emptyOut, ValidEmptyType emptyOut
   ) ⇒ ValidDate a
 
 class ValidDatePart (a ∷ FormatList)
@@ -352,8 +344,7 @@ class ValidDateTime (a ∷ FormatList)
 instance vdt ∷
   ( ValidTimePart a
   , ValidDatePart a
-  , ValidateEmpty a IsEmpty emptyOut
-  , ValidEmptyType emptyOut
+  , ValidateEmpty a IsEmpty emptyOut, ValidEmptyType emptyOut
   ) ⇒ ValidDateTime a
 
 
