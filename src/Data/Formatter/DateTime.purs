@@ -69,7 +69,8 @@ data FormatterCommand
   | MillisecondsTwoDigits
   | Placeholder String
 
-derive instance eqFormatterCommand ∷ Eq (FormatterCommand)
+derive instance eqFormatterCommand ∷ Eq FormatterCommand
+derive instance ordFormatterCommand ∷ Ord FormatterCommand
 derive instance genericFormatter ∷ Generic FormatterCommand _
 instance showFormatter ∷ Show FormatterCommand where
   show = genericShow
