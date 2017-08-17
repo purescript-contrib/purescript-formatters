@@ -58,6 +58,7 @@ data FormatterCommand
   | UnixTimestamp
   | DayOfWeek
   | DayOfWeekName
+  | DayOfWeekNameShort
   | Hours24
   | Hours12
   | Meridiem
@@ -90,7 +91,8 @@ printFormatterCommand = case _ of
   DayOfMonth → "D"
   UnixTimestamp → "X"
   DayOfWeek → "E"
-  DayOfWeekName → "A"
+  DayOfWeekName → "AA"
+  DayOfWeekNameShort → "A"
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
@@ -127,7 +129,8 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
   , Tuple "E" DayOfWeek
-  , Tuple "A" DayOfWeekName
+  , Tuple "AA" DayOfWeekName
+  , Tuple "A" DayOfWeekNameShort
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
@@ -171,6 +174,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   UnixTimestamp → show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt
   DayOfWeek → show $ fromEnum $ D.weekday d
   DayOfWeekName → show $ D.weekday d
+  DayOfWeekNameShort → Str.take 3 $ show $ D.weekday d
   Hours24 → padSingleDigit (fromEnum $ T.hour t)
   Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
@@ -362,6 +366,8 @@ unformatCommandParser = case _ of
   DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
   DayOfWeekName → _{day = _} `modifyWithParser`
     (fromEnum <$> parseDayOfWeekName)
+  DayOfWeekNameShort → _{day = _} `modifyWithParser`
+    (fromEnum <$> parseDayOfWeekNameShort)
   Hours24 → _{hour = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
@@ -421,6 +427,17 @@ parseDayOfWeekName = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "Friday" D.Friday
   , Tuple "Saturday" D.Saturday
   , Tuple "Sunday" D.Sunday
+  ]
+
+parseDayOfWeekNameShort ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Weekday
+parseDayOfWeekNameShort = (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "Mon" D.Monday
+  , Tuple "Tue" D.Tuesday
+  , Tuple "Wed" D.Wednesday
+  , Tuple "Thu" D.Thursday
+  , Tuple "Fri" D.Friday
+  , Tuple "Sat" D.Saturday
+  , Tuple "Sun" D.Sunday
   ]
 
 parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
