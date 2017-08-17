@@ -57,6 +57,7 @@ data FormatterCommand
   | DayOfMonth
   | UnixTimestamp
   | DayOfWeek
+  | DayOfWeekName
   | Hours24
   | Hours12
   | Meridiem
@@ -89,6 +90,7 @@ printFormatterCommand = case _ of
   DayOfMonth → "D"
   UnixTimestamp → "X"
   DayOfWeek → "E"
+  DayOfWeekName → "A"
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
@@ -125,6 +127,7 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
   , Tuple "E" DayOfWeek
+  , Tuple "A" DayOfWeekName
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
@@ -167,6 +170,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   DayOfMonth → show $ fromEnum $ D.day d
   UnixTimestamp → show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt
   DayOfWeek → show $ fromEnum $ D.weekday d
+  DayOfWeekName → show $ D.weekday d
   Hours24 → padSingleDigit (fromEnum $ T.hour t)
   Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
@@ -356,6 +360,8 @@ unformatCommandParser = case _ of
         }
   -- TODO we would need to use this value if we support date format using week number
   DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
+  DayOfWeekName → _{day = _} `modifyWithParser`
+    (fromEnum <$> parseDayOfWeekName)
   Hours24 → _{hour = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
@@ -403,6 +409,18 @@ parseMeridiem =  (PC.try <<< PS.string) `oneOfAs`
   , Tuple "AM" AM
   , Tuple "pm" PM
   , Tuple "PM" PM
+  ]
+
+
+parseDayOfWeekName ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Weekday
+parseDayOfWeekName = (PC.try <<< PS.string) `oneOfAs`
+  [ Tuple "Monday" D.Monday
+  , Tuple "Tuesday" D.Tuesday
+  , Tuple "Wednesday" D.Wednesday
+  , Tuple "Thursday" D.Thursday
+  , Tuple "Friday" D.Friday
+  , Tuple "Saturday" D.Saturday
+  , Tuple "Sunday" D.Sunday
   ]
 
 parseMonth ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Month
