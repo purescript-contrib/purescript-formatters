@@ -56,7 +56,8 @@ data FormatterCommand
   | DayOfMonthTwoDigits
   | DayOfMonth
   | UnixTimestamp
-  | DayOfWeek
+  | DayOfWeekFullName
+  | DayOfWeekISO
   | Hours24
   | Hours12
   | Meridiem
@@ -88,7 +89,8 @@ printFormatterCommand = case _ of
   DayOfMonthTwoDigits → "DD"
   DayOfMonth → "D"
   UnixTimestamp → "X"
-  DayOfWeek → "E"
+  DayOfWeekFullName → "dddd"
+  DayOfWeekISO → "E"
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
@@ -124,7 +126,8 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "MM" MonthTwoDigits
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
-  , Tuple "E" DayOfWeek
+  , Tuple "dddd" DayOfWeekFullName
+  , Tuple "E" DayOfWeekISO
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
@@ -166,7 +169,8 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   DayOfMonthTwoDigits → padSingleDigit $ fromEnum $ D.day d
   DayOfMonth → show $ fromEnum $ D.day d
   UnixTimestamp → show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt
-  DayOfWeek → show $ fromEnum $ D.weekday d
+  DayOfWeekFullName → show $ D.weekday d
+  DayOfWeekISO → show $ fromEnum $ D.weekday d
   Hours24 → padSingleDigit (fromEnum $ T.hour t)
   Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
@@ -354,8 +358,9 @@ unformatCommandParser = case _ of
         , millisecond: Just $ fromEnum $ T.millisecond t
         , meridiem: Nothing
         }
+  DayOfWeekFullName → void $ parseDayOfWeekFullName
   -- TODO we would need to use this value if we support date format using week number
-  DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
+  DayOfWeekISO → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
   Hours24 → _{hour = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
@@ -451,3 +456,14 @@ printShortMonth = case _ of
   D.October → "Oct"
   D.November → "Nov"
   D.December → "Dec"
+
+parseDayOfWeekFullName ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Weekday
+parseDayOfWeekFullName = (PC.try <<< PS.string) `oneOfAs` map (\day → Tuple (show day) day)
+  [ D.Monday
+  , D.Tuesday
+  , D.Wednesday
+  , D.Thursday
+  , D.Friday
+  , D.Saturday
+  , D.Sunday
+  ]
