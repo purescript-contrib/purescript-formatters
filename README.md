@@ -50,6 +50,7 @@ This is just subset of format/parse string from moment.js library. Currently sup
 + `MM`
 + `DD`
 + `D`
++ `dddd`
 + `X`
 + `E`
 + `HH`
