@@ -56,7 +56,7 @@ data FormatterCommand
   | DayOfMonthTwoDigits
   | DayOfMonth
   | UnixTimestamp
-  | DayOfWeek
+  | DayOfWeekISO
   | Hours24
   | Hours12
   | Meridiem
@@ -88,7 +88,7 @@ printFormatterCommand = case _ of
   DayOfMonthTwoDigits → "DD"
   DayOfMonth → "D"
   UnixTimestamp → "X"
-  DayOfWeek → "E"
+  DayOfWeekISO → "E"
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
@@ -124,7 +124,7 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "MM" MonthTwoDigits
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
-  , Tuple "E" DayOfWeek
+  , Tuple "E" DayOfWeekISO
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
@@ -166,7 +166,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   DayOfMonthTwoDigits → padSingleDigit $ fromEnum $ D.day d
   DayOfMonth → show $ fromEnum $ D.day d
   UnixTimestamp → show $ Int.floor $ (_ / 1000.0) $ unwrap $ unInstant $ fromDateTime dt
-  DayOfWeek → show $ fromEnum $ D.weekday d
+  DayOfWeekISO → show $ fromEnum $ D.weekday d
   Hours24 → padSingleDigit (fromEnum $ T.hour t)
   Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
@@ -355,7 +355,7 @@ unformatCommandParser = case _ of
         , meridiem: Nothing
         }
   -- TODO we would need to use this value if we support date format using week number
-  DayOfWeek → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
+  DayOfWeekISO → void $ parseInt 1 (validateRange 1 7) "Incorrect day of week"
   Hours24 → _{hour = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 24 <> exactLength) "Incorrect 24 hour")
   Hours12 → _{hour = _} `modifyWithParser`
