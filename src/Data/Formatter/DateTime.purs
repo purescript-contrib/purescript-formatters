@@ -91,8 +91,8 @@ printFormatterCommand = case _ of
   DayOfMonth → "D"
   UnixTimestamp → "X"
   DayOfWeek → "E"
-  DayOfWeekName → "AA"
-  DayOfWeekNameShort → "A"
+  DayOfWeekName → "dddd"
+  DayOfWeekNameShort → "ddd"
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
@@ -129,8 +129,8 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
   , Tuple "E" DayOfWeek
-  , Tuple "AA" DayOfWeekName
-  , Tuple "A" DayOfWeekNameShort
+  , Tuple "dddd" DayOfWeekName
+  , Tuple "ddd" DayOfWeekNameShort
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
