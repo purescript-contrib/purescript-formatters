@@ -22,7 +22,6 @@ import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
 import Control.Monad.State (State, modify, put, runState)
 import Control.Monad.Trans.Class (lift)
 import Data.Array as Array
-import Data.Date (Weekday(..))
 import Data.Date as D
 import Data.DateTime as DT
 import Data.DateTime.Instant (instant, toDateTime, fromDateTime, unInstant)
@@ -466,4 +465,5 @@ parseDayOfWeekFullName = (PC.try <<< PS.string) `oneOfAs` map (\day → Tuple (s
   , D.Thursday
   , D.Friday
   , D.Saturday
-  , D.Sunday ]
+  , D.Sunday
+  ]
