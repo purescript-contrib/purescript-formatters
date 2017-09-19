@@ -9,7 +9,6 @@ import Prelude
 
 import Data.Int (toNumber)
 import Data.Array (some)
-import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Internal (foldDigits)
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser as P
