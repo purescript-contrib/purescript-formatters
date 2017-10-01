@@ -42,26 +42,27 @@ then use formatter to result of division of input number and that power.
 
 ## Date/Time formatters
 
-This is just subset of format/parse string from moment.js library. Currently supported
-+ `YYYY`
-+ `YY`
-+ `MMMM`
-+ `MMM`
-+ `MM`
-+ `DD`
-+ `D`
-+ `X`
-+ `E`
-+ `HH`
-+ `hh`
-+ `a`
-+ `mm`
-+ `m`
-+ `ss`
-+ `s`
-+ `SSS`
-+ `SS`
-+ `S`
+This is a subset of common format/parse strings currently supported.
+
++ `YYYY` - Full Year      (1999)
++ `YY`   - 2 digit year   (99)
++ `MMMM` - Full Month     (January)
++ `MMM`  - Short Month    (Jan)
++ `DD`   - Padded Day     (02)
++ `D`    - Day of month   (2)
++ `X`    - Unix Timestamp (1506875681)
++ `E`    - Day of Week    (21)
++ `dddd` - DOW Name       (Monday)
++ `ddd`  - DOW Name Short (Mon)
++ `HH`   - 24 Hour        (13:00)
++ `hh`   - 12 Hour        (1:00)
++ `a`    - Meridiem       (am/pm)
++ `mm`   - Minutes Padded (02)
++ `m`    - Minutes        (2)
++ `ss`   - Seconds Padded (02)
++ `s`    - Seconds        (2)
+
+Full list is defined [here](https://github.com/slamdata/purescript-formatters/blob/master/src/Data/Formatter/DateTime.purs)
 
 ## Documentation
 
