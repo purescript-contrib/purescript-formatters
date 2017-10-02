@@ -15,7 +15,7 @@ import Test.Utils (forAll, makeDateTime)
 datetimeTest ∷ ∀ e. Spec e Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
-    "formatDateTime/unformaDateTime should formatt/unforma dateTime"
+    "formatDateTime/unformatDateTime should format/unformat dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YYYY", dateStr: "0017" , date: makeDateTime 17 0 0 0 0 0 0}
     , { format: "MMMM", dateStr: "April" , date: makeDateTime 2017 4 12 11 3 4 234}
@@ -24,6 +24,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "MMM D", dateStr: "Apr 1" , date: makeDateTime 2017 4 1 0 0 0 0}
     , { format: "dddd, MMM D", dateStr: "Saturday, Apr 1" , date: makeDateTime 2017 4 1 0 0 0 0}
     , { format: "ddd, MMM D", dateStr: "Sat, Apr 1" , date: makeDateTime 2017 4 1 0 0 0 0}
+    , { format: "E", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0}
     , { format: "hh:mm:ss:SSS a", dateStr: "11:03:04:234 AM" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YY", dateStr: "17" , date: makeDateTime 2017 4 12 11 3 4 234}
     , { format: "YY", dateStr: "17" , date: makeDateTime 20017 4 12 0 0 0 0} -- Format 20017 with YY
