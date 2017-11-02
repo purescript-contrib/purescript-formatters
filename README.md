@@ -63,6 +63,8 @@ This is just subset of format/parse string from moment.js library. Currently sup
 + `SS`
 + `S`
 
+Literal text can be escaped by enclosing it with square brackets: `[Today is] MMM D`
+
 ## Documentation
 
 Module documentation is published on Pursuit: [http://pursuit.purescript.org/packages/purescript-formatters](http://pursuit.purescript.org/packages/purescript-formatters)

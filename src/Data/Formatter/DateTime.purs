@@ -70,6 +70,7 @@ data FormatterCommand
   | MillisecondsShort
   | MillisecondsTwoDigits
   | Placeholder String
+  | Escaped String
 
 derive instance eqFormatterCommand ∷ Eq FormatterCommand
 derive instance ordFormatterCommand ∷ Ord FormatterCommand
@@ -104,6 +105,7 @@ printFormatterCommand = case _ of
   MillisecondsTwoDigits → "SS"
   Milliseconds → "SSS"
   Placeholder s → s
+  Escaped s → "[" <> s <> "]"
 
 printFormatter ∷ Formatter → String
 printFormatter = foldMap printFormatterCommand
@@ -118,8 +120,15 @@ placeholderContent =
   # Array.some
   <#> Str.fromCharArray
 
+escapedContent :: P.Parser String String
+escapedContent = PC.try $ PC.between (PS.string "[") (PS.string "]") escapedString
+  where
+  escapedString :: P.Parser String String
+  escapedString = (Array.many $ PS.satisfy (_ /= ']')) <#> Str.fromCharArray
+
 formatterCommandParser ∷ P.Parser String FormatterCommand
-formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
+formatterCommandParser = (Escaped <$> escapedContent) <|>
+  (PC.try <<< PS.string) `oneOfAs`
   [ Tuple "YYYY" YearFull
   , Tuple "YY" YearTwoDigits
   , Tuple "Y" YearAbsolute
@@ -186,6 +195,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   MillisecondsShort → show $ (_ / 100) $ fromEnum $ T.millisecond t
   MillisecondsTwoDigits → padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t
   Placeholder s → s
+  Escaped s → s
 
 --TODO we need leftpad here
 
@@ -384,6 +394,7 @@ unformatCommandParser = case _ of
   Milliseconds → _{millisecond = _} `modifyWithParser`
     (parseInt 3 exactLength "Incorrect millisecond")
   Placeholder s → void $ PS.string s
+  Escaped s → void $ PS.string s
   MillisecondsShort → _{millisecond = _} `modifyWithParser`
     (parseInt 1 exactLength "Incorrect 1-digit millisecond" <#> (_ * 100))
   MillisecondsTwoDigits → _{millisecond = _} `modifyWithParser`
