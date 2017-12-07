@@ -47,6 +47,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "hhmmssS", dateStr: "1112301", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "HHmmssSSS", dateStr: "134530123", date: makeDateTime 2017 4 10 13 45 30 123 }
     , { format: "HHmm", dateStr: "1345", date: makeDateTime 2017 4 10 13 45 30 123 }
+    , { format: "X", dateStr: "1499779279", date: makeDateTime 2017 7 11 13 21 19 0 }
     ]
     (\({ format, dateStr, date }) → do
       (format `FDT.formatDateTime` date) `shouldEqual` (Right dateStr)
@@ -92,6 +93,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , {date: "111230003", format: "hhmmssSSS"}
     , {date: "11123012", format: "hhmmssSS"}
     , {date: "1112301", format: "hhmmssS"}
+    , {date: "1499779279", format: "X"}
 
     ]
     (\({date, format}) → (FDT.unformatDateTime format date >>= FDT.formatDateTime format) `shouldEqual` (Right date))

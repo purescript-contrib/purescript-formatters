@@ -129,6 +129,7 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "DD" DayOfMonthTwoDigits
   , Tuple "D" DayOfMonth
   , Tuple "E" DayOfWeek
+  , Tuple "X" UnixTimestamp
   , Tuple "dddd" DayOfWeekName
   , Tuple "ddd" DayOfWeekNameShort
   , Tuple "HH" Hours24
