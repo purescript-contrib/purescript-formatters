@@ -28,7 +28,7 @@ numberTest = describe "Data.Formatter.Number" do
 
   forAll show
     "format (unformat n) = n"
-    [ "001.12"
+    [ "001.12", "001.02"
     ]
     (\n →  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
 
