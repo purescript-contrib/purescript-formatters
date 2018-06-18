@@ -18,7 +18,11 @@
   "dependencies": {
     "purescript-parsing": "https://github.com/joncfoo/purescript-parsing.git#update-for-0.12.0",
     "purescript-fixed-points": "^5.0.0",
-    "purescript-datetime": "^v4.0.0"
+    "purescript-datetime": "^v4.0.0",
+    "purescript-generics-rep": "^6.0.0",
+    "purescript-transformers": "^4.1.0",
+    "purescript-lists": "^5.0.0",
+    "purescript-prelude": "^4.0.1"
   },
   "devDependencies": {
     "purescript-aff": "^5.0.0",
