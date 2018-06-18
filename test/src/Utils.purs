@@ -4,7 +4,7 @@ import Prelude
 
 
 import Test.Spec (describe, it, Spec)
-import Control.Monad.Aff (Aff)
+import Effect.Aff (Aff)
 
 import Data.Foldable (class Foldable, for_)
 import Data.Enum (toEnum)
@@ -14,7 +14,7 @@ import Data.Date (canonicalDate)
 import Data.Time (Time(..))
 
 
-forAll ∷ ∀ e a f. Foldable f ⇒ (a → String) → String → f a → (a → Aff e Unit) → Spec e Unit
+forAll ∷ ∀ a f. Foldable f ⇒ (a → String) → String → f a → (a → Aff Unit) → Spec Unit
 forAll itTitle title arb f = describe title do
   for_ arb \a → it (itTitle a) (f a)
 

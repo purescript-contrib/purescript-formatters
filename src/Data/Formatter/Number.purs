@@ -22,6 +22,7 @@ import Data.Traversable (for)
 import Data.Either (Either, either)
 import Data.Int as Int
 import Data.String as Str
+import Data.String.CodeUnits as CU
 
 import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Internal (foldDigits, repeat)
@@ -123,17 +124,17 @@ format (Formatter f) num =
          roundedWithZeros =
            let roundedString = show rounded
                roundedLength = Str.length roundedString
-               zeros = repeat "0" (f.after - roundedLength)
-           in zeros <> roundedString
+               zeros' = repeat "0" (f.after - roundedLength)
+           in zeros' <> roundedString
          shownNumber =
            if f.comma
              then
-             addCommas [] zero $ Arr.reverse $ Str.toCharArray (repeat "0" zeros <> show integer)
+             addCommas [] zero $ Arr.reverse $ CU.toCharArray (repeat "0" zeros <> show integer)
              else repeat "0" zeros <> show integer
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
-           Nothing → Str.fromCharArray acc
+           Nothing → CU.fromCharArray acc
            Just {head, tail} | counter < 3 →
              addCommas (Arr.cons head acc) (counter + one) tail
            _ →
@@ -238,5 +239,5 @@ unformatNumber pattern str =
 -- good way to extract number back to show.
 formatOrShowNumber ∷ String → Number → String
 formatOrShowNumber patter number =
-  either (const $ show number) id
+  either (const $ show number) identity
   $ formatNumber patter number
