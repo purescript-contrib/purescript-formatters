@@ -17,7 +17,6 @@ import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
 import Data.Interval as I
 import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration, prettyError)
 import Data.Maybe (Maybe)
-import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
 import Partial.Unsafe (unsafePartial)
