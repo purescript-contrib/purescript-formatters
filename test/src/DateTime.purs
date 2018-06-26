@@ -12,7 +12,7 @@ import Test.Spec (describe, Spec, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 
-datetimeTest ∷ ∀ e. Spec e Unit
+datetimeTest ∷ Spec Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime/unformatDateTime should format/unformat dateTime"

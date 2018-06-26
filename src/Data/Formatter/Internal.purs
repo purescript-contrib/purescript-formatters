@@ -3,7 +3,6 @@ module Data.Formatter.Internal where
 import Prelude
 
 import Data.Foldable (class Foldable, foldl)
-import Data.Monoid (class Monoid, mempty)
 
 foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
 foldDigits = foldl (\acc d → acc * 10 + d) zero

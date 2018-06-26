@@ -18,7 +18,6 @@ import Data.Interval as I
 import Data.Interval.Duration.Iso (IsoDuration, unIsoDuration)
 import Data.Map (lookup)
 import Data.Maybe (maybe)
-import Data.Monoid (mempty)
 import Data.Tuple (Tuple(..))
 
 formatRecurringInterval ∷ I.RecurringInterval IsoDuration DateTime → String
