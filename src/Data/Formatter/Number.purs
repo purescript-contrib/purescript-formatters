@@ -15,28 +15,24 @@ module Data.Formatter.Number
 
 import Prelude
 
-import Data.Array as Arr
 import Data.Array (many, some)
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Traversable (for)
+import Data.Array as Arr
 import Data.Either (Either, either)
-import Data.Int as Int
-import Data.String as Str
-import Data.String.CodeUnits as CU
-
-import Data.Formatter.Parser.Utils (runP)
 import Data.Formatter.Internal (foldDigits, repeat)
 import Data.Formatter.Parser.Number (parseDigit)
-
+import Data.Formatter.Parser.Utils (runP)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.Int as Int
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Newtype (class Newtype)
+import Data.String as Str
+import Data.String.CodeUnits as CU
+import Data.Traversable (for)
 import Math as Math
-
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
-
-import Data.Newtype (class Newtype)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 
 
 newtype Formatter = Formatter
@@ -91,9 +87,10 @@ format ∷ Formatter → Number → String
 format (Formatter f) num =
   let
     absed = Math.abs num
-    tens = if absed > 0.0
-             then max (Int.floor $ Math.log absed / Math.ln10) 0
-             else 0
+    tens =
+      if absed > 0.0
+        then max (Int.floor $ Math.log absed / Math.ln10) 0
+        else 0
   in if f.abbreviations
      then
        let
@@ -114,13 +111,9 @@ format (Formatter f) num =
      else
        let
          zeros = f.before - tens - one
-         integer = Int.floor num
-         leftover = num - Int.toNumber integer
-         tehths = -1 * (Int.floor $ Math.log absed / Math.ln10)
-         rounded =
-           let
-             multiplier = Math.pow 10.0 $ Int.toNumber f.after
-           in Int.round $ leftover * multiplier
+         integer = Int.floor absed
+         leftover = absed - Int.toNumber integer
+         rounded = Int.round $ leftover * (Math.pow 10.0 (Int.toNumber f.after))
          roundedWithZeros =
            let roundedString = show rounded
                roundedLength = Str.length roundedString
@@ -128,8 +121,7 @@ format (Formatter f) num =
            in zeros' <> roundedString
          shownNumber =
            if f.comma
-             then
-             addCommas [] zero $ Arr.reverse $ CU.toCharArray (repeat "0" zeros <> show integer)
+             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> show integer)))
              else repeat "0" zeros <> show integer
 
          addCommas ∷ Array Char → Int → Array Char → String
@@ -140,7 +132,7 @@ format (Formatter f) num =
            _ →
              addCommas (Arr.cons ',' acc) zero input
        in
-        (if num > zero && f.sign then "+" else "")
+        (if num < zero then "-" else if num > zero && f.sign then "+" else "")
         <> shownNumber
         <> (if f.after < 1
               then ""
