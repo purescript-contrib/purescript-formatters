@@ -23,21 +23,17 @@ numberTest = describe "Data.Formatter.Number" do
 
   forAll show
     "unformat (format n) = n"
-    [100.2, 100.1, 100.3, 10004000.0]
+    [100.2, 100.1, 100.3, 10004000.0, -100.2, -100.1, -100.3, -10004000.0]
     (\n → unformat fmt1 (format fmt1 n) `shouldEqual` (Right n))
 
   forAll show
     "format (unformat n) = n"
-    [ "001.12", "001.02"
-    ]
+    ["001.12", "001.02", "-001.12", "-001.02"]
     (\n →  (format fmt1 <$> (unformat fmt1 n)) `shouldEqual` (Right n))
 
   forAll show
     "format (unformat n) = n"
-    --TODO negative nubers fail https://github.com/slamdata/purescript-formatters/issues/16
-    [-- "-02.12" -- (Right "0-3.88") ≠ (Right "-02.12")
-    --, "-13.12" -- (Right "-14.88") ≠ (Right "-13.12")
-    ]
+    ["+02.12", "+13.12", "-02.12", "-13.12"]
     (\n →  (format fmt3 <$> (unformat fmt3 n)) `shouldEqual` (Right n))
 
 fmt1 ∷ Formatter
