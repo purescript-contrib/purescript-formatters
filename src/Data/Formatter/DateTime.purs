@@ -35,7 +35,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.List as List
-import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Newtype (unwrap)
 import Data.Ord (abs)
 import Data.String as Str
@@ -189,23 +189,24 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   MillisecondsTwoDigits → padSingleDigit $ (_ / 10) $ fromEnum $ T.millisecond t
   Placeholder s → s
 
---TODO we need leftpad here
-
 padSingleDigit ∷ Int → String
 padSingleDigit i
-  | i < 10    = "0" <> (show i)
+  | i < 0 = "-" <> padSingleDigit (-i)
+  | i < 10 = "0" <> (show i)
   | otherwise = show i
 
 padDoubleDigit ∷ Int → String
 padDoubleDigit i
+  | i < 0 = "-" <> padDoubleDigit (-i)
   | i < 10  = "00" <> (show i)
   | i < 100 = "0" <> (show i)
   | otherwise = show i
 
 padQuadrupleDigit ∷ Int → String
 padQuadrupleDigit i
-  | i < 10   = "000" <> (show i)
-  | i < 100  = "00" <> (show i)
+  | i < 0 = "-" <> padQuadrupleDigit (-i)
+  | i < 10 = "000" <> (show i)
+  | i < 100 = "00" <> (show i)
   | i < 1000 = "0" <> (show i)
   | otherwise = show i
 
@@ -223,7 +224,6 @@ data Meridiem = AM | PM
 
 derive instance eqMeridiem ∷ Eq Meridiem
 
--- TODO: consider using Map Int
 type UnformatAccum =
   { year ∷ Maybe Int
   , month ∷ Maybe Int
@@ -284,8 +284,6 @@ adjustMeridiem (Just AM) n  = n
 adjustMeridiem Nothing   24 = 0
 adjustMeridiem Nothing   n  = n
 
-
-
 exactLength ∷ ∀ e. ReaderT { maxLength ∷ Int, length ∷ Int | e } (Either String) Unit
 exactLength = ask >>= \({maxLength, length}) → lift if maxLength /= length
   then Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
@@ -314,6 +312,15 @@ takeMany :: ∀ f a. Alternative f ⇒ Z.Lazy (f (List.List a)) ⇒ Int → f a 
 takeMany 0 _ = pure List.Nil
 takeMany n v = takeSome n v <|> pure List.Nil
 
+parseSignedInt ∷ ∀ m
+  . Monad m
+  ⇒ Int
+  → ReaderT { length ∷ Int, num ∷ Int, maxLength ∷ Int } (Either String) Unit
+  → String
+  → P.ParserT String m Int
+parseSignedInt maxLength validators errMsg = do
+  isNegative ← isJust <$> PC.optionMaybe (PS.char '-')
+  (if isNegative then negate else identity) <$> parseInt maxLength validators errMsg 
 
 parseInt ∷ ∀ m
   . Monad m
@@ -333,9 +340,9 @@ parseInt maxLength validators errMsg = do
 unformatCommandParser ∷ FormatterCommand → P.ParserT String (State UnformatAccum) Unit
 unformatCommandParser = case _ of
   YearFull → _{year = _} `modifyWithParser`
-    (parseInt 4 exactLength "Incorrect full year")
+    (parseSignedInt 4 exactLength "Incorrect full year")
   YearTwoDigits → _{year = _} `modifyWithParser`
-    (parseInt 2 exactLength "Incorrect 2-digit year")
+    (parseSignedInt 2 exactLength "Incorrect 2-digit year")
   YearAbsolute → _{year = _} `modifyWithParser`
     (lift2 (*)
       (PC.option 1 $ PC.try $ PS.string "-" <#> (const (-1)))
@@ -405,8 +412,6 @@ unformatParser f = do
   unState s = case runState s initialAccum of
     Tuple (Tuple e state) res → pure (Tuple (e $> res) state)
 
-
-
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= (_ `unformat` str)
@@ -418,7 +423,6 @@ parseMeridiem =  (PC.try <<< PS.string) `oneOfAs`
   , Tuple "pm" PM
   , Tuple "PM" PM
   ]
-
 
 parseDayOfWeekName ∷ ∀ m. Monad m ⇒ P.ParserT String m D.Weekday
 parseDayOfWeekName = (PC.try <<< PS.string) `oneOfAs`
