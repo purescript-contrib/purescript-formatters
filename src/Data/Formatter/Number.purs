@@ -112,17 +112,21 @@ format (Formatter f) num =
        let
          zeros = f.before - tens - one
          integer = Int.floor absed
+         roundedInt = Int.round absed
          leftover = absed - Int.toNumber integer
-         rounded = Int.round $ leftover * (Math.pow 10.0 (Int.toNumber f.after))
+         factor = Math.pow 10.0 (Int.toNumber f.after)
+         rounded = Int.round $ leftover * factor
+         overflow = Int.toNumber rounded == factor
          roundedWithZeros =
            let roundedString = show rounded
                roundedLength = Str.length roundedString
                zeros' = repeat "0" (f.after - roundedLength)
            in zeros' <> roundedString
+         strInt = if overflow then show (integer + 1) else show integer
          shownNumber =
            if f.comma
-             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> show integer)))
-             else repeat "0" zeros <> show integer
+             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> strInt)))
+             else repeat "0" zeros <> strInt
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
@@ -138,8 +142,8 @@ format (Formatter f) num =
               then ""
               else
               "."
-              <> (if rounded == 0 then repeat "0" f.after else "")
-              <> (if rounded > 0 then roundedWithZeros else ""))
+              <> (if rounded == 0 || overflow then repeat "0" f.after else "")
+              <> (if rounded > 0 && not overflow then roundedWithZeros else ""))
 
 
 unformat ∷ Formatter → String → Either String Number
