@@ -5,7 +5,7 @@ import Prelude
 import Data.Formatter.Number (Formatter(..), printFormatter, parseFormatString, format, unformat)
 import Data.Either (Either(..))
 
-import Test.Spec (Spec, describe)
+import Test.Spec (describe, Spec)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll)
 
