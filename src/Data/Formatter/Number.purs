@@ -112,7 +112,6 @@ format (Formatter f) num =
        let
          zeros = f.before - tens - one
          integer = Int.floor absed
-         roundedInt = Int.round absed
          leftover = absed - Int.toNumber integer
          factor = Math.pow 10.0 (Int.toNumber f.after)
          rounded = Int.round $ leftover * factor
