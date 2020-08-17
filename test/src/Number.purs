@@ -43,6 +43,7 @@ numberTest = describe "Data.Formatter.Number" do
     , {fmt: fmt5, input: 1.99999, expected: "2.0000"}
     , {fmt: fmt1, input: 1.89999, expected: "001.90"}
     , {fmt: fmt5, input: 1.67899, expected: "1.6790"}
+    , {fmt: fmt6, input: 12.9, expected: "13"}
     ]
     (\{fmt, input, expected} -> do
       format fmt input `shouldEqual` expected
@@ -91,6 +92,15 @@ fmt5 = Formatter
   { comma: true
   , before: 1
   , after: 4
+  , abbreviations: false
+  , sign: false
+  }
+
+fmt6 ∷ Formatter
+fmt6 = Formatter
+  { comma: true
+  , before: 1
+  , after: -1
   , abbreviations: false
   , sign: false
   }

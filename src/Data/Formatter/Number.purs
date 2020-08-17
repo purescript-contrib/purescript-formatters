@@ -111,21 +111,20 @@ format (Formatter f) num =
      else
        let
          zeros = f.before - tens - one
-         integer = Int.floor absed
-         leftover = absed - Int.toNumber integer
-         factor = Math.pow 10.0 (Int.toNumber f.after)
-         rounded = Int.round $ leftover * factor
-         overflow = Int.toNumber rounded == factor
-         roundedWithZeros =
-           let roundedString = show rounded
-               roundedLength = Str.length roundedString
-               zeros' = repeat "0" (f.after - roundedLength)
-           in zeros' <> roundedString
-         strInt = if overflow then show (integer + 1) else show integer
-         shownNumber =
+         factor = Math.pow 10.0 (Int.toNumber (max 0 f.after))
+         rounded = Math.round (absed * factor) / factor
+         integer = Int.floor rounded
+         leftoverDecimal = rounded - Int.toNumber integer
+         leftover = Int.round $ leftoverDecimal * factor
+         leftoverWithZeros =
+           let leftoverString = show leftover
+               leftoverLength = Str.length leftoverString
+               zeros' = repeat "0" (f.after - leftoverLength)
+           in zeros' <> leftoverString
+         shownInt =
            if f.comma
-             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> strInt)))
-             else repeat "0" zeros <> strInt
+             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> show integer)))
+             else repeat "0" zeros <> show integer
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
@@ -136,13 +135,13 @@ format (Formatter f) num =
              addCommas (Arr.cons ',' acc) zero input
        in
         (if num < zero then "-" else if num > zero && f.sign then "+" else "")
-        <> shownNumber
+        <> shownInt
         <> (if f.after < 1
               then ""
               else
               "."
-              <> (if rounded == 0 || overflow then repeat "0" f.after else "")
-              <> (if rounded > 0 && not overflow then roundedWithZeros else ""))
+              <> (if leftover == 0 then repeat "0" f.after else "")
+              <> (if leftover > 0 then leftoverWithZeros else ""))
 
 
 unformat ∷ Formatter → String → Either String Number
