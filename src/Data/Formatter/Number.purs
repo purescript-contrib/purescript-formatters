@@ -110,21 +110,23 @@ format (Formatter f) num =
         format (Formatter f{abbreviations = false}) newNum <> abbr
      else
        let
+         period = Str.codePointFromChar '.' 
+         showNumberAsInt = show >>> Str.takeWhile (_ /= period)
          zeros = f.before - tens - one
          factor = Math.pow 10.0 (Int.toNumber (max 0 f.after))
          rounded = Math.round (absed * factor) / factor
-         integer = Int.floor rounded
-         leftoverDecimal = rounded - Int.toNumber integer
-         leftover = Int.round $ leftoverDecimal * factor
+         integer = Math.floor rounded
+         leftoverDecimal = rounded - integer
+         leftover = Math.round $ leftoverDecimal * factor
          leftoverWithZeros =
-           let leftoverString = show leftover
+           let leftoverString = showNumberAsInt leftover
                leftoverLength = Str.length leftoverString
                zeros' = repeat "0" (f.after - leftoverLength)
            in zeros' <> leftoverString
          shownInt =
            if f.comma
-             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> show integer)))
-             else repeat "0" zeros <> show integer
+             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> showNumberAsInt integer)))
+             else repeat "0" zeros <> showNumberAsInt integer
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
@@ -140,8 +142,8 @@ format (Formatter f) num =
               then ""
               else
               "."
-              <> (if leftover == 0 then repeat "0" f.after else "")
-              <> (if leftover > 0 then leftoverWithZeros else ""))
+              <> (if leftover == 0.0 then repeat "0" f.after else "")
+              <> (if leftover > 0.0 then leftoverWithZeros else ""))
 
 
 unformat ∷ Formatter → String → Either String Number
