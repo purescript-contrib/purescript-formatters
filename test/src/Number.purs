@@ -44,9 +44,9 @@ numberTest = describe "Data.Formatter.Number" do
     , {fmt: fmt1, input: 1.89999, expected: "001.90"}
     , {fmt: fmt5, input: 1.67899, expected: "1.6790"}
     , {fmt: fmt6, input: 12.9, expected: "13"}
-    , {fmt: fmt7, input: 1.123456789012345678, expected: "1.1234567890123457"}
-    , {fmt: fmt6, input: 12345678901234567.8, expected: "12,345,678,901,234,568"}
-    , {fmt: fmt5, input: 123456789012.345678, expected: "123,456,789,012.3457"}
+    , {fmt: fmt7, input: 1.123456789012345678901234, expected: "1.1234567890123457"}
+    , {fmt: fmt6, input: 12345678901234567.8901234, expected: "12,345,678,901,234,568"}
+    , {fmt: fmt5, input: 123456789012.345678901234, expected: "123,456,789,012.3457"}
     ]
     (\{fmt, input, expected} -> do
       format fmt input `shouldEqual` expected

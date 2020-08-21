@@ -83,6 +83,13 @@ formatParser = do
     }
 
 
+-- | Formats a number according to the format object provided. 
+-- | Due to the nature of floating point numbers, may yield unpredictable results for extremely 
+-- | large or extremely small numbers, such as numbers whose absolute values are ≥ 1e21 or ≤ 1e-21,
+-- | or when formatting with > 20 digits after the decimal place.  
+-- | See [purescript-decimals](https://pursuit.purescript.org/packages/purescript-decimals/4.0.0) 
+-- | for working with arbitrary precision decimals, which supports simple number
+-- | formatting for numbers that go beyond the precision available with `Number`.
 format ∷ Formatter → Number → String
 format (Formatter f) num =
   let
