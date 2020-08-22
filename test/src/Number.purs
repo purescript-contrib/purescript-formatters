@@ -36,6 +36,24 @@ numberTest = describe "Data.Formatter.Number" do
     ["+02.12", "+13.12", "-02.12", "-13.12"]
     (\n →  (format fmt3 <$> (unformat fmt3 n)) `shouldEqual` (Right n))
 
+  forAll (\{fmt: (Formatter fmt), input} -> "rounds up " <> show input <> " (" <> show fmt.after <> " digits)")
+    "rounding"
+    [ {fmt: fmt4, input: 1.99999, expected: "02"}
+    , {fmt: fmt1, input: 1.99999, expected: "002.00"}
+    , {fmt: fmt5, input: 1.99999, expected: "2.0000"}
+    , {fmt: fmt1, input: 1.89999, expected: "001.90"}
+    , {fmt: fmt5, input: 1.67899, expected: "1.6790"}
+    , {fmt: fmt6, input: 12.9, expected: "13"}
+    , {fmt: fmt7, input: 1.123456789012345678901234, expected: "1.1234567890123457"}
+    , {fmt: fmt6, input: 12345678901234567.8901234, expected: "12,345,678,901,234,568"}
+    , {fmt: fmt5, input: 123456789012.345678901234, expected: "123,456,789,012.3457"}
+    ]
+    (\{fmt, input, expected} -> do
+      format fmt input `shouldEqual` expected
+      format fmt (negate input) `shouldEqual` ("-" <> expected)
+    )
+
+
 fmt1 ∷ Formatter
 fmt1 = Formatter
   { comma: false
@@ -61,6 +79,42 @@ fmt3 = Formatter
   , after: 2
   , abbreviations: true
   , sign: true
+  }
+
+fmt4 ∷ Formatter
+fmt4 = Formatter
+  { comma: false
+  , before: 2
+  , after: 0
+  , abbreviations: false
+  , sign: false
+  }
+
+fmt5 ∷ Formatter
+fmt5 = Formatter
+  { comma: true
+  , before: 1
+  , after: 4
+  , abbreviations: false
+  , sign: false
+  }
+
+fmt6 ∷ Formatter
+fmt6 = Formatter
+  { comma: true
+  , before: 1
+  , after: -1
+  , abbreviations: false
+  , sign: false
+  }
+
+fmt7 ∷ Formatter
+fmt7 = Formatter
+  { comma: true
+  , before: 1
+  , after: 16
+  , abbreviations: false
+  , sign: false
   }
 
 numberformatts ∷ Array { fmt ∷ Formatter, str ∷ String }

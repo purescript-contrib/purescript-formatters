@@ -82,7 +82,18 @@ formatParser = do
     , abbreviations: isJust abbreviations
     }
 
+-- converts a number to a string of the nearest integer _without_ appending ".0" (like `show` for `Number`) or
+-- clamping to +/- 2 billion (like when working with `Int`). This is important for performance compared to other
+-- means of showing an integer potentially larger than +/- 2 billion.
+foreign import showNumberAsInt :: Number -> String
 
+-- | Formats a number according to the format object provided. 
+-- | Due to the nature of floating point numbers, may yield unpredictable results for extremely 
+-- | large or extremely small numbers, such as numbers whose absolute values are ≥ 1e21 or ≤ 1e-21,
+-- | or when formatting with > 20 digits after the decimal place.  
+-- | See [purescript-decimals](https://pursuit.purescript.org/packages/purescript-decimals/4.0.0) 
+-- | for working with arbitrary precision decimals, which supports simple number
+-- | formatting for numbers that go beyond the precision available with `Number`.
 format ∷ Formatter → Number → String
 format (Formatter f) num =
   let
@@ -111,18 +122,20 @@ format (Formatter f) num =
      else
        let
          zeros = f.before - tens - one
-         integer = Int.floor absed
-         leftover = absed - Int.toNumber integer
-         rounded = Int.round $ leftover * (Math.pow 10.0 (Int.toNumber f.after))
-         roundedWithZeros =
-           let roundedString = show rounded
-               roundedLength = Str.length roundedString
-               zeros' = repeat "0" (f.after - roundedLength)
-           in zeros' <> roundedString
-         shownNumber =
+         factor = Math.pow 10.0 (Int.toNumber (max 0 f.after))
+         rounded = Math.round (absed * factor) / factor
+         integer = Math.floor rounded
+         leftoverDecimal = rounded - integer
+         leftover = Math.round $ leftoverDecimal * factor
+         leftoverWithZeros =
+           let leftoverString = showNumberAsInt leftover
+               leftoverLength = Str.length leftoverString
+               zeros' = repeat "0" (f.after - leftoverLength)
+           in zeros' <> leftoverString
+         shownInt =
            if f.comma
-             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> show integer)))
-             else repeat "0" zeros <> show integer
+             then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> showNumberAsInt integer)))
+             else repeat "0" zeros <> showNumberAsInt integer
 
          addCommas ∷ Array Char → Int → Array Char → String
          addCommas acc counter input = case Arr.uncons input of
@@ -133,13 +146,13 @@ format (Formatter f) num =
              addCommas (Arr.cons ',' acc) zero input
        in
         (if num < zero then "-" else if num > zero && f.sign then "+" else "")
-        <> shownNumber
+        <> shownInt
         <> (if f.after < 1
               then ""
               else
               "."
-              <> (if rounded == 0 then repeat "0" f.after else "")
-              <> (if rounded > 0 then roundedWithZeros else ""))
+              <> (if leftover == 0.0 then repeat "0" f.after else "")
+              <> (if leftover > 0.0 then leftoverWithZeros else ""))
 
 
 unformat ∷ Formatter → String → Either String Number
