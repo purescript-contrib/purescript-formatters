@@ -82,6 +82,7 @@ formatParser = do
     , abbreviations: isJust abbreviations
     }
 
+foreign import showNumberAsInt :: Number -> String
 
 -- | Formats a number according to the format object provided. 
 -- | Due to the nature of floating point numbers, may yield unpredictable results for extremely 
@@ -117,8 +118,6 @@ format (Formatter f) num =
         format (Formatter f{abbreviations = false}) newNum <> abbr
      else
        let
-         period = Str.codePointFromChar '.' 
-         showNumberAsInt = show >>> Str.takeWhile (_ /= period)
          zeros = f.before - tens - one
          factor = Math.pow 10.0 (Int.toNumber (max 0 f.after))
          rounded = Math.round (absed * factor) / factor
