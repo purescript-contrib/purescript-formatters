@@ -1,17 +1,24 @@
-# purescript-formatters
+# Formatters
 
-[![Latest release](http://img.shields.io/github/release/slamdata/purescript-formatters.svg)](https://github.com/slamdata/purescript-formatters/releases)
-[![Build status](https://travis-ci.org/slamdata/purescript-formatters.svg?branch=master)](https://travis-ci.org/slamdata/purescript-formatters)
+[![CI](https://github.com/purescript-contrib/purescript-formatters/workflows/CI/badge.svg?branch=main)](https://github.com/purescript-contrib/purescript-formatters/actions?query=workflow%3ACI+branch%3Amain)
+[![Release](https://img.shields.io/github/release/purescript-contrib/purescript-formatters.svg)](https://github.com/purescript-contrib/purescript-formatters/releases)
+[![Pursuit](https://pursuit.purescript.org/packages/purescript-formatters/badge)](https://pursuit.purescript.org/packages/purescript-formatters)
+[![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
+[![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
 
 A PureScript alternative to numeral.js, moment.js, etc.
 
 ## Installation
 
-```
-bower install purescript-formatters
+Install `formatters` with [Spago](https://github.com/purescript/spago):
+
+```sh
+spago install formatters
 ```
 
-## Number formatters
+## Quick start
+
+**Number formatters**
 
 Formatter has following properties
 + Number of digits before dot
@@ -20,8 +27,7 @@ Formatter has following properties
 + Should thousands be separated by comma
 + Should output string have abbreviations (like `K` or `M`)
 
-Number will be padded with zeros to have at least this number of leading zeros.
-This doesn't restrict number to have more digits then leading zeros in format string.
+Number will be padded with zeros to have at least this number of leading zeros. This doesn't restrict number to have more digits then leading zeros in format string.
 + `0000.0` will show 4 digits: `12 → "0012.0"`, `1234 → "1234.0"`
 + `00.0` will show only 2 digits : `12 → "12.0"`, `1234 → "1234.0"`
 
@@ -40,7 +46,7 @@ For abbreviation one could use `a` flag. In general it tries to find the closest
 then use formatter to result of division of input number and that power.
 + `0a`: `1234567 → "1M"`, `1 → "1"`
 
-## Date/Time formatters
+**Date/Time formatters**
 
 This is a subset of common format/parse strings currently supported.
 
@@ -69,4 +75,23 @@ Full list is defined [here](https://github.com/slamdata/purescript-formatters/bl
 
 ## Documentation
 
-Module documentation is published on Pursuit: [http://pursuit.purescript.org/packages/purescript-formatters](http://pursuit.purescript.org/packages/purescript-formatters)
+`formatters` documentation is stored in a few places:
+
+1. Module documentation is [published on Pursuit](https://pursuit.purescript.org/packages/purescript-formatters).
+2. Written documentation is kept in the [docs directory](./docs).
+3. Usage examples can be found in [the test suite](./test).
+
+If you get stuck, there are several ways to get help:
+
+- [Open an issue](https://github.com/purescript-contrib/purescript-formatters/issues) if you have encountered a bug or problem.
+- [Search or start a thread on the PureScript Discourse](https://discourse.purescript.org) if you have general questions. You can also ask questions in the `#purescript` and `#purescript-beginners` channels on the [Functional Programming Slack](https://functionalprogramming.slack.com) ([invite link](https://fpchat-invite.herokuapp.com/)).
+
+## Contributing
+
+You can contribute to `formatters` in several ways:
+
+1. If you encounter a problem or have a question, please [open an issue](https://github.com/purescript-contrib/purescript-formatters/issues). We'll do our best to work with you to resolve or answer it.
+
+2. If you would like to contribute code, tests, or documentation, please [read the contributor guide](./CONTRIBUTING.md). It's a short, helpful introduction to contributing to this library, including development instructions.
+
+3. If you have written a library, tutorial, guide, or other resource based on this package, please share it on the [PureScript Discourse](https://discourse.purescript.org)! Writing libraries and learning resources are a great way to help this library succeed.
