@@ -8,12 +8,18 @@ import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Formatter.DateTime as FDT
 import Data.List (fromFoldable)
+import Test.DateTime.Standards (standardsTest)
 import Test.Spec (describe, Spec, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Utils (forAll, makeDateTime)
 
 datetimeTest ∷ Spec Unit
-datetimeTest = describe "Data.Formatter.DateTime" do
+datetimeTest = do
+  moduleTest
+  standardsTest
+
+moduleTest ∷ Spec Unit
+moduleTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime/unformatDateTime should format/unformat dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017" , date: makeDateTime 2017 4 12 11 3 4 234}
