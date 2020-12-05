@@ -7,6 +7,7 @@
   , "fixed-points"
   , "generics-rep"
   , "lists"
+  , "numbers"
   , "parsing"
   , "prelude"
   , "psci-support"

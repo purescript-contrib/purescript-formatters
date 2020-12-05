@@ -15,9 +15,9 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
 import Text.Parsing.Parser.String as PS
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
+import Data.Number (fromString)
 import Data.Foldable (foldMap)
-import Global (readFloat)
 
 parseInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
 parseInteger = some parseDigit <#> foldDigits
@@ -26,7 +26,11 @@ parseMaybeInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m (Ma
 parseMaybeInteger = PC.optionMaybe parseInteger
 
 parseFractional ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
-parseFractional = (some parseDigit) <#> (foldMap show >>> ("0." <> _) >>> readFloat)
+parseFractional = do
+  digitStr <- (some parseDigit) <#> (foldMap show >>> ("0." <> _))
+  case fromString digitStr of
+      Just n -> pure n
+      Nothing -> P.fail ("Not a number: " <> digitStr)
 
 parseNumber ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
 parseNumber = (+)
