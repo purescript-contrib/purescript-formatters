@@ -1,6 +1,7 @@
 { name = "formatters"
 , dependencies =
   [ "aff"
+  , "assert"
   , "console"
   , "datetime"
   , "effect"
@@ -11,7 +12,6 @@
   , "parsing"
   , "prelude"
   , "psci-support"
-  , "spec"
   , "transformers"
   ]
 , packages = ./packages.dhall

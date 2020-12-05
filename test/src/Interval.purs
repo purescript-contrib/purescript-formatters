@@ -2,7 +2,9 @@ module Test.Interval (intervalTest) where
 
 import Prelude
 
+import Control.Monad.Reader.Class (class MonadReader)
 import Effect.Aff (Aff)
+import Effect.Aff.Class (class MonadAff)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..), either)
 import Data.Foldable (class Foldable, fold)
@@ -13,14 +15,12 @@ import Data.Interval as I
 import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration)
 import Data.Maybe (Maybe(..))
 import Partial.Unsafe (unsafeCrashWith)
-import Test.Spec (describe, Spec)
-import Test.Spec.Assertions (shouldEqual)
-import Test.Utils (forAll, makeDateTime)
+import Test.Utils (forAll, makeDateTime, describe, shouldEqual)
 
-prop ∷ ∀ e f. Foldable f ⇒ String → f {str ∷ String | e} → ({str ∷ String | e} → Aff Unit) → Spec Unit
+prop ∷ ∀ m e f. MonadReader Int m ⇒ MonadAff m ⇒ Foldable f ⇒ String → f {str ∷ String | e} → ({str ∷ String | e} → Aff Unit) → m Unit
 prop = forAll (show <<< _.str)
 
-intervalTest ∷ Spec Unit
+intervalTest ∷ forall m. MonadReader Int m ⇒ MonadAff m ⇒ m Unit
 intervalTest = describe "Data.Formatter.Interval" do
   prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) → do
     (unformatInterval str) `shouldEqual` (Left $ err)

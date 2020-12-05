@@ -2,17 +2,17 @@ module Test.DateTime (datetimeTest) where
 
 import Prelude
 
+import Control.Monad.Reader.Class (class MonadReader)
 import Control.Alternative (class Alternative, empty)
 import Control.MonadZero (guard)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Formatter.DateTime as FDT
 import Data.List (fromFoldable)
-import Test.Spec (describe, Spec, it)
-import Test.Spec.Assertions (shouldEqual)
-import Test.Utils (forAll, makeDateTime)
+import Effect.Aff.Class (class MonadAff)
+import Test.Utils (forAll, makeDateTime, describe, it, shouldEqual)
 
-datetimeTest ∷ Spec Unit
+datetimeTest ∷ forall m. MonadReader Int m ⇒ MonadAff m ⇒ m Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
   forAll (\a → a.format <> " | " <> a.dateStr)
     "formatDateTime/unformatDateTime should format/unformat dateTime"
