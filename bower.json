@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/slamdata/purescript-formatters.git"
+    "url": "https://github.com/purescript-contrib/purescript-formatters.git"
   },
   "ignore": [
     "**/.*",
@@ -16,18 +16,18 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-fixed-points": "^5.0.0",
-    "purescript-datetime": "^v4.0.0",
-    "purescript-generics-rep": "^6.0.0",
-    "purescript-transformers": "^4.1.0",
-    "purescript-lists": "^5.0.0",
-    "purescript-prelude": "^4.0.1",
-    "purescript-parsing": "^5.0.0"
+    "purescript-fixed-points": "main",
+    "purescript-datetime": "master",
+    "purescript-generics-rep": "master",
+    "purescript-transformers": "master",
+    "purescript-lists": "master",
+    "purescript-prelude": "master",
+    "purescript-parsing": "main"
   },
   "devDependencies": {
-    "purescript-aff": "^5.0.0",
-    "purescript-console": "^4.1.0",
-    "purescript-psci-support": "^4.0.0",
-    "purescript-spec": "^3.0.0"
+    "purescript-aff": "main",
+    "purescript-console": "master",
+    "purescript-psci-support": "master",
+    "purescript-assert": "master"
   }
 }
