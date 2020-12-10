@@ -10,7 +10,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.DateTime (DateTime)
-import Data.Either (Either(..), fromRight)
+import Data.Either (Either(..), either)
 import Data.Foldable (class Foldable, fold, foldMap, intercalate)
 import Data.Formatter.DateTime (unformatParser, Formatter, parseFormatString)
 import Data.Formatter.Parser.Number (parseNumber, parseMaybeInteger)
@@ -19,7 +19,7 @@ import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration, prettyError)
 import Data.Maybe (Maybe)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
-import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
@@ -77,4 +77,4 @@ parseDateTime = unformatParser extendedDateTimeFormatInUTC
 
 extendedDateTimeFormatInUTC ∷ Formatter
 extendedDateTimeFormatInUTC = parseFormatString "YYYY-MM-DDTHH:mm:ssZ"
-  # unsafePartial fromRight -- the format must be valid ISO date format
+  # either unsafeCrashWith identity -- the format must be valid ISO date format

@@ -2,14 +2,14 @@ module Test.Number (numberTest) where
 
 import Prelude
 
+import Control.Monad.Reader.Class (class MonadReader)
 import Data.Formatter.Number (Formatter(..), printFormatter, parseFormatString, format, unformat)
 import Data.Either (Either(..))
+import Effect.Aff.Class (class MonadAff)
 
-import Test.Spec (describe, Spec)
-import Test.Spec.Assertions (shouldEqual)
-import Test.Utils (forAll)
+import Test.Utils (forAll, describe, shouldEqual)
 
-numberTest ∷ Spec Unit
+numberTest ∷ forall m. MonadReader Int m ⇒ MonadAff m ⇒ m Unit
 numberTest = describe "Data.Formatter.Number" do
   forAll _.str
     "should print formatter"

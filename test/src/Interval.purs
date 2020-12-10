@@ -2,9 +2,11 @@ module Test.Interval (intervalTest) where
 
 import Prelude
 
+import Control.Monad.Reader.Class (class MonadReader)
 import Effect.Aff (Aff)
+import Effect.Aff.Class (class MonadAff)
 import Data.DateTime (DateTime)
-import Data.Either (Either(..), fromRight)
+import Data.Either (Either(..), either)
 import Data.Foldable (class Foldable, fold)
 import Data.Formatter.Interval (unformatInterval, unformatRecurringInterval, formatRecurringInterval)
 import Data.Formatter.Parser.Interval (parseIsoDuration)
@@ -12,15 +14,13 @@ import Data.Formatter.Parser.Utils (runP)
 import Data.Interval as I
 import Data.Interval.Duration.Iso (IsoDuration, mkIsoDuration)
 import Data.Maybe (Maybe(..))
-import Partial.Unsafe (unsafePartial)
-import Test.Spec (describe, Spec)
-import Test.Spec.Assertions (shouldEqual)
-import Test.Utils (forAll, makeDateTime)
+import Partial.Unsafe (unsafeCrashWith)
+import Test.Utils (forAll, makeDateTime, describe, shouldEqual)
 
-prop ∷ ∀ e f. Foldable f ⇒ String → f {str ∷ String | e} → ({str ∷ String | e} → Aff Unit) → Spec Unit
+prop ∷ ∀ m e f. MonadReader Int m ⇒ MonadAff m ⇒ Foldable f ⇒ String → f {str ∷ String | e} → ({str ∷ String | e} → Aff Unit) → m Unit
 prop = forAll (show <<< _.str)
 
-intervalTest ∷ Spec Unit
+intervalTest ∷ forall m. MonadReader Int m ⇒ MonadAff m ⇒ m Unit
 intervalTest = describe "Data.Formatter.Interval" do
   prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) → do
     (unformatInterval str) `shouldEqual` (Left $ err)
@@ -40,7 +40,8 @@ intervalTest = describe "Data.Formatter.Interval" do
 
 unsafeMkToIsoDuration ∷ I.Duration → IsoDuration
 unsafeMkToIsoDuration d = mkIsoDuration d
-  # unsafePartial fromRight -- the duration must be valid ISO duration
+  -- the duration must be valid ISO duration
+  # either (\_ -> unsafeCrashWith "unsafeMkToIsoDuration failed") identity
 
 durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ IsoDuration }
 durations =

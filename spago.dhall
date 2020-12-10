@@ -1,16 +1,17 @@
 { name = "formatters"
 , dependencies =
   [ "aff"
+  , "assert"
   , "console"
   , "datetime"
   , "effect"
   , "fixed-points"
   , "generics-rep"
   , "lists"
+  , "numbers"
   , "parsing"
   , "prelude"
   , "psci-support"
-  , "spec"
   , "transformers"
   ]
 , packages = ./packages.dhall

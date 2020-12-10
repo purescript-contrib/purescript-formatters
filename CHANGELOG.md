@@ -11,6 +11,7 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Changed test library from `spec` to `assert`
 
 ## [v4.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v4.0.1) - 2019-02-09
 
