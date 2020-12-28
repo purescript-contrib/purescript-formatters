@@ -22,10 +22,10 @@ import Data.Formatter.Internal (foldDigits, repeat)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Newtype (class Newtype)
+import Data.Show.Generic (genericShow)
 import Data.String as Str
 import Data.String.CodeUnits as CU
 import Data.Traversable (for)
@@ -87,11 +87,11 @@ formatParser = do
 -- means of showing an integer potentially larger than +/- 2 billion.
 foreign import showNumberAsInt :: Number -> String
 
--- | Formats a number according to the format object provided. 
--- | Due to the nature of floating point numbers, may yield unpredictable results for extremely 
+-- | Formats a number according to the format object provided.
+-- | Due to the nature of floating point numbers, may yield unpredictable results for extremely
 -- | large or extremely small numbers, such as numbers whose absolute values are ≥ 1e21 or ≤ 1e-21,
--- | or when formatting with > 20 digits after the decimal place.  
--- | See [purescript-decimals](https://pursuit.purescript.org/packages/purescript-decimals/4.0.0) 
+-- | or when formatting with > 20 digits after the decimal place.
+-- | See [purescript-decimals](https://pursuit.purescript.org/packages/purescript-decimals/4.0.0)
 -- | for working with arbitrary precision decimals, which supports simple number
 -- | formatting for numbers that go beyond the precision available with `Number`.
 format ∷ Formatter → Number → String

@@ -32,12 +32,12 @@ import Data.Formatter.Internal (foldDigits)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP, oneOfAs)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Newtype (unwrap)
 import Data.Ord (abs)
+import Data.Show.Generic (genericShow)
 import Data.String as Str
 import Data.String.CodeUnits as CU
 import Data.Time as T
@@ -320,7 +320,7 @@ parseSignedInt ∷ ∀ m
   → P.ParserT String m Int
 parseSignedInt maxLength validators errMsg = do
   isNegative ← isJust <$> PC.optionMaybe (PS.char '-')
-  (if isNegative then negate else identity) <$> parseInt maxLength validators errMsg 
+  (if isNegative then negate else identity) <$> parseInt maxLength validators errMsg
 
 parseInt ∷ ∀ m
   . Monad m

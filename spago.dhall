@@ -6,7 +6,6 @@
   , "datetime"
   , "effect"
   , "fixed-points"
-  , "generics-rep"
   , "lists"
   , "numbers"
   , "parsing"

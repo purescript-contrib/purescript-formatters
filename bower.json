@@ -18,7 +18,6 @@
   "dependencies": {
     "purescript-fixed-points": "main",
     "purescript-datetime": "master",
-    "purescript-generics-rep": "master",
     "purescript-transformers": "master",
     "purescript-lists": "master",
     "purescript-prelude": "master",
