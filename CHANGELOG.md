@@ -5,13 +5,17 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes (😱!!!):
+- Added support for PureScript 0.14 and dropped support for all previous versions (#62, #64)
 
 New features:
 
 Bugfixes:
+- Fixed rounding up when a number has trailing zeroes (#56)
 
 Other improvements:
-- Changed test library from `spec` to `assert`
+- Changed test library from `spec` to `assert` to avoid non-core-library dependencies
+- Changed default branch to `main` from `master`
+- Updated to comply with Contributors library guidelines by adding new issue and pull request templates, updating documentation, and migrating to Spago for local development and CI (#58)
 
 ## [v4.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v4.0.1) - 2019-02-09
 
@@ -20,16 +24,16 @@ Other improvements:
 
 ## [v4.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v4.0.0) - 2018-06-26
 
-- Update to PS@0.12 @thomashoneyman
+- Updated to PureScript 0.12 (@thomashoneyman)
 
 ## [v3.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v3.0.1) - 2017-12-07
 
 Bug fixes:
-- Enable timestamp parsing @tippenein
+- Enabled timestamp parsing @tippenein
 
 Other changes:
-- Update README and tests @tippenein
-- Remove self import @paulyoung
+- Updated README and tests @tippenein
+- Removed self import @paulyoung
 
 ## [v3.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v3.0.0) - 2017-09-11
 
@@ -41,11 +45,11 @@ Other changes:
 
 ## [v2.0.2](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v2.0.2) - 2017-07-19
 
-- fix for 24 and `{12,0}{am,pm}` cases #26
+- Fixed 24 and `{12,0}{am,pm}` cases (#26)
 
 ## [v2.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v2.0.1) - 2017-07-11
 
-- fix YYYY formatting #23
+- Fixed YYYY formatting (#23
 
 ## [v2.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v2.0.0) - 2017-06-27
 
@@ -79,7 +83,7 @@ Other changes:
 
 ## [v0.1.3](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v0.1.3) - 2017-03-01
 
-- Fix `bower.json` for Pursuit publishing
+- Fixed `bower.json` for Pursuit publishing
 
 ## [v0.1.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v0.1.1) - 2017-02-24
 
@@ -87,7 +91,7 @@ Other changes:
 
 ## [v0.1.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v0.1.0) - 2016-11-03
 
-- 0.10 updates
+- Updated for PureScript 0.10
 
 ## [0.0.5](https://github.com/purescript-contrib/purescript-formatters/releases/tag/0.0.5) - 2016-09-18
 
