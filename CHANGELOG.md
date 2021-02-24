@@ -6,6 +6,7 @@ Notable changes to this project are documented in this file. The format is based
 
 Breaking changes (😱!!!):
 - Added support for PureScript 0.14 and dropped support for all previous versions (#62, #64)
+- Added support for lower-case meridiem via a new `FormatterCommand` constructor `MeridiemLowerCase`
 
 New features:
 
