@@ -141,6 +141,24 @@ dateformats =
       , FDT.DayOfMonthTwoDigits
       ]
     }
+  , { str: "HH:mma"
+    , lossless: false
+    , format: fromFoldable
+      [ FDT.Hours24
+      , FDT.Placeholder ":"
+      , FDT.MinutesTwoDigits
+      , FDT.Meridiem
+      ]
+    }
+  , { str: "HH:mmA"
+    , lossless: false
+    , format: fromFoldable
+      [ FDT.Hours24
+      , FDT.Placeholder ":"
+      , FDT.MinutesTwoDigits
+      , FDT.MeridiemLowerCase
+      ]
+    }
   , { str: "Y-MM-DD HH:mm:ss:SSS"
     , lossless: true
     , format: fromFoldable
