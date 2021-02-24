@@ -63,6 +63,7 @@ data FormatterCommand
   | Hours24
   | Hours12
   | Meridiem
+  | MeridiemLowerCase
   | Minutes
   | MinutesTwoDigits
   | Seconds
@@ -97,6 +98,7 @@ printFormatterCommand = case _ of
   Hours24 → "HH"
   Hours12 → "hh"
   Meridiem → "a"
+  MeridiemLowerCase → "A"
   Minutes → "m"
   MinutesTwoDigits → "mm"
   Seconds → "s"
@@ -114,7 +116,7 @@ parseFormatString = runP formatParser
 
 placeholderContent ∷ P.Parser String String
 placeholderContent =
-  CU.toCharArray "YMDEHhamsS"
+  CU.toCharArray "YMDEHhaAmsS"
   # PS.noneOf
   # Array.some
   <#> CU.fromCharArray
@@ -136,6 +138,7 @@ formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
   , Tuple "HH" Hours24
   , Tuple "hh" Hours12
   , Tuple "a" Meridiem
+  , Tuple "A" MeridiemLowerCase
   , Tuple "mm" MinutesTwoDigits
   , Tuple "m" Minutes
   , Tuple "ss" SecondsTwoDigits
@@ -180,6 +183,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   Hours24 → padSingleDigit (fromEnum $ T.hour t)
   Hours12 → padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem → if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
+  MeridiemLowerCase → if (fromEnum $ T.hour t) >= 12 then "pm" else "am"
   Minutes → show $ fromEnum $ T.minute t
   MinutesTwoDigits → padSingleDigit <<< fromEnum $ T.minute t
   Seconds → show $ fromEnum $ T.second t
@@ -382,6 +386,7 @@ unformatCommandParser = case _ of
   Hours12 → _{hour = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 12 <> exactLength) "Incorrect 12 hour")
   Meridiem → _{meridiem = _} `modifyWithParser` parseMeridiem
+  MeridiemLowerCase → _{meridiem = _} `modifyWithParser` parseMeridiem
   MinutesTwoDigits → _{minute = _} `modifyWithParser`
     (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute")
   Minutes → _{minute = _} `modifyWithParser`

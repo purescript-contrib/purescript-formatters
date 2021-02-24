@@ -30,8 +30,11 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "YY", dateStr: "00" , date: makeDateTime 0 4 12 0 0 0 0} -- Format 0 with YY
     , { format: "YY", dateStr: "01" , date: makeDateTime (-1) 4 12 0 0 0 0} -- Format -1 with YY
     , { format: "hh:m:s a", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:m:s A", dateStr: "11:3:4 am", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hh a", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
     , { format: "hh a", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
+    , { format: "hh A", dateStr: "12 am", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh A", dateStr: "12 pm", date: makeDateTime 0 1 1 12 0 0 0 }
     , { format: "hh:mm:ss a", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.023", date: makeDateTime 2017 4 10 11 12 30 23 }
