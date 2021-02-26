@@ -19,7 +19,7 @@
     "purescript-datetime": "^5.0.0",
     "purescript-fixed-points": "^6.0.0",
     "purescript-lists": "^6.0.0",
-    "purescript-numbers": "^7.0.0",
+    "purescript-numbers": "^8.0.0",
     "purescript-parsing": "^6.0.0",
     "purescript-prelude": "^5.0.0",
     "purescript-transformers": "^5.0.0"
