@@ -11,6 +11,8 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Removed unused names and declaration found by the v0.14.1 PureScript release (#68 by @PureFunctor)
+- Installed dependencies directly imported into source code that were previously installed transitively and removed unused `fixed-point` dependency (#68 by @PureFunctor)
 
 ## [v5.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v5.0.0) - 2021-02-26
 
