@@ -3,7 +3,7 @@ module Test.DateTime (datetimeTest) where
 import Prelude
 
 import Control.Monad.Reader.Class (class MonadReader)
-import Control.Alternative (class Alternative, empty, guard)
+import Control.Alternative (guard)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Formatter.DateTime as FDT
