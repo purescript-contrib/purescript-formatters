@@ -196,6 +196,3 @@ dateformats =
       ]
     }
   ]
-
-filter ∷ ∀ m a. Alternative m ⇒ Monad m ⇒ (a → Boolean) → m a → m a
-filter f m = m >>= \x → if f x then pure x else empty
