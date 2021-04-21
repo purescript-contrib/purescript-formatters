@@ -11,7 +11,7 @@ repeat ∷ ∀ a. Monoid a ⇒ a → Int → a
 repeat = repeat' mempty
   where
   repeat' ∷ a → a → Int → a
-  repeat' accum part count
+  repeat' accum _ count
     | count < one = accum
   repeat' accum part count =
     repeat' (accum <> part) part (count - one)

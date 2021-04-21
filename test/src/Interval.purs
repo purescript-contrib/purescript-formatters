@@ -31,10 +31,10 @@ intervalTest = describe "Data.Formatter.Interval" do
   prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) → do
     (unformatRecurringInterval str) `shouldEqual` (Right interval)
 
-  prop "format (unformat s) = s" arbRecurringInterval \({ str, interval, formatedStr }) → do
+  prop "format (unformat s) = s" arbRecurringInterval \({ str, formatedStr }) → do
     (formatRecurringInterval <$> (unformatRecurringInterval str)) `shouldEqual` (Right formatedStr)
 
-  prop "unformat (format s) = s" arbRecurringInterval \({ str, interval, formatedStr }) → do
+  prop "unformat (format s) = s" arbRecurringInterval \({ interval }) → do
     (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
 
