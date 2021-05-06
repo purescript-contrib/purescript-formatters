@@ -11,6 +11,10 @@ New features:
 Bugfixes:
 
 Other improvements:
+
+## [v5.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v5.0.1) - 2021-05-06
+
+Other improvements:
 - Removed unused names and declaration found by the v0.14.1 PureScript release (#68 by @PureFunctor)
 - Installed dependencies directly imported into source code that were previously installed transitively and removed unused `fixed-point` dependency (#68 by @PureFunctor)
 
@@ -18,8 +22,6 @@ Other improvements:
 
 Breaking changes:
 - Added support for PureScript 0.14 and dropped support for all previous versions (#62, #64)
-
-New features:
 
 Bugfixes:
 - Fixed rounding up when a number has trailing zeroes (#56)
