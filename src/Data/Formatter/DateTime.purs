@@ -118,12 +118,12 @@ printFormatterCommand = case _ of
 -- | 
 -- | while `printFormatter (Hours24 : MinutesTwoDigits : Nil) = "HHmm"`.
 -- | 
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 printFormatter ∷ Formatter → String
 printFormatter = foldMap printFormatterCommand
 
 -- | Attempt to parse a `String` as a `Formatter`, 
--- | using an interpretation inspired by [momentjs](https://momentjs.com/).
+-- | using an interpretation inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
 
@@ -232,9 +232,9 @@ format f d = foldMap (formatCommand d) f
 -- | Format a DateTime according to the format defined in the given format string.
 -- | If the format string is empty, will return a `Left` value. Note that any 
 -- | unrecognized character is treated as a placeholder, so while "yyyy-MM-dd" might
--- | not produce the format you want (since "y" and "d" aren't recognized format 
--- | characters), it will still return a `Right` value.
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
+-- | not produce the format you want (since "yyyy" and "dd" aren't recognized formats),
+-- | it will still return a `Right` value.
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 formatDateTime ∷ String → DT.DateTime → Either String String
 formatDateTime pattern datetime =
   parseFormatString pattern <#> (_ `format` datetime)
@@ -442,7 +442,7 @@ unformatParser f = do
 -- | Attempt to parse a `String` as a `DateTime` according to the format defined in the 
 -- | given format string. Returns a `Left` value if the given format string was empty, or
 -- | if the date string fails to parse according to the format.
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= (_ `unformat` str)
