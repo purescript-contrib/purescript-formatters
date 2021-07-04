@@ -47,6 +47,8 @@ import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
+-- | One part of a DateTime `Formatter`. Use `Placeholder` for 
+-- | any static portion of the format, such as whitespace or separators `-` or `:`.
 data FormatterCommand
   = YearFull
   | YearTwoDigits
@@ -78,6 +80,10 @@ derive instance genericFormatter ∷ Generic FormatterCommand _
 instance showFormatter ∷ Show FormatterCommand where
   show = genericShow
 
+-- | A description of a string format for dates and times.
+-- | Functions such as `format` and `unformat` use a `Formatter` 
+-- | such as `(YearFull : MonthTwoDigits : DayOfMonthTwoDigits : Nil)`
+-- | in place of a format string such as `"YYYYMMDD"`.
 type Formatter = List.List FormatterCommand
 
 printFormatterCommand ∷ FormatterCommand → String
@@ -106,9 +112,18 @@ printFormatterCommand = case _ of
   Milliseconds → "SSS"
   Placeholder s → s
 
+-- | The format string representation of a `Formatter`.
+-- | 
+-- | `show (Hours24 : MinutesTwoDigits : Nil) = "(Hours24 : MinutesTwoDigits : Nil)"`
+-- | 
+-- | while `printFormatter (Hours24 : MinutesTwoDigits : Nil) = "HHmm"`.
+-- | 
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
 printFormatter ∷ Formatter → String
 printFormatter = foldMap printFormatterCommand
 
+-- | Attempt to parse a `String` as a `Formatter`, 
+-- | using an interpretation inspired by [momentjs](https://momentjs.com/).
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
 
@@ -210,16 +225,26 @@ padQuadrupleDigit i
   | i < 1000 = "0" <> (show i)
   | otherwise = show i
 
+-- | Format a DateTime according to the format defined in the given `Formatter`
 format ∷ Formatter → DT.DateTime → String
 format f d = foldMap (formatCommand d) f
 
+-- | Format a DateTime according to the format defined in the given format string.
+-- | If the format string is empty, will return a `Left` value. Note that any 
+-- | unrecognized character is treated as a placeholder, so while "yyyy-MM-dd" might
+-- | not produce the format you want (since "y" and "d" aren't recognized format 
+-- | characters), it will still return a `Right` value.
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
 formatDateTime ∷ String → DT.DateTime → Either String String
 formatDateTime pattern datetime =
   parseFormatString pattern <#> (_ `format` datetime)
 
+-- | Attempt to parse a String as a DateTime according to the format defined in the 
+-- | given `Formatter`. 
 unformat ∷ Formatter → String → Either String DT.DateTime
 unformat = runP <<< unformatParser
 
+-- | Before or after noon (AM/PM)
 data Meridiem = AM | PM
 
 derive instance eqMeridiem ∷ Eq Meridiem
@@ -403,6 +428,8 @@ unformatCommandParser = case _ of
     v ← p
     lift $ modify_ (flip f (Just v))
 
+-- | A `ParserT` for `String`s that parses a `DateTime` 
+-- | according to the format defined in the given `Formatter`. 
 unformatParser ∷ ∀ m. Monad m ⇒ Formatter → P.ParserT String m DT.DateTime
 unformatParser f = do
   acc ← P.mapParserT unState $ foldMap unformatCommandParser f
@@ -412,6 +439,10 @@ unformatParser f = do
   unState s = case runState s initialAccum of
     Tuple (Tuple e state) res → pure (Tuple (e $> res) state)
 
+-- | Attempt to parse a `String` as a `DateTime` according to the format defined in the 
+-- | given format string. Returns a `Left` value if the given format string was empty, or
+-- | if the date string fails to parse according to the format.
+-- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/).
 unformatDateTime ∷ String → String → Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= (_ `unformat` str)

@@ -35,6 +35,17 @@ import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 
 
+-- | Defines a format for printing/parsing numbers.
+-- | 
+-- | `comma`: use a ',' for a thousands separator
+-- | 
+-- | `before`: the minimum number of characters to print before the decimal point
+-- | 
+-- | `after`: the total number of characters to print after the decimal point
+-- | 
+-- | `abbreviations`: "31600.0" → "32K"; "31600000.0" → "32M" 
+-- | 
+-- | `sign`: always print a sign, including a `+` for positive numbers
 newtype Formatter = Formatter
   { comma ∷ Boolean
   , before ∷ Int
@@ -51,6 +62,8 @@ instance showFormatter ∷ Show Formatter where
 
 derive instance eqFormatter ∷ Eq Formatter
 
+-- | The format string representation of a `Formatter`.
+-- | The interpretation of the format string inspired by [numeral.js](http://numeraljs.com/#format)
 printFormatter ∷ Formatter → String
 printFormatter (Formatter f) =
     (if f.sign then "+" else "")
@@ -60,6 +73,8 @@ printFormatter (Formatter f) =
     <> (repeat "0" f.after)
     <> (if f.abbreviations then "a" else "")
 
+-- | Attempt to parse a `String` as a `Formatter`, 
+-- | using an interpretation inspired by [numeral.js](http://numeraljs.com/#format)
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
 
@@ -87,7 +102,7 @@ formatParser = do
 -- means of showing an integer potentially larger than +/- 2 billion.
 foreign import showNumberAsInt :: Number -> String
 
--- | Formats a number according to the format object provided.
+-- | Format a `Number` according to the `Formatter` provided.
 -- | Due to the nature of floating point numbers, may yield unpredictable results for extremely
 -- | large or extremely small numbers, such as numbers whose absolute values are ≥ 1e21 or ≤ 1e-21,
 -- | or when formatting with > 20 digits after the decimal place.
@@ -155,9 +170,13 @@ format (Formatter f) num =
               <> (if leftover > 0.0 then leftoverWithZeros else ""))
 
 
+-- | Attempt to parse a `String` as a `Number` according to the format defined in the 
+-- | given `Formatter`. 
 unformat ∷ Formatter → String → Either String Number
 unformat = runP <<< unformatParser
 
+-- | A `ParserT` for `String`s that parses a `Number` 
+-- | according to the format defined in the given `Formatter`. 
 unformatParser ∷ Formatter → P.Parser String Number
 unformatParser (Formatter f) = do
   minus ← PC.optionMaybe $ PC.try $ PS.string "-"
@@ -232,10 +251,17 @@ unformatParser (Formatter f) = do
     * sign
     * (before + after / Math.pow 10.0 (Int.toNumber f.after))
 
+-- | Format a Number according to the format defined in the given format string.
+-- | If the format string fails to parse, will return a `Left` value. 
+-- | The interpretation of the format string is inspired by [numeral.js](http://numeraljs.com/#format)
 formatNumber ∷ String → Number → Either String String
 formatNumber pattern number =
   parseFormatString pattern <#> flip format number
 
+-- | Attempt to parse a `String` as a `Number` according to the format defined in the 
+-- | given format string. Returns a `Left` value if the given format string fails to parse, or
+-- | if the number string fails to parse according to the format.
+-- | The interpretation of the format string is inspired by [numeral.js](http://numeraljs.com/#format)
 unformatNumber ∷ String → String → Either String Number
 unformatNumber pattern str =
   parseFormatString pattern >>= flip unformat str
