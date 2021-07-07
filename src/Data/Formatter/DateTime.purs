@@ -104,7 +104,13 @@ printFormatterCommand = case _ of
   MillisecondsShort → "S"
   MillisecondsTwoDigits → "SS"
   Milliseconds → "SSS"
-  Placeholder s → s
+  Placeholder s | needsEscaping s → "[" <> s <> "]" 
+  Placeholder s -> s
+  where
+    needsEscaping = CU.toCharArray >>> Array.any (flip Array.elem formatCharacters)
+
+formatCharacters :: Array Char
+formatCharacters = CU.toCharArray "YMDEHhamsS"
 
 printFormatter ∷ Formatter → String
 printFormatter = foldMap printFormatterCommand
@@ -112,12 +118,21 @@ printFormatter = foldMap printFormatterCommand
 parseFormatString ∷ String → Either String Formatter
 parseFormatString = runP formatParser
 
-placeholderContent ∷ P.Parser String String
-placeholderContent =
-  CU.toCharArray "YMDEHhamsS"
+escapedPlaceholderContent ∷ P.Parser String String
+escapedPlaceholderContent = PC.between (PS.char '[') (PS.char ']') (anyStringUntil ['[',']'])
+  where
+    anyStringUntil cs = Array.some (PS.noneOf cs) <#> CU.fromCharArray
+
+unEscapedPlaceholderContent ∷ P.Parser String String
+unEscapedPlaceholderContent =
+  (formatCharacters <> ['[',']'])
   # PS.noneOf
   # Array.some
   <#> CU.fromCharArray
+
+placeholderContent ∷ P.Parser String String
+placeholderContent = 
+  Array.fold <$> Array.some (PC.try escapedPlaceholderContent <|> unEscapedPlaceholderContent)
 
 formatterCommandParser ∷ P.Parser String FormatterCommand
 formatterCommandParser = (PC.try <<< PS.string) `oneOfAs`
