@@ -5,6 +5,7 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- DateTime Formatter Placeholders that contain any valid format characters are now escaped via square brackets.  Square brackets are not valid Placeholder characters. (#74 by @ntwilson)
 
 New features:
 
