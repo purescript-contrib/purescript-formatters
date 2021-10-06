@@ -19,26 +19,26 @@ import Data.Maybe (Maybe(..))
 import Data.Number (fromString)
 import Data.Foldable (foldMap)
 
-parseInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
+parseInteger ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
 parseInteger = some parseDigit <#> foldDigits
 
-parseMaybeInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m (Maybe Int)
+parseMaybeInteger ∷ ∀ m. Monad m ⇒ P.ParserT String m (Maybe Int)
 parseMaybeInteger = PC.optionMaybe parseInteger
 
-parseFractional ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
+parseFractional ∷ ∀ m. Monad m ⇒ P.ParserT String m Number
 parseFractional = do
   digitStr <- (some parseDigit) <#> (foldMap show >>> ("0." <> _))
   case fromString digitStr of
       Just n -> pure n
       Nothing -> P.fail ("Not a number: " <> digitStr)
 
-parseNumber ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
+parseNumber ∷ ∀ m. Monad m ⇒ P.ParserT String m Number
 parseNumber = (+)
   <$> (parseInteger <#> toNumber)
   <*> (PC.option 0.0 $ PC.try $ PS.oneOf ['.', ','] *> parseFractional)
 
 
-parseDigit ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
+parseDigit ∷ ∀ m. Monad m ⇒ P.ParserT String m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
   [ Tuple '0' 0
   , Tuple '1' 1
