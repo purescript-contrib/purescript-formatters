@@ -17,7 +17,7 @@ import Data.Either (Either)
 oneOfAs ∷ ∀ c s m f a b. Functor f ⇒ Foldable f ⇒ Monad m ⇒ (a → ParserT s m b) → f (Tuple a c) → ParserT s m c
 oneOfAs p xs = PC.choice $ (\(Tuple s r) → p s $> r) <$> xs
 
-runP ∷ ∀ s a. PS.StringLike s ⇒ Parser s a → s → Either String a
+runP ∷ ∀ a. Parser String a → String → Either String a
 runP p s = lmap printError $ runParser s (p <* PS.eof)
 
 printError ∷ ParseError → String

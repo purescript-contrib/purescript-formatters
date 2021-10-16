@@ -6,6 +6,8 @@ Notable changes to this project are documented in this file. The format is based
 
 Breaking changes:
 
+- Upgrade to parsing v7.0.0, replace all `StringLike` constraints with `String` type (#76 by @jamesdbrock)
+
 New features:
 
 Bugfixes:
