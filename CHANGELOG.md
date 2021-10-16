@@ -11,6 +11,7 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Added support for single-digit months [#69](https://github.com/purescript-contrib/purescript-formatters/pull/69) (@vapaj)
 
 ## [v6.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v6.0.0) - 2021-10-16
 
