@@ -20,22 +20,22 @@ import Data.Map (lookup)
 import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
 
-formatRecurringInterval ∷ I.RecurringInterval IsoDuration DateTime → String
+formatRecurringInterval :: I.RecurringInterval IsoDuration DateTime -> String
 formatRecurringInterval (I.RecurringInterval n i) = "R" <> (maybe "" formatInteger n) <> "/" <> (formatInterval i)
 
-formatInterval ∷ I.Interval IsoDuration DateTime → String
+formatInterval :: I.Interval IsoDuration DateTime -> String
 formatInterval (I.StartEnd x y) = (formatDateTime x) <> "/" <> (formatDateTime y)
 formatInterval (I.DurationEnd d x) = (formatIsoDuration d) <> "/" <> (formatDateTime x)
 formatInterval (I.StartDuration x d) = (formatDateTime x) <> "/" <> (formatIsoDuration d)
 formatInterval (I.DurationOnly d) = (formatIsoDuration d)
 
-formatDateTime ∷ DateTime → String
+formatDateTime :: DateTime -> String
 formatDateTime = FDT.format extendedDateTimeFormatInUTC
 
-formatIsoDuration ∷ IsoDuration → String
+formatIsoDuration :: IsoDuration -> String
 formatIsoDuration = formatDuration <<< unIsoDuration
 
-formatDuration ∷ I.Duration → String
+formatDuration :: I.Duration -> String
 formatDuration (I.Duration m) = "P" <> datePart <> timePart
   where
   datePart = componentToString `foldMap` dateComponentsToStr
@@ -47,14 +47,14 @@ formatDuration (I.Duration m) = "P" <> datePart <> timePart
   dateComponentsToStr = [ Tuple I.Year "Y", Tuple I.Month "M", Tuple I.Week "W", Tuple I.Day "D" ]
   timeComponentsToStr = [ Tuple I.Hour "H", Tuple I.Minute "M", Tuple I.Second "S" ]
 
-formatInteger ∷ Int → String
+formatInteger :: Int -> String
 formatInteger = show
 
-formatNumber ∷ Number → String
+formatNumber :: Number -> String
 formatNumber n = if Int.toNumber (Int.floor n) == n then show (Int.floor n) else show n
 
-unformatRecurringInterval ∷ String → Either String (I.RecurringInterval IsoDuration DateTime)
+unformatRecurringInterval :: String -> Either String (I.RecurringInterval IsoDuration DateTime)
 unformatRecurringInterval = runP $ parseRecurringInterval parseIsoDuration parseDateTime
 
-unformatInterval ∷ String → Either String (I.Interval IsoDuration DateTime)
+unformatInterval :: String -> Either String (I.Interval IsoDuration DateTime)
 unformatInterval = runP $ parseInterval parseIsoDuration parseDateTime
