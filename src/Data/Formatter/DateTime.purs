@@ -255,22 +255,11 @@ unformatAccumToDateTime a = applySecond (validAccum a) $
       ( D.canonicalDate
           <$> (maybe (Left "Incorrect year") pure $ toEnum $ fromMaybe zero a.year)
           <*> (maybe (Left "Incorrect month") pure $ toEnum $ fromMaybe one a.month)
-          <*>
-            ( maybe (Left "Incorrect day") pure $ toEnum
-                $ adjustDay a.hour
-                $ fromMaybe one a.day
-            )
+          <*> (maybe (Left "Incorrect day") pure $ toEnum $ adjustDay a.hour $ fromMaybe one a.day)
       )
     <*>
       ( T.Time
-          <$>
-            ( maybe
-                (Left "Incorrect hour")
-                pure
-                $ toEnum
-                $ fromMaybe zero
-                $ adjustMeridiem a.meridiem <$> a.hour
-            )
+          <$> (maybe (Left "Incorrect hour") pure $ toEnum $ fromMaybe zero $ adjustMeridiem a.meridiem <$> a.hour)
           <*> (maybe (Left "Incorrect minute") pure $ toEnum $ fromMaybe zero a.minute)
           <*> (maybe (Left "Incorrect second") pure $ toEnum $ fromMaybe zero a.second)
           <*> (maybe (Left "Incorrect millisecond") pure $ toEnum $ fromMaybe zero a.millisecond)
@@ -296,13 +285,17 @@ adjustMeridiem Nothing n = n
 
 exactLength :: forall e. ReaderT { maxLength :: Int, length :: Int | e } (Either String) Unit
 exactLength = ask >>= \({ maxLength, length }) -> lift
-  if maxLength /= length then Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
-  else Right unit
+  if maxLength /= length then
+    Left $ "Expected " <> (show maxLength) <> " digits but got " <> (show length)
+  else
+    Right unit
 
 validateRange :: forall e. Int -> Int -> ReaderT { num :: Int | e } (Either String) Unit
 validateRange min max = ask >>= \({ num }) -> lift
-  if num < min || num > max then Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
-  else Right unit
+  if num < min || num > max then 
+    Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
+  else
+    Right unit
 
 -- NOTE related discussion: https://github.com/purescript-contrib/purescript-parsing/issues/57
 -- | Attempt a computation `n` times, requiring at least one success.
