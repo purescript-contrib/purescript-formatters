@@ -292,7 +292,7 @@ exactLength = ask >>= \({ maxLength, length }) -> lift
 
 validateRange :: forall e. Int -> Int -> ReaderT { num :: Int | e } (Either String) Unit
 validateRange min max = ask >>= \({ num }) -> lift
-  if num < min || num > max then 
+  if num < min || num > max then
     Left $ "Number is out of range [ " <> (show min) <> ", " <> (show max) <> " ]"
   else
     Right unit
