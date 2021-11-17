@@ -133,8 +133,10 @@ format (Formatter f) num =
           in
             zeros' <> leftoverString
         shownInt =
-          if f.comma then addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> showNumberAsInt integer)))
-          else repeat "0" zeros <> showNumberAsInt integer
+          if f.comma then
+            addCommas [] zero (Arr.reverse (CU.toCharArray (repeat "0" zeros <> showNumberAsInt integer)))
+          else
+            repeat "0" zeros <> showNumberAsInt integer
 
         addCommas :: Array Char -> Int -> Array Char -> String
         addCommas acc counter input = case Arr.uncons input of
@@ -147,7 +149,8 @@ format (Formatter f) num =
         (if num < zero then "-" else if num > zero && f.sign then "+" else "")
           <> shownInt
           <>
-            ( if f.after < 1 then ""
+            ( if f.after < 1 then
+                ""
               else
                 "."
                   <> (if leftover == 0.0 then repeat "0" f.after else "")
@@ -238,6 +241,4 @@ unformatNumber pattern str =
 -- Supposed to be used in chaining, because after calling format number there is no
 -- good way to extract number back to show.
 formatOrShowNumber :: String -> Number -> String
-formatOrShowNumber patter number =
-  either (const $ show number) identity
-    $ formatNumber patter number
+formatOrShowNumber patter number = either (const $ show number) identity $ formatNumber patter number
