@@ -9,7 +9,7 @@ import Test.DateTime (datetimeTest)
 import Test.Interval (intervalTest)
 import Test.Number (numberTest)
 
-main ∷ Effect Unit
+main :: Effect Unit
 main = launchAff_ $ flip runReaderT 0 do
   intervalTest
   datetimeTest
