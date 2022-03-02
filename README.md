@@ -4,7 +4,6 @@
 [![Release](https://img.shields.io/github/release/purescript-contrib/purescript-formatters.svg)](https://github.com/purescript-contrib/purescript-formatters/releases)
 [![Pursuit](https://pursuit.purescript.org/packages/purescript-formatters/badge)](https://pursuit.purescript.org/packages/purescript-formatters)
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](https://github.com/garyb)
-[![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](https://github.com/thomashoneyman)
 
 A PureScript alternative to numeral.js, moment.js, etc.
 
