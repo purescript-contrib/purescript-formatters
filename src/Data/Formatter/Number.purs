@@ -25,11 +25,11 @@ import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Newtype (class Newtype)
+import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import Data.String as Str
 import Data.String.CodeUnits as CU
 import Data.Traversable (for)
-import Math as Math
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
@@ -95,9 +95,9 @@ foreign import showNumberAsInt :: Number -> String
 format :: Formatter -> Number -> String
 format (Formatter f) num = do
   let
-    absed = Math.abs num
+    absed = Number.abs num
     tens
-      | absed > 0.0 = max (Int.floor $ Math.log absed / Math.ln10) 0
+      | absed > 0.0 = max (Int.floor $ Number.log absed / Number.ln10) 0
       | otherwise = 0
 
   if f.abbreviations then do
@@ -114,17 +114,17 @@ format (Formatter f) num = do
         | thousands == 7 = "Z"
         | thousands == 8 = "Y"
         | otherwise = "10e+" <> show (thousands * 3)
-      newNum = if thousands < 1 then num else num / Math.pow 1000.0 (Int.toNumber thousands)
+      newNum = if thousands < 1 then num else num / Number.pow 1000.0 (Int.toNumber thousands)
 
     format (Formatter f { abbreviations = false }) newNum <> abbr
   else do
     let
       zeros = f.before - tens - one
-      factor = Math.pow 10.0 (Int.toNumber (max 0 f.after))
-      rounded = Math.round (absed * factor) / factor
-      integer = Math.floor rounded
+      factor = Number.pow 10.0 (Int.toNumber (max 0 f.after))
+      rounded = Number.round (absed * factor) / factor
+      integer = Number.floor rounded
       leftoverDecimal = rounded - integer
-      leftover = Math.round $ leftoverDecimal * factor
+      leftover = Number.round $ leftoverDecimal * factor
 
       leftoverWithZeros = do
         let
@@ -232,9 +232,9 @@ unformatParser (Formatter f) = do
     else pure 0
 
   pure $
-    Math.pow 10.0 (Int.toNumber abbr)
+    Number.pow 10.0 (Int.toNumber abbr)
       * sign
-      * (before + after / Math.pow 10.0 (Int.toNumber f.after))
+      * (before + after / Number.pow 10.0 (Int.toNumber f.after))
 
 formatNumber :: String -> Number -> Either String String
 formatNumber pattern number = parseFormatString pattern <#> flip format number
