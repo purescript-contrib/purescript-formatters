@@ -13,7 +13,6 @@
   , "foldable-traversable"
   , "integers"
   , "lists"
-  , "math"
   , "maybe"
   , "newtype"
   , "numbers"
