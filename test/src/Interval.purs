@@ -88,21 +88,21 @@ invalidDurations =
 
 invalidIntervals :: Array { err :: String, str :: String }
 invalidIntervals =
-  [ { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z-P1Y2M10D" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z~P1Y2M10D" }
+  [ { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z-P1Y2M10D" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z~P1Y2M10D" }
   , { err: "Expected EOF (line 1, col 15)", str: "P1Y2M10DT2H30M2007-03-01T13:00:00Z" }
   , { err: "Expected EOF (line 1, col 9)", str: "P1Y2M10D-2007-03-01T13:00:00Z" }
   , { err: "Expected EOF (line 1, col 9)", str: "P1Y2M10D~2007-03-01T13:00:00Z" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z2008-05-11T15:30:00Z" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z-2008-05-11T15:30:00Z" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z~2008-05-11T15:30:00Z" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/P" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/PT" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/2010-0-09" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/2010-05-09T103012+0400" }
-  , { err: "No alternative (line 1, col 1)", str: "2007-03-01T13:00:00Z/2014-W15-02T10:11:12Z" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z-2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z~2008-05-11T15:30:00Z" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/P" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/PT" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/2010-0-09" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/2010-05-09T103012+0400" }
+  , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z/2014-W15-02T10:11:12Z" }
   , { err: "Expected EOF (line 1, col 9)", str: "P1Y2M10D/P1Y2M10D" }
   , { err: "Expected EOF (line 1, col 8)", str: "P1Y0.5M/P1Y0.5M" }
   ]
