@@ -6,10 +6,10 @@ module Data.Formatter.Parser.Utils
 import Prelude
 
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser (ParserT, Parser, runParser, ParseError, parseErrorMessage, parseErrorPosition)
-import Text.Parsing.Parser.Pos (Position(..))
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+import Parsing (ParserT, Parser, runParser, ParseError, parseErrorMessage, parseErrorPosition)
+import Parsing.Pos (Position(..))
+import Parsing.Combinators as PC
+import Parsing.String as PS
 import Data.Bifunctor (lmap)
 import Data.Foldable (class Foldable)
 import Data.Either (Either)

@@ -20,9 +20,9 @@ import Data.Maybe (Maybe)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
 import Partial.Unsafe (unsafeCrashWith)
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+import Parsing as P
+import Parsing.Combinators as PC
+import Parsing.String as PS
 
 parseRecurringInterval :: forall a b. P.Parser String a -> P.Parser String b -> P.Parser String (I.RecurringInterval a b)
 parseRecurringInterval duration date =

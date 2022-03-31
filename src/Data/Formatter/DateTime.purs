@@ -43,9 +43,9 @@ import Data.String.CodeUnits as CU
 import Data.Time as T
 import Data.Time.Duration as Dur
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
-import Text.Parsing.Parser.String as PS
+import Parsing as P
+import Parsing.Combinators as PC
+import Parsing.String as PS
 
 data FormatterCommand
   = YearFull
