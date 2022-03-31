@@ -11,10 +11,10 @@ import Data.Int (toNumber)
 import Data.Array (some)
 import Data.Formatter.Internal (foldDigits)
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
+import Parsing as P
+import Parsing.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
-import Text.Parsing.Parser.String as PS
+import Parsing.String as PS
 import Data.Maybe (Maybe(..))
 import Data.Number (fromString)
 import Data.Foldable (foldMap)
