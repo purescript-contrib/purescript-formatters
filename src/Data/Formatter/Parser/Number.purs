@@ -15,6 +15,7 @@ import Parsing as P
 import Parsing.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
 import Parsing.String as PS
+import Parsing.String.Basic as PSB
 import Data.Maybe (Maybe(..))
 import Data.Number (fromString)
 import Data.Foldable (foldMap)
@@ -35,7 +36,7 @@ parseFractional = do
 parseNumber :: forall m. Monad m => P.ParserT String m Number
 parseNumber = (+)
   <$> (parseInteger <#> toNumber)
-  <*> (PC.option 0.0 $ PC.try $ PS.oneOf [ '.', ',' ] *> parseFractional)
+  <*> (PC.option 0.0 $ PC.try $ PSB.oneOf [ '.', ',' ] *> parseFractional)
 
 parseDigit :: forall m. Monad m => P.ParserT String m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
