@@ -46,6 +46,7 @@ import Data.Tuple (Tuple(..))
 import Parsing as P
 import Parsing.Combinators as PC
 import Parsing.String as PS
+import Parsing.String.Basic as PSB
 
 data FormatterCommand
   = YearFull
@@ -115,7 +116,7 @@ parseFormatString = runP formatParser
 placeholderContent :: P.Parser String String
 placeholderContent =
   CU.toCharArray "YMDEHhamsS"
-    # PS.noneOf
+    # PSB.noneOf
     # Array.some
     <#> CU.fromCharArray
 
