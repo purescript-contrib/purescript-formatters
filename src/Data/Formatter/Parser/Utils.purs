@@ -6,8 +6,7 @@ module Data.Formatter.Parser.Utils
 import Prelude
 
 import Data.Tuple (Tuple(..))
-import Parsing (ParserT, Parser, runParser, ParseError, parseErrorMessage, parseErrorPosition)
-import Parsing.Pos (Position(..))
+import Parsing (ParserT, Parser, Position(..), runParser, ParseError, parseErrorMessage, parseErrorPosition)
 import Parsing.Combinators as PC
 import Parsing.String as PS
 import Data.Bifunctor (lmap)
