@@ -33,6 +33,7 @@ import Data.Traversable (for)
 import Parsing as P
 import Parsing.Combinators as PC
 import Parsing.String as PS
+import Parsing.String.Basic as PSB
 
 newtype Formatter = Formatter
   { comma :: Boolean
@@ -191,7 +192,7 @@ unformatParser (Formatter f) = do
       when (Arr.length ds /= 3) do
         P.fail "Wrong number of digits between thousand separators"
 
-      sep <- PS.oneOf [ ',', '.' ]
+      sep <- PSB.oneOf [ ',', '.' ]
       case sep of
         '.' -> pure $ accum <> ds
         ',' -> digitsWithCommas' $ accum <> ds
@@ -213,7 +214,7 @@ unformatParser (Formatter f) = do
 
   abbr <-
     if f.abbreviations then do
-      letter <- PC.optionMaybe $ PC.try $ PS.oneOf [ 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ]
+      letter <- PC.optionMaybe $ PC.try $ PSB.oneOf [ 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ]
       case letter of
         Nothing -> do
           e <- PC.optionMaybe $ PS.string "10e+"
