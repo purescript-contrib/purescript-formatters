@@ -6,6 +6,8 @@ Notable changes to this project are documented in this file. The format is based
 
 Breaking changes:
 
+- Support for different separators [PR](https://github.com/purescript-contrib/purescript-formatters/pull/86)
+
 New features:
 
 Bugfixes:
