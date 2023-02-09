@@ -25,6 +25,10 @@ Formatter has following properties
 + Should sign be printed for positive numbers
 + Should thousands be separated by comma
 + Should output string have abbreviations (like `K` or `M`)
++ What decimal-separator character should be used (default '.')
++ What thousand-group-separator character should be used (default '+')
+
+**Note:** The parser will return a formatter with the default separator-characters - use `changeSeparators` to override this after parsing.
 
 Number will be padded with zeros to have at least this number of leading zeros. This doesn't restrict number to have more digits then leading zeros in format string.
 + `0000.0` will show 4 digits: `12 → "0012.0"`, `1234 → "1234.0"`
