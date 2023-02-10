@@ -28,7 +28,7 @@ Formatter has following properties
 + What decimal-separator character should be used (default '.')
 + What thousand-group-separator character should be used (default '+')
 
-**Note:** The parser will return a formatter with the default separator-characters - use `changeSeparators` to override this after parsing.
+**Note:** The parser will return a formatter with the default separator-characters - use `withSeparators` to override this after parsing.
 
 Number will be padded with zeros to have at least this number of leading zeros. This doesn't restrict number to have more digits then leading zeros in format string.
 + `0000.0` will show 4 digits: `12 → "0012.0"`, `1234 → "1234.0"`

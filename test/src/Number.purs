@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Monad.Reader.Class (class MonadReader)
 import Data.Either (Either(..))
-import Data.Formatter.Number (Formatter(..), changeSeparators, format, parseFormatString, printFormatter, unformat)
+import Data.Formatter.Number (Formatter(..), format, parseFormatString, printFormatter, unformat, withSeparators)
 import Effect.Aff.Class (class MonadAff)
 import Test.Utils (forAll, describe, shouldEqual)
 
@@ -196,4 +196,4 @@ numberformatts =
   ]
 
 germanStyleSeparators :: Formatter -> Formatter
-germanStyleSeparators = changeSeparators { decimalSeparator: ',', groupSeparator: '.' }
+germanStyleSeparators = withSeparators { decimalSeparator: ',', groupSeparator: '.' }

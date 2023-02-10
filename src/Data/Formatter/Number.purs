@@ -4,7 +4,7 @@
 -- | because one could just compose it with `flip append "%"` or whatever
 module Data.Formatter.Number
   ( Formatter(..)
-  , changeSeparators
+  , withSeparators
   , printFormatter
   , parseFormatString
   , format
@@ -50,9 +50,9 @@ newtype Formatter = Formatter
 -- | change the default Separators
 -- | for example for german formatting you could do
 -- |
--- | > parseFormatString ".." # map (changeSeparators { groupSeparator: '.', decimalSeparator: ','})
-changeSeparators :: { groupSeparator :: Char, decimalSeparator :: Char } -> Formatter -> Formatter
-changeSeparators { groupSeparator, decimalSeparator } (Formatter formatter) =
+-- | > parseFormatString ".." # map (withSeparators { groupSeparator: '.', decimalSeparator: ','})
+withSeparators :: { groupSeparator :: Char, decimalSeparator :: Char } -> Formatter -> Formatter
+withSeparators { groupSeparator, decimalSeparator } (Formatter formatter) =
   Formatter (formatter { groupSeparator = groupSeparator, decimalSeparator = decimalSeparator })
 
 derive instance genericFormatter :: Generic Formatter _
