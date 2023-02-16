@@ -4,6 +4,7 @@
 -- | because one could just compose it with `flip append "%"` or whatever
 module Data.Formatter.Number
   ( Formatter(..)
+  , withSeparators
   , printFormatter
   , parseFormatString
   , format
@@ -29,6 +30,7 @@ import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import Data.String as Str
 import Data.String.CodeUnits as CU
+import Data.String.CodeUnits as String
 import Data.Traversable (for)
 import Parsing as P
 import Parsing.Combinators as PC
@@ -41,7 +43,17 @@ newtype Formatter = Formatter
   , after :: Int
   , abbreviations :: Boolean
   , sign :: Boolean
+  , groupSeparator :: Char
+  , decimalSeparator :: Char
   }
+
+-- | change the default Separators
+-- | for example for german formatting you could do
+-- |
+-- | > parseFormatString ".." # map (withSeparators { groupSeparator: '.', decimalSeparator: ','})
+withSeparators :: { groupSeparator :: Char, decimalSeparator :: Char } -> Formatter -> Formatter
+withSeparators { groupSeparator, decimalSeparator } (Formatter formatter) =
+  Formatter (formatter { groupSeparator = groupSeparator, decimalSeparator = decimalSeparator })
 
 derive instance genericFormatter :: Generic Formatter _
 derive instance newtypeFormatter :: Newtype Formatter _
@@ -79,6 +91,8 @@ formatParser = do
     , comma: isJust comma
     , after: fromMaybe zero $ Arr.length <$> after
     , abbreviations: isJust abbreviations
+    , groupSeparator: ','
+    , decimalSeparator: '.'
     }
 
 -- converts a number to a string of the nearest integer _without_ appending ".0" (like `show` for `Number`) or
@@ -147,12 +161,12 @@ format (Formatter f) num = do
         Just { head, tail } | counter < 3 ->
           addCommas (Arr.cons head acc) (counter + one) tail
         _ ->
-          addCommas (Arr.cons ',' acc) zero input
+          addCommas (Arr.cons f.groupSeparator acc) zero input
 
       leftovers =
         if f.after < 1 then ""
         else
-          "."
+          String.singleton f.decimalSeparator
             <> (if leftover == 0.0 then repeat "0" f.after else "")
             <> (if leftover > 0.0 then leftoverWithZeros else "")
 
@@ -178,24 +192,25 @@ unformatParser (Formatter f) = do
     digitsWithCommas :: P.Parser String (Array Int)
     digitsWithCommas =
       if not f.comma then
-        some parseDigit <* PS.string "."
+        some parseDigit <* PS.char (f.decimalSeparator)
       else
-        digitsWithCommas' []
+        digitsWithCommas' false []
 
-    digitsWithCommas' :: Array Int -> P.Parser String (Array Int)
-    digitsWithCommas' accum = do
+    digitsWithCommas' :: Boolean -> Array Int -> P.Parser String (Array Int)
+    digitsWithCommas' inGroup accum = do
       ds <- some parseDigit
 
       when (Arr.null accum && Arr.length ds > 3) do
-        P.fail "Wrong number of digits between thousand separators"
+        P.fail "Wrong number of digits in front of first thousand separator"
 
-      when (Arr.length ds /= 3) do
+      when (inGroup && Arr.length ds /= 3) do
         P.fail "Wrong number of digits between thousand separators"
 
       sep <- PSB.oneOf [ ',', '.' ]
       case sep of
-        '.' -> pure $ accum <> ds
-        ',' -> digitsWithCommas' $ accum <> ds
+        s
+          | s == f.decimalSeparator -> pure $ accum <> ds
+          | s == f.groupSeparator -> digitsWithCommas' true $ accum <> ds
         _ -> P.fail "Incorrect symbol, expected ',' or '.'"
 
   beforeDigits <- digitsWithCommas
