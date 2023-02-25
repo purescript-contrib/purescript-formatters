@@ -4,13 +4,13 @@ import Prelude
 
 import Data.Foldable (class Foldable, foldl)
 
-foldDigits ∷ ∀ f. Foldable f ⇒ f Int → Int
-foldDigits = foldl (\acc d → acc * 10 + d) zero
+foldDigits :: forall f. Foldable f => f Int -> Int
+foldDigits = foldl (\acc d -> acc * 10 + d) zero
 
-repeat ∷ ∀ a. Monoid a ⇒ a → Int → a
+repeat :: forall a. Monoid a => a -> Int -> a
 repeat = repeat' mempty
   where
-  repeat' ∷ a → a → Int → a
+  repeat' :: a -> a -> Int -> a
   repeat' accum _ count
     | count < one = accum
   repeat' accum part count =

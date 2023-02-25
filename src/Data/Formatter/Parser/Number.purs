@@ -11,34 +11,34 @@ import Data.Int (toNumber)
 import Data.Array (some)
 import Data.Formatter.Internal (foldDigits)
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser as P
-import Text.Parsing.Parser.Combinators as PC
+import Parsing as P
+import Parsing.Combinators as PC
 import Data.Formatter.Parser.Utils (oneOfAs)
-import Text.Parsing.Parser.String as PS
+import Parsing.String as PS
+import Parsing.String.Basic as PSB
 import Data.Maybe (Maybe(..))
 import Data.Number (fromString)
 import Data.Foldable (foldMap)
 
-parseInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
+parseInteger :: forall m. Monad m => P.ParserT String m Int
 parseInteger = some parseDigit <#> foldDigits
 
-parseMaybeInteger ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m (Maybe Int)
+parseMaybeInteger :: forall m. Monad m => P.ParserT String m (Maybe Int)
 parseMaybeInteger = PC.optionMaybe parseInteger
 
-parseFractional ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
+parseFractional :: forall m. Monad m => P.ParserT String m Number
 parseFractional = do
   digitStr <- (some parseDigit) <#> (foldMap show >>> ("0." <> _))
   case fromString digitStr of
-      Just n -> pure n
-      Nothing -> P.fail ("Not a number: " <> digitStr)
+    Just n -> pure n
+    Nothing -> P.fail ("Not a number: " <> digitStr)
 
-parseNumber ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Number
+parseNumber :: forall m. Monad m => P.ParserT String m Number
 parseNumber = (+)
   <$> (parseInteger <#> toNumber)
-  <*> (PC.option 0.0 $ PC.try $ PS.oneOf ['.', ','] *> parseFractional)
+  <*> (PC.option 0.0 $ PC.try $ PSB.oneOf [ '.', ',' ] *> parseFractional)
 
-
-parseDigit ∷ ∀ s m. Monad m ⇒ PS.StringLike s ⇒ P.ParserT s m Int
+parseDigit :: forall m. Monad m => P.ParserT String m Int
 parseDigit = PC.try $ PS.char `oneOfAs`
   [ Tuple '0' 0
   , Tuple '1' 1
@@ -49,4 +49,5 @@ parseDigit = PC.try $ PS.char `oneOfAs`
   , Tuple '6' 6
   , Tuple '7' 7
   , Tuple '8' 8
-  , Tuple '9' 9]
+  , Tuple '9' 9
+  ]

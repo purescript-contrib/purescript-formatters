@@ -16,18 +16,18 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-datetime": "^5.0.0",
-    "purescript-fixed-points": "^6.0.0",
-    "purescript-lists": "^6.0.0",
-    "purescript-numbers": "^8.0.0",
-    "purescript-parsing": "^6.0.0",
-    "purescript-prelude": "^5.0.0",
-    "purescript-transformers": "^5.0.0"
+    "purescript-datetime": "^6.0.0",
+    "purescript-fixed-points": "^7.0.0",
+    "purescript-lists": "^7.0.0",
+    "purescript-numbers": "^9.0.0",
+    "purescript-parsing": "^9.0.0",
+    "purescript-prelude": "^6.0.0",
+    "purescript-transformers": "^6.0.0"
   },
   "devDependencies": {
-    "purescript-aff": "^6.0.0",
-    "purescript-assert": "^5.0.0",
-    "purescript-console": "^5.0.0",
-    "purescript-effect": "^3.0.0"
+    "purescript-aff": "^7.0.0",
+    "purescript-assert": "^6.0.0",
+    "purescript-console": "^6.0.0",
+    "purescript-effect": "^4.0.0"
   }
 }
