@@ -189,34 +189,34 @@ dateformats =
   , { str: "DD-MM-YYYY[ at ]HH-:-mm"
     , lossless: false
     , format: fromFoldable
-      [ FDT.DayOfMonthTwoDigits
-      , FDT.Placeholder "-"
-      , FDT.MonthTwoDigits
-      , FDT.Placeholder "-"
-      , FDT.YearFull
-      , FDT.Placeholder " at "
-      , FDT.Hours24
-      , FDT.Placeholder "-:-"
-      , FDT.MinutesTwoDigits
-      ]
+        [ FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.YearFull
+        , FDT.Placeholder " at "
+        , FDT.Hours24
+        , FDT.Placeholder "-:-"
+        , FDT.MinutesTwoDigits
+        ]
     }
   , { str: "Y-MM-DD [at] HH:mm:ss:SSS"
     , lossless: true
     , format: fromFoldable
-      [ FDT.YearAbsolute
-      , FDT.Placeholder "-"
-      , FDT.MonthTwoDigits
-      , FDT.Placeholder "-"
-      , FDT.DayOfMonthTwoDigits
-      , FDT.Placeholder " at "
-      , FDT.Hours24
-      , FDT.Placeholder ":"
-      , FDT.MinutesTwoDigits
-      , FDT.Placeholder ":"
-      , FDT.SecondsTwoDigits
-      , FDT.Placeholder ":"
-      , FDT.Milliseconds
-      ]
+        [ FDT.YearAbsolute
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder " at "
+        , FDT.Hours24
+        , FDT.Placeholder ":"
+        , FDT.MinutesTwoDigits
+        , FDT.Placeholder ":"
+        , FDT.SecondsTwoDigits
+        , FDT.Placeholder ":"
+        , FDT.Milliseconds
+        ]
     }
   , { str: "YYYY-DD-MM SSS"
     , lossless: false
