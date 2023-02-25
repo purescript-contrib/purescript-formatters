@@ -122,7 +122,7 @@ parseFormatString = runP formatParser
 escapedPlaceholderContent ∷ P.Parser String String
 escapedPlaceholderContent = PC.between (PS.char '[') (PS.char ']') (anyStringUntil ['[',']'])
   where
-    anyStringUntil cs = Array.some (PS.noneOf cs) <#> CU.fromCharArray
+    anyStringUntil cs = Array.some (PSB.noneOf cs) <#> CU.fromCharArray
 
 unEscapedPlaceholderContent ∷ P.Parser String String
 unEscapedPlaceholderContent =
