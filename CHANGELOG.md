@@ -7,11 +7,31 @@ Notable changes to this project are documented in this file. The format is based
 Breaking changes:
 - DateTime Formatter Placeholders that contain any valid format characters are now escaped via square brackets.  Square brackets are not valid Placeholder characters. (#74 by @ntwilson)
 
+- Support for different separators ([PR](https://github.com/purescript-contrib/purescript-formatters/pull/86) by @carstenkoenig)
+
 New features:
 
 Bugfixes:
 
 Other improvements:
+
+## [v7.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v7.0.0) - 2022-04-28
+
+Breaking changes:
+- Migrate FFI to ES modules (#79 by @i-am-the-slime and @JordanMartinez)
+
+New features:
+
+Bugfixes:
+
+Other improvements:
+- Added `purs-tidy` formatter (#77 by @thomashoneyman)
+- Drop `math` dependency; update imports (#80 by @JordanMartinez)
+
+## [v6.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v6.0.0) - 2021-10-16
+
+Breaking changes:
+- Upgraded to parsing v7.0.0, replace all `StringLike` constraints with `String` type (#76 by @jamesdbrock)
 
 ## [v5.0.1](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v5.0.1) - 2021-05-06
 

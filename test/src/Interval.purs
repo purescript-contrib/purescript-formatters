@@ -17,33 +17,32 @@ import Data.Maybe (Maybe(..))
 import Partial.Unsafe (unsafeCrashWith)
 import Test.Utils (forAll, makeDateTime, describe, shouldEqual)
 
-prop ∷ ∀ m e f. MonadReader Int m ⇒ MonadAff m ⇒ Foldable f ⇒ String → f {str ∷ String | e} → ({str ∷ String | e} → Aff Unit) → m Unit
+prop :: forall m e f. MonadReader Int m => MonadAff m => Foldable f => String -> f { str :: String | e } -> ({ str :: String | e } -> Aff Unit) -> m Unit
 prop = forAll (show <<< _.str)
 
-intervalTest ∷ forall m. MonadReader Int m ⇒ MonadAff m ⇒ m Unit
+intervalTest :: forall m. MonadReader Int m => MonadAff m => m Unit
 intervalTest = describe "Data.Formatter.Interval" do
-  prop "shouldn't unformat invalid Interval" invalidIntervals \({str, err}) → do
+  prop "shouldn't unformat invalid Interval" invalidIntervals \({ str, err }) -> do
     (unformatInterval str) `shouldEqual` (Left $ err)
 
-  prop "shouldn't unformat invalid Duration" invalidDurations \({str, err}) → do
+  prop "shouldn't unformat invalid Duration" invalidDurations \({ str, err }) -> do
     (runP parseIsoDuration str) `shouldEqual` (Left $ err)
 
-  prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) → do
+  prop "should unformat RecurringInterval" arbRecurringInterval \({ str, interval }) -> do
     (unformatRecurringInterval str) `shouldEqual` (Right interval)
 
-  prop "format (unformat s) = s" arbRecurringInterval \({ str, formatedStr }) → do
+  prop "format (unformat s) = s" arbRecurringInterval \({ str, formatedStr }) -> do
     (formatRecurringInterval <$> (unformatRecurringInterval str)) `shouldEqual` (Right formatedStr)
 
-  prop "unformat (format s) = s" arbRecurringInterval \({ interval }) → do
+  prop "unformat (format s) = s" arbRecurringInterval \({ interval }) -> do
     (unformatRecurringInterval $ formatRecurringInterval interval) `shouldEqual` (Right interval)
 
-
-unsafeMkToIsoDuration ∷ I.Duration → IsoDuration
+unsafeMkToIsoDuration :: I.Duration -> IsoDuration
 unsafeMkToIsoDuration d = mkIsoDuration d
   -- the duration must be valid ISO duration
   # either (\_ -> unsafeCrashWith "unsafeMkToIsoDuration failed") identity
 
-durations ∷ Array { str∷ String, formatedStr∷ String, dur ∷ IsoDuration }
+durations :: Array { str :: String, formatedStr :: String, dur :: IsoDuration }
 durations =
   [ { str: "P1W", formatedStr: "P1W", dur: I.week 1.0 }
   , { str: "P1.0W", formatedStr: "P1W", dur: I.week 1.0 }
@@ -56,9 +55,9 @@ durations =
   , { str: "PT1M", formatedStr: "PT1M", dur: I.minute 1.0 }
   , { str: "PT1S", formatedStr: "PT1S", dur: I.second 1.0 }
   , { str: "PT1H1S", formatedStr: "PT1H1S", dur: I.hour 1.0 <> I.second 1.0 }
-  ] <#> (\a → a { dur = unsafeMkToIsoDuration a.dur })
+  ] <#> (\a -> a { dur = unsafeMkToIsoDuration a.dur })
 
-invalidDurations ∷ Array { err ∷ String, str ∷ String}
+invalidDurations :: Array { err :: String, str :: String }
 invalidDurations =
   [ { err: errInvalidISO "Hour" <> "(line 1, col 13)", str: "P1DT1.5H0M1S" }
   , { err: errInvalidISO "Year" <> "(line 1, col 10)", str: "P1.5Y0.5M" }
@@ -81,11 +80,13 @@ invalidDurations =
   errPrefix = "Expected \"P\" "
   errEOF = "Expected EOF "
   errInvalidISO c =
-    "Extracted Duration is not valid ISO duration " <>
-    "(Invalid usage of Fractional value at component `" <> c <> "`) "
+    "Extracted Duration is not valid ISO duration "
+      <> "(Invalid usage of Fractional value at component `"
+      <> c
+      <> "`) "
   errNoTimeComponent = "None of valid duration components ([\"H\",\"M\",\"S\"]) were present "
 
-invalidIntervals ∷ Array {err ∷ String, str ∷ String}
+invalidIntervals :: Array { err :: String, str :: String }
 invalidIntervals =
   [ { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00ZP1Y2M10DT2H30M" }
   , { err: "Expected \"P\" (line 1, col 1)", str: "2007-03-01T13:00:00Z-P1Y2M10D" }
@@ -106,32 +107,32 @@ invalidIntervals =
   , { err: "Expected EOF (line 1, col 8)", str: "P1Y0.5M/P1Y0.5M" }
   ]
 
-recurrences ∷ Array { str ∷ String, rec ∷ Maybe Int }
+recurrences :: Array { str :: String, rec :: Maybe Int }
 recurrences =
-  [ {str: "", rec: Nothing}
-  , {str: "18", rec: Just 18}
+  [ { str: "", rec: Nothing }
+  , { str: "18", rec: Just 18 }
   ]
 
-dates ∷ Array { str∷ String, date ∷ DateTime }
+dates :: Array { str :: String, date :: DateTime }
 dates =
   [ { str: "2015-07-23T11:12:13Z", date: makeDateTime 2015 7 23 11 12 13 0 }
-  , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0  0  0  0 }
+  , { str: "2015-07-22T00:00:00Z", date: makeDateTime 2015 7 22 0 0 0 0 }
   ]
 
-type ArbRecurringInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.RecurringInterval IsoDuration DateTime}
-type ArbInterval = Array { str ∷ String, formatedStr ∷ String, interval ∷ I.Interval IsoDuration DateTime}
+type ArbRecurringInterval = Array { str :: String, formatedStr :: String, interval :: I.RecurringInterval IsoDuration DateTime }
+type ArbInterval = Array { str :: String, formatedStr :: String, interval :: I.Interval IsoDuration DateTime }
 
-arbRecurringInterval ∷ ArbRecurringInterval
+arbRecurringInterval :: ArbRecurringInterval
 arbRecurringInterval = do
-  rec ← recurrences
-  i ← arbInterval
+  rec <- recurrences
+  i <- arbInterval
   pure
-    { str : "R" <> rec.str <> "/" <> i.str
-    , formatedStr : "R" <> rec.str <> "/" <> i.formatedStr
+    { str: "R" <> rec.str <> "/" <> i.str
+    , formatedStr: "R" <> rec.str <> "/" <> i.formatedStr
     , interval: I.RecurringInterval rec.rec i.interval
     }
 
-arbInterval ∷ ArbInterval
+arbInterval :: ArbInterval
 arbInterval = fold
   [ arbIntervalStartEnd
   , arbIntervalDurationEnd
@@ -139,39 +140,39 @@ arbInterval = fold
   , arbIntervalDurationOnly
   ]
 
-arbIntervalStartEnd ∷ ArbInterval
+arbIntervalStartEnd :: ArbInterval
 arbIntervalStartEnd = do
-  start ← dates
-  end ← dates
+  start <- dates
+  end <- dates
   pure
     { str: start.str <> "/" <> end.str
     , formatedStr: start.str <> "/" <> end.str
     , interval: I.StartEnd start.date end.date
     }
 
-arbIntervalDurationEnd ∷ ArbInterval
+arbIntervalDurationEnd :: ArbInterval
 arbIntervalDurationEnd = do
-  dur ← durations
-  end ← dates
+  dur <- durations
+  end <- dates
   pure
     { str: dur.str <> "/" <> end.str
     , formatedStr: dur.formatedStr <> "/" <> end.str
     , interval: I.DurationEnd dur.dur end.date
     }
 
-arbIntervalStartDuration ∷ ArbInterval
+arbIntervalStartDuration :: ArbInterval
 arbIntervalStartDuration = do
-  dur ← durations
-  start ← dates
+  dur <- durations
+  start <- dates
   pure
-    { str:  start.str <> "/" <> dur.str
-    , formatedStr:  start.str <> "/" <> dur.formatedStr
+    { str: start.str <> "/" <> dur.str
+    , formatedStr: start.str <> "/" <> dur.formatedStr
     , interval: I.StartDuration start.date dur.dur
     }
 
-arbIntervalDurationOnly ∷ ArbInterval
+arbIntervalDurationOnly :: ArbInterval
 arbIntervalDurationOnly = do
-  dur ← durations
+  dur <- durations
   pure
     { str: dur.str
     , formatedStr: dur.formatedStr
