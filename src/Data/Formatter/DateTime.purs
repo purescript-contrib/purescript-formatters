@@ -232,8 +232,9 @@ format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
 -- | Format a DateTime according to the format defined in the given format string.
--- | If the format string is empty, will return a `Left` value. Note that any 
--- | unrecognized character is treated as a placeholder, so while "yyyy-MM-dd" might
+-- | If the format string is empty, or contains astral plane characters (i.e., unicode 
+-- | code points that aren't representable in a single code unit), will return a `Left` value. 
+-- | Note that any unrecognized `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
 -- | not produce the format you want (since "yyyy" and "dd" aren't recognized formats),
 -- | it will still return a `Right` value.
 -- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
