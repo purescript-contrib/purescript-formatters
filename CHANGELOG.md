@@ -5,6 +5,7 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- DateTime Formatter Placeholders that contain any valid format characters are now escaped via square brackets.  Square brackets are not valid Placeholder characters. (#74 by @ntwilson)
 
 - Support for different separators ([PR](https://github.com/purescript-contrib/purescript-formatters/pull/86) by @carstenkoenig)
 

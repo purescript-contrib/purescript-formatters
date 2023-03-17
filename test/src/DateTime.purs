@@ -2,8 +2,8 @@ module Test.DateTime (datetimeTest) where
 
 import Prelude
 
-import Control.Monad.Reader.Class (class MonadReader)
 import Control.Alternative (guard)
+import Control.Monad.Reader.Class (class MonadReader)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Formatter.DateTime as FDT
@@ -19,6 +19,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "YYYY", dateStr: "0017", date: makeDateTime 17 0 0 0 0 0 0 }
     , { format: "MMMM", dateStr: "April", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YYYY-DD-MM", dateStr: "2017-12-04", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "[(Y)]YYYY-([M])MM-([D])DD", dateStr: "(Y)2017-(M)04-(D)12", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YYYY-MMM", dateStr: "2017-Apr", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "MMM D", dateStr: "Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "dddd, MMM D", dateStr: "Saturday, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
@@ -123,6 +124,9 @@ invalidDateformats =
   [ { str: "YY-h-dddd HH:mm Z", pos: "(line 1, col 4)" }
   , { str: "YYYY-MM-DD M", pos: "(line 1, col 12)" }
   , { str: "YYYYM", pos: "(line 1, col 5)" }
+  , { str: "YYYY-MM-DD[ [at] ] hh", pos: "(line 1, col 11)" }
+  , { str: "YYYY-MM-DD [at hh", pos: "(line 1, col 12)" }
+  , { str: "YYYY-MM-DD at] hh", pos: "(line 1, col 14)" }
   ]
 
 dateformats :: Array { str :: String, lossless :: Boolean, format :: FDT.Formatter }
@@ -180,6 +184,38 @@ dateformats =
         , FDT.Hours24
         , FDT.Placeholder "-:-"
         , FDT.MinutesTwoDigits
+        ]
+    }
+  , { str: "DD-MM-YYYY[ at ]HH-:-mm"
+    , lossless: false
+    , format: fromFoldable
+        [ FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.YearFull
+        , FDT.Placeholder " at "
+        , FDT.Hours24
+        , FDT.Placeholder "-:-"
+        , FDT.MinutesTwoDigits
+        ]
+    }
+  , { str: "Y-MM-DD [at] HH:mm:ss:SSS"
+    , lossless: true
+    , format: fromFoldable
+        [ FDT.YearAbsolute
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder " at "
+        , FDT.Hours24
+        , FDT.Placeholder ":"
+        , FDT.MinutesTwoDigits
+        , FDT.Placeholder ":"
+        , FDT.SecondsTwoDigits
+        , FDT.Placeholder ":"
+        , FDT.Milliseconds
         ]
     }
   , { str: "YYYY-DD-MM SSS"
