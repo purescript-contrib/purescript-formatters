@@ -111,7 +111,7 @@ printFormatterCommand = case _ of
   needsEscaping = CU.toCharArray >>> Array.any (flip Array.elem formatCharacters)
 
 formatCharacters :: Array Char
-formatCharacters = CU.toCharArray "YMDdHhamsS"
+formatCharacters = CU.toCharArray "YMDXdHhamsS"
 
 printFormatter :: Formatter -> String
 printFormatter = foldMap printFormatterCommand
