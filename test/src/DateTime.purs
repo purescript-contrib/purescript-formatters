@@ -86,6 +86,13 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       invalidDateformats
       (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected EOF " <> f.pos))
 
+  describe "parseFormatString/printFormatter should roundtrip" do
+    forAll
+      _.str
+      "should parse"
+      dateformats
+      (\f -> (FDT.printFormatter <$> FDT.parseFormatString f.str) `shouldEqual` (Right f.str))
+
   forAll
     (\a -> a.format <> " | " <> a.date)
     "s ≡ format (unformat s)"
@@ -200,7 +207,7 @@ dateformats =
         , FDT.MinutesTwoDigits
         ]
     }
-  , { str: "Y-MM-DD [at] HH:mm:ss:SSS"
+  , { str: "Y-MM-DD[ at ]HH:mm:ss:SSS"
     , lossless: true
     , format: fromFoldable
         [ FDT.YearAbsolute
@@ -228,6 +235,17 @@ dateformats =
         , FDT.MonthTwoDigits
         , FDT.Placeholder " "
         , FDT.Milliseconds
+        ]
+    }
+  , { str: "YYYY-DD-MM[X]"
+    , lossless: false
+    , format: fromFoldable
+        [ FDT.YearFull
+        , FDT.Placeholder "-"
+        , FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "X"
         ]
     }
   ]
