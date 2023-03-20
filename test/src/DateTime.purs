@@ -24,7 +24,7 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "MMM D", dateStr: "Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "dddd, MMM D", dateStr: "Saturday, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "ddd, MMM D", dateStr: "Sat, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
-    , { format: "E", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0 }
+    , { format: "d", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "hh:mm:ss:SSS a", dateStr: "11:03:04:234 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 20017 4 12 0 0 0 0 } -- Format 20017 with YY
