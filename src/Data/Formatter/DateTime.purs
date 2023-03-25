@@ -1,3 +1,27 @@
+-- | This is a subset of common format/parse strings currently supported.
+-- | 
+-- | + `YYYY` - Full Year      (1999)
+-- | + `YY`   - 2 digit year   (99)
+-- | + `MMMM` - Full Month     (January)
+-- | + `MMM`  - Short Month    (Jan)
+-- | + `DD`   - Padded Day     (02)
+-- | + `D`    - Day of month   (2)
+-- | + `X`    - Unix Timestamp (1506875681)
+-- | + `E`    - Day of Week    (2)
+-- | + `dddd` - DOW Name       (Monday)
+-- | + `ddd`  - DOW Name Short (Mon)
+-- | + `HH`   - 24 Hour        (13)
+-- | + `hh`   - 12 Hour        (1)
+-- | + `a`    - Meridiem       (am/pm)
+-- | + `mm`   - Minutes Padded (02)
+-- | + `m`    - Minutes        (2)
+-- | + `ss`   - Seconds Padded (02)
+-- | + `s`    - Seconds        (2)
+-- | + `S`    - MilliSeconds   (4)
+-- | + `SS`   - MilliSeconds   (04)
+-- | + `SSS`  - MilliSeconds   (004)
+-- |
+-- | Full list is defined [here](https://github.com/slamdata/purescript-formatters/blob/master/src/Data/Formatter/DateTime.purs)
 module Data.Formatter.DateTime
   ( Formatter
   , FormatterCommand(..)
@@ -118,13 +142,10 @@ printFormatterCommand = case _ of
 -- | `show (Hours24 : MinutesTwoDigits : Nil) = "(Hours24 : MinutesTwoDigits : Nil)"`
 -- | 
 -- | while `printFormatter (Hours24 : MinutesTwoDigits : Nil) = "HHmm"`.
--- | 
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 printFormatter :: Formatter -> String
 printFormatter = foldMap printFormatterCommand
 
--- | Attempt to parse a `String` as a `Formatter`, 
--- | using an interpretation inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
+-- | Attempt to parse a `String` as a `Formatter`. 
 parseFormatString :: String -> Either String Formatter
 parseFormatString = runP formatParser
 
@@ -227,17 +248,16 @@ padQuadrupleDigit i
   | i < 1000 = "0" <> (show i)
   | otherwise = show i
 
--- | Format a DateTime according to the format defined in the given `Formatter`
+-- | Format a DateTime according to the format defined in the given `Formatter`.
 format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
 -- | Format a DateTime according to the format defined in the given format string.
--- | If the format string is empty, or contains astral plane characters (i.e., unicode 
--- | code points that aren't representable in a single code unit), will return a `Left` value. 
--- | Note that any unrecognized `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
--- | not produce the format you want (since "yyyy" and "dd" aren't recognized formats),
+-- | If the format string is empty or contains a reserved character such as a single "M" or "H", 
+-- | will return a `Left` value. 
+-- | Note that any non-reserved `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
+-- | not produce the format you want (since "yyyy" isn't a recognized format),
 -- | it will still return a `Right` value.
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 formatDateTime :: String -> DT.DateTime -> Either String String
 formatDateTime pattern datetime =
   parseFormatString pattern <#> (_ `format` datetime)
@@ -450,7 +470,6 @@ unformatParser f = do
 -- | Attempt to parse a `String` as a `DateTime` according to the format defined in the 
 -- | given format string. Returns a `Left` value if the given format string was empty, or
 -- | if the date string fails to parse according to the format.
--- | The interpretation of the format string is inspired by [momentjs](https://momentjs.com/docs/#/displaying/format/).
 unformatDateTime :: String -> String -> Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= (_ `unformat` str)
