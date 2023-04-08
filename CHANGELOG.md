@@ -14,6 +14,7 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Added module documentation for Data.Formatter.DateTime and Data.Formatter.Number (#73 by @ntwilson)
 
 ## [v7.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v7.0.0) - 2022-04-28
 

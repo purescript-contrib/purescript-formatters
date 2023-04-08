@@ -1,3 +1,27 @@
+-- | This is a subset of common format/parse strings currently supported.
+-- | 
+-- | + `YYYY` - Full Year      (1999)
+-- | + `YY`   - 2 digit year   (99)
+-- | + `MMMM` - Full Month     (January)
+-- | + `MMM`  - Short Month    (Jan)
+-- | + `DD`   - Padded Day     (02)
+-- | + `D`    - Day of month   (2)
+-- | + `X`    - Unix Timestamp (1506875681)
+-- | + `E`    - Day of Week    (2)
+-- | + `dddd` - DOW Name       (Monday)
+-- | + `ddd`  - DOW Name Short (Mon)
+-- | + `HH`   - 24 Hour        (13)
+-- | + `hh`   - 12 Hour        (1)
+-- | + `a`    - Meridiem       (am/pm)
+-- | + `mm`   - Minutes Padded (02)
+-- | + `m`    - Minutes        (2)
+-- | + `ss`   - Seconds Padded (02)
+-- | + `s`    - Seconds        (2)
+-- | + `S`    - MilliSeconds   (4)
+-- | + `SS`   - MilliSeconds   (04)
+-- | + `SSS`  - MilliSeconds   (004)
+-- |
+-- | Full list is defined [here](https://github.com/slamdata/purescript-formatters/blob/master/src/Data/Formatter/DateTime.purs)
 module Data.Formatter.DateTime
   ( Formatter
   , FormatterCommand(..)
@@ -48,6 +72,8 @@ import Parsing.Combinators as PC
 import Parsing.String as PS
 import Parsing.String.Basic as PSB
 
+-- | One part of a DateTime `Formatter`. Use `Placeholder` for 
+-- | any static portion of the format, such as whitespace or separators `-` or `:`.
 data FormatterCommand
   = YearFull
   | YearTwoDigits
@@ -79,6 +105,10 @@ derive instance genericFormatter :: Generic FormatterCommand _
 instance showFormatter :: Show FormatterCommand where
   show = genericShow
 
+-- | A description of a string format for dates and times.
+-- | Functions such as `format` and `unformat` use a `Formatter` 
+-- | such as `(YearFull : MonthTwoDigits : DayOfMonthTwoDigits : Nil)`
+-- | in place of a format string such as `"YYYYMMDD"`.
 type Formatter = List.List FormatterCommand
 
 printFormatterCommand :: FormatterCommand -> String
@@ -113,9 +143,15 @@ printFormatterCommand = case _ of
 formatCharacters :: Array Char
 formatCharacters = CU.toCharArray "YMDEHhamsS"
 
+-- | The format string representation of a `Formatter`.
+-- | 
+-- | `show (Hours24 : MinutesTwoDigits : Nil) = "(Hours24 : MinutesTwoDigits : Nil)"`
+-- | 
+-- | while `printFormatter (Hours24 : MinutesTwoDigits : Nil) = "HHmm"`.
 printFormatter :: Formatter -> String
 printFormatter = foldMap printFormatterCommand
 
+-- | Attempt to parse a `String` as a `Formatter`. 
 parseFormatString :: String -> Either String Formatter
 parseFormatString = runP formatParser
 
@@ -227,16 +263,26 @@ padQuadrupleDigit i
   | i < 1000 = "0" <> (show i)
   | otherwise = show i
 
+-- | Format a DateTime according to the format defined in the given `Formatter`.
 format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
+-- | Format a DateTime according to the format defined in the given format string.
+-- | If the format string is empty or contains a reserved character such as a single "M" or "H", 
+-- | will return a `Left` value. 
+-- | Note that any non-reserved `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
+-- | not produce the format you want (since "yyyy" isn't a recognized format),
+-- | it will still return a `Right` value.
 formatDateTime :: String -> DT.DateTime -> Either String String
 formatDateTime pattern datetime =
   parseFormatString pattern <#> (_ `format` datetime)
 
+-- | Attempt to parse a String as a DateTime according to the format defined in the 
+-- | given `Formatter`. 
 unformat :: Formatter -> String -> Either String DT.DateTime
 unformat = runP <<< unformatParser
 
+-- | Before or after noon (AM/PM)
 data Meridiem = AM | PM
 
 derive instance eqMeridiem :: Eq Meridiem
@@ -425,6 +471,8 @@ unformatCommandParser = case _ of
     v <- p
     lift $ modify_ (flip f (Just v))
 
+-- | A `ParserT` for `String`s that parses a `DateTime` 
+-- | according to the format defined in the given `Formatter`. 
 unformatParser :: forall m. Monad m => Formatter -> P.ParserT String m DT.DateTime
 unformatParser f = do
   acc <- P.mapParserT unState $ foldMap unformatCommandParser f
@@ -434,6 +482,9 @@ unformatParser f = do
   unState s = case runState s initialAccum of
     Tuple (Tuple e state) res -> pure (Tuple (e $> res) state)
 
+-- | Attempt to parse a `String` as a `DateTime` according to the format defined in the 
+-- | given format string. Returns a `Left` value if the given format string was empty, or
+-- | if the date string fails to parse according to the format.
 unformatDateTime :: String -> String -> Either String DT.DateTime
 unformatDateTime pattern str =
   parseFormatString pattern >>= (_ `unformat` str)

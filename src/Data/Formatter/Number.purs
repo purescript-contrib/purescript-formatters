@@ -1,7 +1,37 @@
+-- | Formatter has following properties
+-- | + Number of digits before dot
+-- | + Number of digits after dot
+-- | + Should sign be printed for positive numbers
+-- | + Should thousands be separated by comma
+-- | + Should output string have abbreviations (like `K` or `M`)
+-- | + What decimal-separator character should be used (default '.')
+-- | + What thousand-group-separator character should be used (default '+')
+-- |
+-- | **Note:** The parser will return a formatter with the default separator-characters - use `withSeparators` to override this after parsing.
+-- |
+-- | Number will be padded with zeros to have at least this number of leading zeros. This doesn't restrict number to have more digits then leading zeros in format string.
+-- | + `0000.0` will show 4 digits: `12 → "0012.0"`, `1234 → "1234.0"`
+-- | + `00.0` will show only 2 digits : `12 → "12.0"`, `1234 → "1234.0"`
+-- |
+-- | Number of digits after dot is set by number of trailing zeros (note the rounding)
+-- | + `0.000` will show 3 digits: `0.12345 → "0.123"`, `12.98765 → "12.988"`
+-- | + `0.0` will show only 1 digit: `0.12345 → "0.1"`, `12.98765 → "13.0"`
+-- |
+-- | If number is lesser then zero `-` is always printed. Otherwise you could specify `+` in format string
+-- | + `+0`: `12.0 → "+12"`, `-34.8 → "-35"`
+-- | + `0`: `12.0 → "12"`, `-34.8 → "-35"`
+-- |
+-- | Thousands separator is specified as `,0` please note that this `0` isn't counted as leading.
+-- | + `00,0`: `1234567890 → "1,234,567,890.0", `1 → "1.0"`
+-- |
+-- | For abbreviation one could use `a` flag. In general it tries to find the closest power of thousand and
+-- | then use formatter to result of division of input number and that power.
+-- | + `0a`: `1234567 → "1M"`, `1 → "1"`
+-- |
 -- | This module has no support of percents and currencies.
 -- | Please, note that using simple formatter that tabulates number with
 -- | zeros and put commas between thousands should be enough for everything
--- | because one could just compose it with `flip append "%"` or whatever
+-- | because one could just compose it with `flip append "%"` or whatever.
 module Data.Formatter.Number
   ( Formatter(..)
   , withSeparators
@@ -37,6 +67,17 @@ import Parsing.Combinators as PC
 import Parsing.String as PS
 import Parsing.String.Basic as PSB
 
+-- | Defines a format for printing/parsing numbers.
+-- | 
+-- | `comma`: use a ',' for a thousands separator
+-- | 
+-- | `before`: the minimum number of characters to print before the decimal point
+-- | 
+-- | `after`: the total number of characters to print after the decimal point
+-- | 
+-- | `abbreviations`: "31600.0" → "32K"; "31600000.0" → "32M" 
+-- | 
+-- | `sign`: always print a sign, including a `+` for positive numbers
 newtype Formatter = Formatter
   { comma :: Boolean
   , before :: Int
@@ -63,6 +104,7 @@ instance showFormatter :: Show Formatter where
 
 derive instance eqFormatter :: Eq Formatter
 
+-- | The format string representation of a `Formatter`.
 printFormatter :: Formatter -> String
 printFormatter (Formatter f) =
   (if f.sign then "+" else "")
@@ -72,6 +114,8 @@ printFormatter (Formatter f) =
     <> (repeat "0" f.after)
     <> (if f.abbreviations then "a" else "")
 
+-- | Attempt to parse a `String` as a `Formatter`, 
+-- | using an interpretation inspired by [numeral.js](http://numeraljs.com/#format)
 parseFormatString :: String -> Either String Formatter
 parseFormatString = runP formatParser
 
@@ -100,7 +144,7 @@ formatParser = do
 -- means of showing an integer potentially larger than +/- 2 billion.
 foreign import showNumberAsInt :: Number -> String
 
--- | Formats a number according to the format object provided.
+-- | Format a `Number` according to the `Formatter` provided.
 -- | Due to the nature of floating point numbers, may yield unpredictable results for extremely
 -- | large or extremely small numbers, such as numbers whose absolute values are ≥ 1e21 or ≤ 1e-21,
 -- | or when formatting with > 20 digits after the decimal place.
@@ -174,9 +218,13 @@ format (Formatter f) num = do
       <> shownInt
       <> leftovers
 
+-- | Attempt to parse a `String` as a `Number` according to the format defined in the 
+-- | given `Formatter`. 
 unformat :: Formatter -> String -> Either String Number
 unformat = runP <<< unformatParser
 
+-- | A `ParserT` for `String`s that parses a `Number` 
+-- | according to the format defined in the given `Formatter`. 
 unformatParser :: Formatter -> P.Parser String Number
 unformatParser (Formatter f) = do
   minus <- PC.optionMaybe $ PC.try $ PS.string "-"
@@ -252,9 +300,16 @@ unformatParser (Formatter f) = do
       * sign
       * (before + after / Number.pow 10.0 (Int.toNumber f.after))
 
+-- | Format a Number according to the format defined in the given format string.
+-- | If the format string fails to parse, will return a `Left` value. 
+-- | The interpretation of the format string is inspired by [numeral.js](http://numeraljs.com/#format)
 formatNumber :: String -> Number -> Either String String
 formatNumber pattern number = parseFormatString pattern <#> flip format number
 
+-- | Attempt to parse a `String` as a `Number` according to the format defined in the 
+-- | given format string. Returns a `Left` value if the given format string fails to parse, or
+-- | if the number string fails to parse according to the format.
+-- | The interpretation of the format string is inspired by [numeral.js](http://numeraljs.com/#format)
 unformatNumber :: String -> String -> Either String Number
 unformatNumber pattern str = parseFormatString pattern >>= flip unformat str
 
