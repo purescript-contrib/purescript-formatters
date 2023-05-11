@@ -122,7 +122,7 @@ printFormatterCommand = case _ of
   DayOfMonthTwoDigits -> "DD"
   DayOfMonth -> "D"
   UnixTimestamp -> "X"
-  DayOfWeek -> "E"
+  DayOfWeek -> "d"
   DayOfWeekName -> "dddd"
   DayOfWeekNameShort -> "ddd"
   Hours24 -> "HH"
@@ -141,7 +141,7 @@ printFormatterCommand = case _ of
   needsEscaping = CU.toCharArray >>> Array.any (flip Array.elem formatCharacters)
 
 formatCharacters :: Array Char
-formatCharacters = CU.toCharArray "YMDEHhamsS"
+formatCharacters = CU.toCharArray "YMDXdHhamsS"
 
 -- | The format string representation of a `Formatter`.
 -- | 
@@ -182,10 +182,10 @@ formatterCommandParser =
     , Tuple "MM" MonthTwoDigits
     , Tuple "DD" DayOfMonthTwoDigits
     , Tuple "D" DayOfMonth
-    , Tuple "E" DayOfWeek
     , Tuple "X" UnixTimestamp
     , Tuple "dddd" DayOfWeekName
     , Tuple "ddd" DayOfWeekNameShort
+    , Tuple "d" DayOfWeek
     , Tuple "HH" Hours24
     , Tuple "hh" Hours12
     , Tuple "a" Meridiem
