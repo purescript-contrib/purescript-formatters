@@ -5,6 +5,16 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+
+New features:
+
+Bugfixes:
+
+Other improvements:
+
+## [v8.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v8.0.0) - 2026-10-11
+
+Breaking changes:
 - The day-of-week token is now `d` instead of `E`; numeric weekdays remain Monday = 1 through Sunday = 7. (#87 by @garyb)
 - The `a` token now prints lowercase `am`/`pm`; use `A` for uppercase `AM`/`PM`. Both parse either case. `Meridiem` still prints uppercase; `MeridiemLowerCase` prints lowercase.
 - `FormatterCommand` has new `MonthDigit` and `MeridiemLowerCase` constructors; update exhaustive matches.
