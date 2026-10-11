@@ -10,6 +10,7 @@ Breaking changes:
 - Support for different separators ([PR](https://github.com/purescript-contrib/purescript-formatters/pull/86) by @carstenkoenig)
 
 New features:
+- Added support for single-digit months [#69](https://github.com/purescript-contrib/purescript-formatters/pull/69) (@vapaj)
 
 Bugfixes:
 

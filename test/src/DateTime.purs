@@ -5,7 +5,7 @@ import Prelude
 import Control.Alternative (guard)
 import Control.Monad.Reader.Class (class MonadReader)
 import Data.DateTime (DateTime)
-import Data.Either (Either(..))
+import Data.Either (Either(..), isLeft)
 import Data.Formatter.DateTime as FDT
 import Data.List (fromFoldable)
 import Effect.Aff.Class (class MonadAff)
@@ -13,6 +13,18 @@ import Test.Utils (forAll, makeDateTime, describe, it, shouldEqual)
 
 datetimeTest :: forall m. MonadReader Int m => MonadAff m => m Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
+  describe "single-digit months" do
+    forAll show "formats and parses unpadded months" [ 1, 5, 10, 12 ] \month -> do
+      let date = makeDateTime 2020 month 20 0 0 0 0
+      FDT.formatDateTime "D.M.YYYY" date `shouldEqual` Right ("20." <> show month <> ".2020")
+      FDT.unformatDateTime "D.M.YYYY" ("20." <> show month <> ".2020") `shouldEqual` Right date
+    it "also accepts padded input" $
+      FDT.unformatDateTime "D.M.YYYY" "20.05.2020" `shouldEqual` Right (makeDateTime 2020 5 20 0 0 0 0)
+    forAll identity "rejects invalid months" [ "0", "13", "123" ] \month ->
+      isLeft (FDT.unformatDateTime "D.M.YYYY" ("20." <> month <> ".2020")) `shouldEqual` true
+    it "keeps MM padded" $
+      isLeft (FDT.unformatDateTime "D.MM.YYYY" "20.5.2020") `shouldEqual` true
+
   forAll (\a -> a.format <> " | " <> a.dateStr)
     "formatDateTime/unformatDateTime should format/unformat dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017", date: makeDateTime 2017 4 12 11 3 4 234 }
@@ -129,8 +141,6 @@ dates =
 invalidDateformats :: Array { str :: String, pos :: String }
 invalidDateformats =
   [ { str: "YY-h-dddd HH:mm Z", pos: "(line 1, col 4)" }
-  , { str: "YYYY-MM-DD M", pos: "(line 1, col 12)" }
-  , { str: "YYYYM", pos: "(line 1, col 5)" }
   , { str: "YYYY-MM-DD[ [at] ] hh", pos: "(line 1, col 11)" }
   , { str: "YYYY-MM-DD [at hh", pos: "(line 1, col 12)" }
   , { str: "YYYY-MM-DD at] hh", pos: "(line 1, col 14)" }

@@ -80,6 +80,7 @@ data FormatterCommand
   | YearAbsolute
   | MonthFull
   | MonthShort
+  | MonthDigit
   | MonthTwoDigits
   | DayOfMonthTwoDigits
   | DayOfMonth
@@ -118,6 +119,7 @@ printFormatterCommand = case _ of
   YearAbsolute -> "Y"
   MonthFull -> "MMMM"
   MonthShort -> "MMM"
+  MonthDigit -> "M"
   MonthTwoDigits -> "MM"
   DayOfMonthTwoDigits -> "DD"
   DayOfMonth -> "D"
@@ -180,6 +182,7 @@ formatterCommandParser =
     , Tuple "MMMM" MonthFull
     , Tuple "MMM" MonthShort
     , Tuple "MM" MonthTwoDigits
+    , Tuple "M" MonthDigit
     , Tuple "DD" DayOfMonthTwoDigits
     , Tuple "D" DayOfMonth
     , Tuple "X" UnixTimestamp
@@ -223,6 +226,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   YearAbsolute -> show $ fromEnum $ D.year d
   MonthFull -> show $ D.month d
   MonthShort -> printShortMonth $ D.month d
+  MonthDigit -> show $ fromEnum $ D.month d
   MonthTwoDigits -> padSingleDigit $ fromEnum $ D.month d
   DayOfMonthTwoDigits -> padSingleDigit $ fromEnum $ D.day d
   DayOfMonth -> show $ fromEnum $ D.day d
@@ -419,6 +423,8 @@ unformatCommandParser = case _ of
     (fromEnum <$> parseMonth)
   MonthShort -> _ { month = _ } `modifyWithParser`
     (fromEnum <$> parseShortMonth)
+  MonthDigit -> _ { month = _ } `modifyWithParser`
+    (parseInt 2 (validateRange 1 12) "Incorrect month digit")
   MonthTwoDigits -> _ { month = _ } `modifyWithParser`
     (parseInt 2 (validateRange 1 12 <> exactLength) "Incorrect 2-digit month")
   DayOfMonthTwoDigits -> _ { day = _ } `modifyWithParser`
