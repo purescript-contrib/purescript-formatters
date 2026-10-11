@@ -18,6 +18,7 @@ New features:
 
 Bugfixes:
 - Escape `X` and `d` in literal placeholders when printing DateTime formatters. (#87 by @garyb)
+- Parse numbers without intermediate 32-bit integer overflow, and retain extra fractional digits at their correct scale. Minimum digit widths are unchanged. (#16)
 
 Other improvements:
 - Added module documentation for Data.Formatter.DateTime and Data.Formatter.Number (#73 by @ntwilson)

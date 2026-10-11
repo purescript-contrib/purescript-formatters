@@ -278,7 +278,7 @@ format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
 -- | Format a DateTime according to the format defined in the given format string.
--- | If the format string is empty or contains a reserved character such as a single "H", 
+-- | If the format string is empty or contains a reserved character such as a single "H",
 -- | will return a `Left` value. 
 -- | Note that any non-reserved `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
 -- | not produce the format you want (since "yyyy" isn't a recognized format),

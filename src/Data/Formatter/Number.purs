@@ -49,6 +49,7 @@ import Prelude
 import Data.Array (many, some)
 import Data.Array as Arr
 import Data.Either (Either, either)
+import Data.Foldable (foldMap)
 import Data.Formatter.Internal (foldDigits, repeat)
 import Data.Formatter.Parser.Number (parseDigit)
 import Data.Formatter.Parser.Utils (runP)
@@ -220,6 +221,8 @@ format (Formatter f) num = do
 
 -- | Attempt to parse a `String` as a `Number` according to the format defined in the 
 -- | given `Formatter`. 
+-- | The digit counts are minimum widths: additional fractional digits are retained.
+-- | Parsing uses the precision of `Number`, without an intermediate 32-bit `Int`.
 unformat :: Formatter -> String -> Either String Number
 unformat = runP <<< unformatParser
 
@@ -262,18 +265,12 @@ unformatParser (Formatter f) = do
         _ -> P.fail "Incorrect symbol, expected ',' or '.'"
 
   beforeDigits <- digitsWithCommas
-  before <-
-    if Arr.length beforeDigits < f.before then
-      P.fail "Error: too few digits before dot"
-    else
-      pure $ Int.toNumber $ foldDigits beforeDigits
+  when (Arr.length beforeDigits < f.before) $
+    P.fail "Error: too few digits before dot"
 
   afterDigits <- some parseDigit
-  after <-
-    if Arr.length afterDigits < f.after then
-      P.fail "Error: too few digits after dot"
-    else
-      pure $ Int.toNumber $ foldDigits afterDigits
+  when (Arr.length afterDigits < f.after) $
+    P.fail "Error: too few digits after dot"
 
   abbr <-
     if f.abbreviations then do
@@ -295,10 +292,9 @@ unformatParser (Formatter f) = do
         _ -> pure 0
     else pure 0
 
-  pure $
-    Number.pow 10.0 (Int.toNumber abbr)
-      * sign
-      * (before + after / Number.pow 10.0 (Int.toNumber f.after))
+  case Number.fromString (foldMap show beforeDigits <> "." <> foldMap show afterDigits) of
+    Nothing -> P.fail "Number out of range"
+    Just number -> pure $ Number.pow 10.0 (Int.toNumber abbr) * sign * number
 
 -- | Format a Number according to the format defined in the given format string.
 -- | If the format string fails to parse, will return a `Left` value. 
