@@ -11,6 +11,7 @@ Breaking changes:
 
 New features:
 - Added support for single-digit months [#69](https://github.com/purescript-contrib/purescript-formatters/pull/69) (@vapaj)
+- Added support for lower-case meridiem via `MeridiemLowerCase` [#67](https://github.com/purescript-contrib/purescript-formatters/pull/67) (@fsoikin)
 
 Bugfixes:
 
