@@ -22,6 +22,7 @@ Bugfixes:
 
 Other improvements:
 - Added module documentation for Data.Formatter.DateTime and Data.Formatter.Number (#73 by @ntwilson)
+- Migrate to registry-backed Spago 1.0 and update repository tooling.
 
 ## [v7.0.0](https://github.com/purescript-contrib/purescript-formatters/releases/tag/v7.0.0) - 2022-04-28
 
