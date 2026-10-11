@@ -5,7 +5,8 @@ import Prelude
 import Control.Alternative (guard)
 import Control.Monad.Reader.Class (class MonadReader)
 import Data.DateTime (DateTime)
-import Data.Either (Either(..))
+import Data.Either (Either(..), isLeft)
+import Data.Foldable (for_)
 import Data.Formatter.DateTime as FDT
 import Data.List (fromFoldable)
 import Effect.Aff.Class (class MonadAff)
@@ -13,6 +14,35 @@ import Test.Utils (forAll, makeDateTime, describe, it, shouldEqual)
 
 datetimeTest :: forall m. MonadReader Int m => MonadAff m => m Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
+  describe "meridiem token convention" do
+    forAll show "formats and parses both cases at midnight and noon" [ 0, 11, 12, 23 ] \hour -> do
+      let
+        date = makeDateTime 2020 5 20 hour 0 0 0
+        lower = if hour < 12 then "am" else "pm"
+        upper = if hour < 12 then "AM" else "PM"
+      FDT.formatDateTime "a A" date `shouldEqual` Right (lower <> " " <> upper)
+      for_ [ "a", "A" ] \token -> do
+        let prefix = "2020-05-20 " <> (if hour == 0 || hour == 12 then "12" else "11") <> " "
+        FDT.unformatDateTime ("YYYY-MM-DD hh " <> token) (prefix <> lower) `shouldEqual` Right date
+        FDT.unformatDateTime ("YYYY-MM-DD hh " <> token) (prefix <> upper) `shouldEqual` Right date
+
+  forAll identity "preserves escaped token literals" [ "X", "d", "ddd", "M", "a", "A" ] \literal -> do
+    let str = "[" <> literal <> "]"
+    (FDT.printFormatter <$> FDT.parseFormatString str) `shouldEqual` Right str
+    FDT.formatDateTime str (makeDateTime 2020 5 20 0 0 0 0) `shouldEqual` Right literal
+
+  describe "single-digit months" do
+    forAll show "formats and parses unpadded months" [ 1, 5, 10, 12 ] \month -> do
+      let date = makeDateTime 2020 month 20 0 0 0 0
+      FDT.formatDateTime "D.M.YYYY" date `shouldEqual` Right ("20." <> show month <> ".2020")
+      FDT.unformatDateTime "D.M.YYYY" ("20." <> show month <> ".2020") `shouldEqual` Right date
+    it "also accepts padded input" $
+      FDT.unformatDateTime "D.M.YYYY" "20.05.2020" `shouldEqual` Right (makeDateTime 2020 5 20 0 0 0 0)
+    forAll identity "rejects invalid months" [ "0", "13", "123" ] \month ->
+      isLeft (FDT.unformatDateTime "D.M.YYYY" ("20." <> month <> ".2020")) `shouldEqual` true
+    it "keeps MM padded" $
+      isLeft (FDT.unformatDateTime "D.MM.YYYY" "20.5.2020") `shouldEqual` true
+
   forAll (\a -> a.format <> " | " <> a.dateStr)
     "formatDateTime/unformatDateTime should format/unformat dateTime"
     [ { format: "MM/DD/YYYY", dateStr: "04/12/2017", date: makeDateTime 2017 4 12 11 3 4 234 }
@@ -24,22 +54,25 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "MMM D", dateStr: "Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "dddd, MMM D", dateStr: "Saturday, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "ddd, MMM D", dateStr: "Sat, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
-    , { format: "E", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0 }
-    , { format: "hh:mm:ss:SSS a", dateStr: "11:03:04:234 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "d", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0 }
+    , { format: "hh:mm:ss:SSS A", dateStr: "11:03:04:234 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 20017 4 12 0 0 0 0 } -- Format 20017 with YY
     , { format: "YY", dateStr: "00", date: makeDateTime 0 4 12 0 0 0 0 } -- Format 0 with YY
     , { format: "YY", dateStr: "01", date: makeDateTime (-1) 4 12 0 0 0 0 } -- Format -1 with YY
-    , { format: "hh:m:s a", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
-    , { format: "hh a", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
-    , { format: "hh a", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
-    , { format: "hh:mm:ss a", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:m:s A", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:m:s a", dateStr: "11:3:4 am", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh A", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh A", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
+    , { format: "hh a", dateStr: "12 am", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh a", dateStr: "12 pm", date: makeDateTime 0 1 1 12 0 0 0 }
+    , { format: "hh:mm:ss A", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.023", date: makeDateTime 2017 4 10 11 12 30 23 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.003", date: makeDateTime 2017 4 10 11 12 30 3 }
     , { format: "hh:mm:ss.SS", dateStr: "11:12:30.12", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.S", dateStr: "11:12:30.1", date: makeDateTime 2017 4 10 11 12 30 123 }
-    , { format: "hhmmss a", dateStr: "110304 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hhmmss A", dateStr: "110304 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hhmmssSSS", dateStr: "111230123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hhmmssSSS", dateStr: "111230023", date: makeDateTime 2017 4 10 11 12 30 23 }
     , { format: "hhmmssSSS", dateStr: "111230003", date: makeDateTime 2017 4 10 11 12 30 3 }
@@ -86,6 +119,13 @@ datetimeTest = describe "Data.Formatter.DateTime" do
       invalidDateformats
       (\f -> (FDT.parseFormatString f.str) `shouldEqual` (Left $ "Expected EOF " <> f.pos))
 
+  describe "parseFormatString/printFormatter should roundtrip" do
+    forAll
+      _.str
+      "should parse"
+      dateformats
+      (\f -> (FDT.printFormatter <$> FDT.parseFormatString f.str) `shouldEqual` (Right f.str))
+
   forAll
     (\a -> a.format <> " | " <> a.date)
     "s ≡ format (unformat s)"
@@ -122,8 +162,6 @@ dates =
 invalidDateformats :: Array { str :: String, pos :: String }
 invalidDateformats =
   [ { str: "YY-h-dddd HH:mm Z", pos: "(line 1, col 4)" }
-  , { str: "YYYY-MM-DD M", pos: "(line 1, col 12)" }
-  , { str: "YYYYM", pos: "(line 1, col 5)" }
   , { str: "YYYY-MM-DD[ [at] ] hh", pos: "(line 1, col 11)" }
   , { str: "YYYY-MM-DD [at hh", pos: "(line 1, col 12)" }
   , { str: "YYYY-MM-DD at] hh", pos: "(line 1, col 14)" }
@@ -139,6 +177,24 @@ dateformats =
         , FDT.MonthTwoDigits
         , FDT.Placeholder "-"
         , FDT.DayOfMonthTwoDigits
+        ]
+    }
+  , { str: "HH:mmA"
+    , lossless: false
+    , format: fromFoldable
+        [ FDT.Hours24
+        , FDT.Placeholder ":"
+        , FDT.MinutesTwoDigits
+        , FDT.Meridiem
+        ]
+    }
+  , { str: "HH:mma"
+    , lossless: false
+    , format: fromFoldable
+        [ FDT.Hours24
+        , FDT.Placeholder ":"
+        , FDT.MinutesTwoDigits
+        , FDT.MeridiemLowerCase
         ]
     }
   , { str: "Y-MM-DD HH:mm:ss:SSS"
@@ -200,7 +256,7 @@ dateformats =
         , FDT.MinutesTwoDigits
         ]
     }
-  , { str: "Y-MM-DD [at] HH:mm:ss:SSS"
+  , { str: "Y-MM-DD[ at ]HH:mm:ss:SSS"
     , lossless: true
     , format: fromFoldable
         [ FDT.YearAbsolute
@@ -228,6 +284,17 @@ dateformats =
         , FDT.MonthTwoDigits
         , FDT.Placeholder " "
         , FDT.Milliseconds
+        ]
+    }
+  , { str: "YYYY-DD-MM[X]"
+    , lossless: false
+    , format: fromFoldable
+        [ FDT.YearFull
+        , FDT.Placeholder "-"
+        , FDT.DayOfMonthTwoDigits
+        , FDT.Placeholder "-"
+        , FDT.MonthTwoDigits
+        , FDT.Placeholder "X"
         ]
     }
   ]

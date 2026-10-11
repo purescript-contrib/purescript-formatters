@@ -4,15 +4,17 @@
 -- | + `YY`   - 2 digit year   (99)
 -- | + `MMMM` - Full Month     (January)
 -- | + `MMM`  - Short Month    (Jan)
+-- | + `M`    - Unpadded Month (1)
 -- | + `DD`   - Padded Day     (02)
 -- | + `D`    - Day of month   (2)
 -- | + `X`    - Unix Timestamp (1506875681)
--- | + `E`    - Day of Week    (2)
+-- | + `d`    - Day of Week    (2, Monday = 1, Sunday = 7)
 -- | + `dddd` - DOW Name       (Monday)
 -- | + `ddd`  - DOW Name Short (Mon)
 -- | + `HH`   - 24 Hour        (13)
 -- | + `hh`   - 12 Hour        (1)
 -- | + `a`    - Meridiem       (am/pm)
+-- | + `A`    - Meridiem       (AM/PM)
 -- | + `mm`   - Minutes Padded (02)
 -- | + `m`    - Minutes        (2)
 -- | + `ss`   - Seconds Padded (02)
@@ -80,6 +82,7 @@ data FormatterCommand
   | YearAbsolute
   | MonthFull
   | MonthShort
+  | MonthDigit
   | MonthTwoDigits
   | DayOfMonthTwoDigits
   | DayOfMonth
@@ -90,6 +93,7 @@ data FormatterCommand
   | Hours24
   | Hours12
   | Meridiem
+  | MeridiemLowerCase
   | Minutes
   | MinutesTwoDigits
   | Seconds
@@ -118,16 +122,18 @@ printFormatterCommand = case _ of
   YearAbsolute -> "Y"
   MonthFull -> "MMMM"
   MonthShort -> "MMM"
+  MonthDigit -> "M"
   MonthTwoDigits -> "MM"
   DayOfMonthTwoDigits -> "DD"
   DayOfMonth -> "D"
   UnixTimestamp -> "X"
-  DayOfWeek -> "E"
+  DayOfWeek -> "d"
   DayOfWeekName -> "dddd"
   DayOfWeekNameShort -> "ddd"
   Hours24 -> "HH"
   Hours12 -> "hh"
-  Meridiem -> "a"
+  Meridiem -> "A"
+  MeridiemLowerCase -> "a"
   Minutes -> "m"
   MinutesTwoDigits -> "mm"
   Seconds -> "s"
@@ -141,7 +147,7 @@ printFormatterCommand = case _ of
   needsEscaping = CU.toCharArray >>> Array.any (flip Array.elem formatCharacters)
 
 formatCharacters :: Array Char
-formatCharacters = CU.toCharArray "YMDEHhamsS"
+formatCharacters = CU.toCharArray "YMDXdHhaAmsS"
 
 -- | The format string representation of a `Formatter`.
 -- | 
@@ -180,15 +186,17 @@ formatterCommandParser =
     , Tuple "MMMM" MonthFull
     , Tuple "MMM" MonthShort
     , Tuple "MM" MonthTwoDigits
+    , Tuple "M" MonthDigit
     , Tuple "DD" DayOfMonthTwoDigits
     , Tuple "D" DayOfMonth
-    , Tuple "E" DayOfWeek
     , Tuple "X" UnixTimestamp
     , Tuple "dddd" DayOfWeekName
     , Tuple "ddd" DayOfWeekNameShort
+    , Tuple "d" DayOfWeek
     , Tuple "HH" Hours24
     , Tuple "hh" Hours12
-    , Tuple "a" Meridiem
+    , Tuple "A" Meridiem
+    , Tuple "a" MeridiemLowerCase
     , Tuple "mm" MinutesTwoDigits
     , Tuple "m" Minutes
     , Tuple "ss" SecondsTwoDigits
@@ -223,6 +231,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   YearAbsolute -> show $ fromEnum $ D.year d
   MonthFull -> show $ D.month d
   MonthShort -> printShortMonth $ D.month d
+  MonthDigit -> show $ fromEnum $ D.month d
   MonthTwoDigits -> padSingleDigit $ fromEnum $ D.month d
   DayOfMonthTwoDigits -> padSingleDigit $ fromEnum $ D.day d
   DayOfMonth -> show $ fromEnum $ D.day d
@@ -233,6 +242,7 @@ formatCommand dt@(DT.DateTime d t) = case _ of
   Hours24 -> padSingleDigit (fromEnum $ T.hour t)
   Hours12 -> padSingleDigit $ fix12 $ (fromEnum $ T.hour t) `mod` 12
   Meridiem -> if (fromEnum $ T.hour t) >= 12 then "PM" else "AM"
+  MeridiemLowerCase -> if (fromEnum $ T.hour t) >= 12 then "pm" else "am"
   Minutes -> show $ fromEnum $ T.minute t
   MinutesTwoDigits -> padSingleDigit <<< fromEnum $ T.minute t
   Seconds -> show $ fromEnum $ T.second t
@@ -268,7 +278,7 @@ format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
 -- | Format a DateTime according to the format defined in the given format string.
--- | If the format string is empty or contains a reserved character such as a single "M" or "H", 
+-- | If the format string is empty or contains a reserved character such as a single "H",
 -- | will return a `Left` value. 
 -- | Note that any non-reserved `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
 -- | not produce the format you want (since "yyyy" isn't a recognized format),
@@ -419,6 +429,8 @@ unformatCommandParser = case _ of
     (fromEnum <$> parseMonth)
   MonthShort -> _ { month = _ } `modifyWithParser`
     (fromEnum <$> parseShortMonth)
+  MonthDigit -> _ { month = _ } `modifyWithParser`
+    (parseInt 2 (validateRange 1 12) "Incorrect month digit")
   MonthTwoDigits -> _ { month = _ } `modifyWithParser`
     (parseInt 2 (validateRange 1 12 <> exactLength) "Incorrect 2-digit month")
   DayOfMonthTwoDigits -> _ { day = _ } `modifyWithParser`
@@ -450,6 +462,7 @@ unformatCommandParser = case _ of
   Hours12 -> _ { hour = _ } `modifyWithParser`
     (parseInt 2 (validateRange 0 12 <> exactLength) "Incorrect 12 hour")
   Meridiem -> _ { meridiem = _ } `modifyWithParser` parseMeridiem
+  MeridiemLowerCase -> _ { meridiem = _ } `modifyWithParser` parseMeridiem
   MinutesTwoDigits -> _ { minute = _ } `modifyWithParser`
     (parseInt 2 (validateRange 0 59 <> exactLength) "Incorrect 2-digit minute")
   Minutes -> _ { minute = _ } `modifyWithParser`

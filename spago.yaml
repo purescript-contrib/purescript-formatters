@@ -1,0 +1,41 @@
+package:
+  name: formatters
+  description: A PureScript alternative to numeral.js, moment.js, etc.
+  publish:
+    version: 8.0.0
+    license: Apache-2.0
+    location:
+      githubOwner: purescript-contrib
+      githubRepo: purescript-formatters
+  build:
+    strict: true
+  dependencies:
+    - arrays: ">=7.0.0 <8.0.0"
+    - bifunctors: ">=6.0.0 <7.0.0"
+    - control: ">=6.0.0 <7.0.0"
+    - datetime: ">=6.0.0 <7.0.0"
+    - either: ">=6.0.0 <7.0.0"
+    - enums: ">=6.0.0 <7.0.0"
+    - foldable-traversable: ">=6.0.0 <7.0.0"
+    - integers: ">=6.0.0 <7.0.0"
+    - lists: ">=7.0.0 <8.0.0"
+    - maybe: ">=6.0.0 <7.0.0"
+    - newtype: ">=5.0.0 <6.0.0"
+    - numbers: ">=9.0.0 <10.0.0"
+    - ordered-collections: ">=3.0.0 <4.0.0"
+    - parsing: ">=9.0.0 <12.0.0"
+    - partial: ">=4.0.0 <5.0.0"
+    - prelude: ">=6.0.0 <7.0.0"
+    - strings: ">=6.0.0 <7.0.0"
+    - transformers: ">=6.0.0 <7.0.0"
+    - tuples: ">=7.0.0 <8.0.0"
+  test:
+    main: Test.Main
+    dependencies:
+      - aff
+      - assert
+      - console
+      - effect
+workspace:
+  packageSet:
+    registry: 81.4.0

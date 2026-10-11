@@ -3,13 +3,38 @@ module Test.Number (numberTest) where
 import Prelude
 
 import Control.Monad.Reader.Class (class MonadReader)
-import Data.Either (Either(..))
-import Data.Formatter.Number (Formatter(..), format, parseFormatString, printFormatter, unformat, withSeparators)
+import Data.Either (Either(..), isLeft)
+import Data.Formatter.Number (Formatter(..), format, parseFormatString, printFormatter, unformat, unformatNumber, withSeparators)
 import Effect.Aff.Class (class MonadAff)
 import Test.Utils (forAll, describe, shouldEqual)
 
 numberTest :: forall m. MonadReader Int m => MonadAff m => m Unit
 numberTest = describe "Data.Formatter.Number" do
+  forAll _.input "parses numbers without Int overflow or fractional rescaling"
+    [ { pattern: "0.0", input: "2147483647.0", expected: 2147483647.0 }
+    , { pattern: "0.0", input: "2147483648.0", expected: 2147483648.0 }
+    , { pattern: "0.0", input: "-2147483649.0", expected: -2147483649.0 }
+    , { pattern: "0.0", input: "1507142848002.0", expected: 1507142848002.0 }
+    , { pattern: "0.0", input: "9007199254740991.0", expected: 9007199254740991.0 }
+    , { pattern: "00.00", input: "50.0234252", expected: 50.0234252 }
+    , { pattern: "0.0", input: "-50.0234252", expected: -50.0234252 }
+    , { pattern: "0.00", input: "0.000000000123456789", expected: 0.000000000123456789 }
+    , { pattern: "0.0", input: "1.2345678901234567", expected: 1.2345678901234567 }
+    , { pattern: "0,0.00", input: "1,507,142,848,002.25", expected: 1507142848002.25 }
+    , { pattern: "+0.00a", input: "+1.250K", expected: 1250.0 }
+    ]
+    (\{ pattern, input, expected } -> unformatNumber pattern input `shouldEqual` Right expected)
+
+  forAll identity "keeps minimum widths and rejects malformed input"
+    [ "5.00", "50.0", "50.00x", "50.00.1" ]
+    (\input -> isLeft (unformatNumber "00.00a" input) `shouldEqual` true)
+
+  forAll _.input "parses localized numbers without overflow or rescaling"
+    [ { input: "1.507.142.848.002,25", expected: 1507142848002.25 }
+    , { input: "-50,0234252", expected: -50.0234252 }
+    ]
+    (\{ input, expected } -> unformat (germanStyleSeparators fmt1') input `shouldEqual` Right expected)
+
   forAll _.str
     "should print formatter"
     numberformatts
