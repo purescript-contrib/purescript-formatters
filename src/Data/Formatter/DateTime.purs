@@ -4,15 +4,17 @@
 -- | + `YY`   - 2 digit year   (99)
 -- | + `MMMM` - Full Month     (January)
 -- | + `MMM`  - Short Month    (Jan)
+-- | + `M`    - Unpadded Month (1)
 -- | + `DD`   - Padded Day     (02)
 -- | + `D`    - Day of month   (2)
 -- | + `X`    - Unix Timestamp (1506875681)
--- | + `E`    - Day of Week    (2)
+-- | + `d`    - Day of Week    (2, Monday = 1, Sunday = 7)
 -- | + `dddd` - DOW Name       (Monday)
 -- | + `ddd`  - DOW Name Short (Mon)
 -- | + `HH`   - 24 Hour        (13)
 -- | + `hh`   - 12 Hour        (1)
 -- | + `a`    - Meridiem       (am/pm)
+-- | + `A`    - Meridiem       (AM/PM)
 -- | + `mm`   - Minutes Padded (02)
 -- | + `m`    - Minutes        (2)
 -- | + `ss`   - Seconds Padded (02)
@@ -130,8 +132,8 @@ printFormatterCommand = case _ of
   DayOfWeekNameShort -> "ddd"
   Hours24 -> "HH"
   Hours12 -> "hh"
-  Meridiem -> "a"
-  MeridiemLowerCase -> "A"
+  Meridiem -> "A"
+  MeridiemLowerCase -> "a"
   Minutes -> "m"
   MinutesTwoDigits -> "mm"
   Seconds -> "s"
@@ -193,8 +195,8 @@ formatterCommandParser =
     , Tuple "d" DayOfWeek
     , Tuple "HH" Hours24
     , Tuple "hh" Hours12
-    , Tuple "a" Meridiem
-    , Tuple "A" MeridiemLowerCase
+    , Tuple "A" Meridiem
+    , Tuple "a" MeridiemLowerCase
     , Tuple "mm" MinutesTwoDigits
     , Tuple "m" Minutes
     , Tuple "ss" SecondsTwoDigits
@@ -276,7 +278,7 @@ format :: Formatter -> DT.DateTime -> String
 format f d = foldMap (formatCommand d) f
 
 -- | Format a DateTime according to the format defined in the given format string.
--- | If the format string is empty or contains a reserved character such as a single "M" or "H", 
+-- | If the format string is empty or contains a reserved character such as a single "H", 
 -- | will return a `Left` value. 
 -- | Note that any non-reserved `Char` is treated as a placeholder, so while "yyyy-MM-dd" might
 -- | not produce the format you want (since "yyyy" isn't a recognized format),

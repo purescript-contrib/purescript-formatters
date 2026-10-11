@@ -5,6 +5,9 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- The day-of-week token is now `d` instead of `E`; numeric weekdays remain Monday = 1 through Sunday = 7. (#87 by @garyb)
+- The `a` token now prints lowercase `am`/`pm`; use `A` for uppercase `AM`/`PM`. Both parse either case. `Meridiem` still prints uppercase; `MeridiemLowerCase` prints lowercase.
+- `FormatterCommand` has new `MonthDigit` and `MeridiemLowerCase` constructors; update exhaustive matches.
 - DateTime Formatter Placeholders that contain any valid format characters are now escaped via square brackets.  Square brackets are not valid Placeholder characters. (#74 by @ntwilson)
 
 - Support for different separators ([PR](https://github.com/purescript-contrib/purescript-formatters/pull/86) by @carstenkoenig)
@@ -14,6 +17,7 @@ New features:
 - Added support for lower-case meridiem via `MeridiemLowerCase` [#67](https://github.com/purescript-contrib/purescript-formatters/pull/67) (@fsoikin)
 
 Bugfixes:
+- Escape `X` and `d` in literal placeholders when printing DateTime formatters. (#87 by @garyb)
 
 Other improvements:
 - Added module documentation for Data.Formatter.DateTime and Data.Formatter.Number (#73 by @ntwilson)

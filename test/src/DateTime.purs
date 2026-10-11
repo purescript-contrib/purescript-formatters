@@ -6,6 +6,7 @@ import Control.Alternative (guard)
 import Control.Monad.Reader.Class (class MonadReader)
 import Data.DateTime (DateTime)
 import Data.Either (Either(..), isLeft)
+import Data.Foldable (for_)
 import Data.Formatter.DateTime as FDT
 import Data.List (fromFoldable)
 import Effect.Aff.Class (class MonadAff)
@@ -13,6 +14,23 @@ import Test.Utils (forAll, makeDateTime, describe, it, shouldEqual)
 
 datetimeTest :: forall m. MonadReader Int m => MonadAff m => m Unit
 datetimeTest = describe "Data.Formatter.DateTime" do
+  describe "meridiem token convention" do
+    forAll show "formats and parses both cases at midnight and noon" [ 0, 11, 12, 23 ] \hour -> do
+      let
+        date = makeDateTime 2020 5 20 hour 0 0 0
+        lower = if hour < 12 then "am" else "pm"
+        upper = if hour < 12 then "AM" else "PM"
+      FDT.formatDateTime "a A" date `shouldEqual` Right (lower <> " " <> upper)
+      for_ [ "a", "A" ] \token -> do
+        let prefix = "2020-05-20 " <> (if hour == 0 || hour == 12 then "12" else "11") <> " "
+        FDT.unformatDateTime ("YYYY-MM-DD hh " <> token) (prefix <> lower) `shouldEqual` Right date
+        FDT.unformatDateTime ("YYYY-MM-DD hh " <> token) (prefix <> upper) `shouldEqual` Right date
+
+  forAll identity "preserves escaped token literals" [ "X", "d", "ddd", "M", "a", "A" ] \literal -> do
+    let str = "[" <> literal <> "]"
+    (FDT.printFormatter <$> FDT.parseFormatString str) `shouldEqual` Right str
+    FDT.formatDateTime str (makeDateTime 2020 5 20 0 0 0 0) `shouldEqual` Right literal
+
   describe "single-digit months" do
     forAll show "formats and parses unpadded months" [ 1, 5, 10, 12 ] \month -> do
       let date = makeDateTime 2020 month 20 0 0 0 0
@@ -37,24 +55,24 @@ datetimeTest = describe "Data.Formatter.DateTime" do
     , { format: "dddd, MMM D", dateStr: "Saturday, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "ddd, MMM D", dateStr: "Sat, Apr 1", date: makeDateTime 2017 4 1 0 0 0 0 }
     , { format: "d", dateStr: "6", date: makeDateTime 2017 4 1 0 0 0 0 }
-    , { format: "hh:mm:ss:SSS a", dateStr: "11:03:04:234 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:mm:ss:SSS A", dateStr: "11:03:04:234 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "YY", dateStr: "17", date: makeDateTime 20017 4 12 0 0 0 0 } -- Format 20017 with YY
     , { format: "YY", dateStr: "00", date: makeDateTime 0 4 12 0 0 0 0 } -- Format 0 with YY
     , { format: "YY", dateStr: "01", date: makeDateTime (-1) 4 12 0 0 0 0 } -- Format -1 with YY
-    , { format: "hh:m:s a", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
-    , { format: "hh:m:s A", dateStr: "11:3:4 am", date: makeDateTime 2017 4 12 11 3 4 234 }
-    , { format: "hh a", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
-    , { format: "hh a", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
-    , { format: "hh A", dateStr: "12 am", date: makeDateTime 0 1 1 0 0 0 0 }
-    , { format: "hh A", dateStr: "12 pm", date: makeDateTime 0 1 1 12 0 0 0 }
-    , { format: "hh:mm:ss a", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:m:s A", dateStr: "11:3:4 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh:m:s a", dateStr: "11:3:4 am", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hh A", dateStr: "12 AM", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh A", dateStr: "12 PM", date: makeDateTime 0 1 1 12 0 0 0 }
+    , { format: "hh a", dateStr: "12 am", date: makeDateTime 0 1 1 0 0 0 0 }
+    , { format: "hh a", dateStr: "12 pm", date: makeDateTime 0 1 1 12 0 0 0 }
+    , { format: "hh:mm:ss A", dateStr: "11:03:04 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.023", date: makeDateTime 2017 4 10 11 12 30 23 }
     , { format: "hh:mm:ss.SSS", dateStr: "11:12:30.003", date: makeDateTime 2017 4 10 11 12 30 3 }
     , { format: "hh:mm:ss.SS", dateStr: "11:12:30.12", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hh:mm:ss.S", dateStr: "11:12:30.1", date: makeDateTime 2017 4 10 11 12 30 123 }
-    , { format: "hhmmss a", dateStr: "110304 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
+    , { format: "hhmmss A", dateStr: "110304 AM", date: makeDateTime 2017 4 12 11 3 4 234 }
     , { format: "hhmmssSSS", dateStr: "111230123", date: makeDateTime 2017 4 10 11 12 30 123 }
     , { format: "hhmmssSSS", dateStr: "111230023", date: makeDateTime 2017 4 10 11 12 30 23 }
     , { format: "hhmmssSSS", dateStr: "111230003", date: makeDateTime 2017 4 10 11 12 30 3 }
@@ -161,7 +179,7 @@ dateformats =
         , FDT.DayOfMonthTwoDigits
         ]
     }
-  , { str: "HH:mma"
+  , { str: "HH:mmA"
     , lossless: false
     , format: fromFoldable
         [ FDT.Hours24
@@ -170,7 +188,7 @@ dateformats =
         , FDT.Meridiem
         ]
     }
-  , { str: "HH:mmA"
+  , { str: "HH:mma"
     , lossless: false
     , format: fromFoldable
         [ FDT.Hours24
